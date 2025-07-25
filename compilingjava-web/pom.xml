@@ -1,50 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.compilingjava</groupId>
   <artifactId>compilingjava-web</artifactId>
   <version>1.0-SNAPSHOT</version>
-
   <name>compilingjava-web</name>
-  <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
-<properties>
-  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  <maven.compiler.source>17</maven.compiler.source>
-  <maven.compiler.target>17</maven.compiler.target>
-  <maven.compiler.release>17</maven.compiler.release> <!-- Optional, recommended for JDK 9+ -->
-</properties>
+  <!-- ✅ Parent must go here -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.0</version>
+    <relativePath/> <!-- lookup parent from repository -->
+  </parent>
+
+  <properties>
+    <java.version>17</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
   <dependencies>
+    <!-- Spring Boot Web -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- JUnit (optional if you're using Spring Boot's default testing support) -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>
-<build>
-  <pluginManagement>
-    <plugins>
-      <!-- other plugins unchanged -->
 
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Compiler plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version> <!-- Update to a newer version -->
+        <version>3.8.1</version>
         <configuration>
           <source>17</source>
           <target>17</target>
-          <release>17</release>
         </configuration>
       </plugin>
 
-      <!-- rest unchanged -->
+      <!-- Spring Boot plugin -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>com.compilingjava.App</mainClass>
+      </configuration>
+      </plugin>
     </plugins>
-  </pluginManagement>
-</build>
+  </build>
+
 </project>
