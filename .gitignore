@@ -1,0 +1,55 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+*.class
+*.classpath
+*.project
+*.settings/
+bin/
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Environment/config
+.env
+*.env
+
+# Java
+*.class
+
+# Build tools
+*.jar
+*.war
+*.ear
+
+# Node/npm (if ever used in frontend)
+node_modules/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Backup files
+*.bak
+*.old
