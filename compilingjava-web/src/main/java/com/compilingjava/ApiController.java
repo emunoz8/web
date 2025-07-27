@@ -8,6 +8,6 @@ public class ApiController {
 
     @GetMapping("/api/greeting")
     public String greeting() {
-        return "Hello from Spring Boot REST API!";
+        return "Hello and Welcome to my Website";
     }
 }
