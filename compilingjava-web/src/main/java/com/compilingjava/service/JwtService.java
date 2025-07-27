@@ -1,11 +1,11 @@
 package com.compilingjava.service;
 
-import java.util.Date;
-import java.security.Key;
-import java.nio.charset.StandardCharsets;
-
 import com.compilingjava.config.JwtProperties;
+import java.util.Date;
 
+import javax.crypto.SecretKey;
+
+import java.nio.charset.StandardCharsets;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -16,7 +16,7 @@ import io.jsonwebtoken.security.Keys;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
-    private final Key signingKey;
+    private final SecretKey signingKey;
 
     public JwtService(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
@@ -30,5 +30,29 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
                 .signWith(signingKey)
                 .compact();
+    }
+
+    public String extractUsername(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
+    public boolean isTokenExpired(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration()
+                .before(new Date());
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 }

@@ -47,3 +47,6 @@ compilingjava-react/*.local
 compilingjava-react/*.cache
 
 .env
+
+# Prevent this if you ever copy it locally
+compilingjava-web/src/main/resources/application.properties
