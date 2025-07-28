@@ -1,37 +1,40 @@
 package com.compilingjava.service;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
 import com.compilingjava.dto.AuthRequest;
 import com.compilingjava.dto.AuthResponse;
+import com.compilingjava.repository.UserRepository;
+import com.compilingjava.model.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationService {
 
-    private final AuthenticationManager authManager;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthenticationService(
-            AuthenticationManager authManager,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
             JwtService jwtService) {
-        this.authManager = authManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
 
     }
 
     public AuthResponse authenticate(AuthRequest request) {
-        UserDetails user;
-        String token;
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
+        }
 
-        user = (UserDetails) auth.getPrincipal();
-        token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user);
 
         return new AuthResponse(token);
     }
