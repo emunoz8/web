@@ -1,16 +1,22 @@
-import React from "react";
+import React, { ReactElement} from "react";
 import { Link, useLocation } from "react-router-dom";
-import '../styles/NavItem.css';
 
 interface NavItemProps {
   to: string;
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactElement;
   exact?: boolean;
   className?: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, label, icon, exact = false, className }) => {
+// Explicitly typing the return as JSX.Element fixes compatibility
+const NavItem = ({
+  to,
+  label,
+  icon,
+  exact = false,
+  className,
+}: NavItemProps): React.JSX.Element => {
   const location = useLocation();
   const isActive = exact ? location.pathname === to : location.pathname.startsWith(to);
 
@@ -18,10 +24,10 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, icon, exact = false, class
 
   return (
     <li>
-    <Link to={to} className={classes} aria-current={isActive ? "page" : undefined}>
-      {icon && <span className="nav-icon">{icon}</span>}
-      <span>{label}</span>
-    </Link>
+      <Link to={to} className={classes} aria-current={isActive ? "page" : undefined}>
+        {icon && <span className="nav-icon">{icon}</span>}
+        <span>{label}</span>
+      </Link>
     </li>
   );
 };
