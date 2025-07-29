@@ -1,0 +1,46 @@
+.navbar {
+  background-color: #333;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Nav items container (ul) flex row */
+.navbar ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 16px;
+}
+
+/* Nav item spacing */
+.navbar ul li {
+  margin: 0 1rem;
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;       /* vertical stack */
+    align-items: flex-start;      /* align left */
+    width: 200px;                 /* fixed sidebar width */
+    height: 100vh;                /* full viewport height */
+    position: fixed;              /* fixed on screen */
+    top: 0;
+    left: 0;
+    padding: 24px 12px;
+  }
+
+  .navbar ul {
+    flex-direction: column;       /* vertical nav items */
+    gap: 12px;
+    width: 100%;
+  }
+
+  .navbar ul li {
+    margin: 8px 0;
+  }
+}
