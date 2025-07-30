@@ -1,4 +1,4 @@
-import React, { ReactElement} from "react";
+import React, { ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 interface NavItemProps {
@@ -9,7 +9,6 @@ interface NavItemProps {
   className?: string;
 }
 
-// Explicitly typing the return as JSX.Element fixes compatibility
 const NavItem = ({
   to,
   label,
@@ -23,12 +22,12 @@ const NavItem = ({
   const classes = `nav-item ${isActive ? "active" : ""} ${className ?? ""}`;
 
   return (
-    <li>
+    <>
       <Link to={to} className={classes} aria-current={isActive ? "page" : undefined}>
         {icon && <span className="nav-icon">{icon}</span>}
         <span>{label}</span>
       </Link>
-    </li>
+    </>
   );
 };
 

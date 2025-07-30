@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-black text-gray-900;
+body{
+  @apply bg-gray-700 text-gray-900
+}
+
+/* Desktop navbar */
+.navbar-desktop {
+  @apply hidden md:flex bg-gray-800 text-white shadow-md px-6 py-4 justify-center space-x-8;
+}
+
+/* Mobile top bar with hamburger */
+.navbar-mobile-top {
+  @apply flex md:hidden bg-gray-800 text-white items-center justify-between px-6 py-4;
+}
+
+/* Sidebar menu */
+.sidebar {
+  @apply fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-lg transform transition-transform duration-300 ease-in-out md:hidden;
+  /* Hidden by default - shifted left */
+  transform: translateX(-100%);
+}
+
+/* Sidebar open */
+.sidebar-open {
+  transform: translateX(0);
+}
+
+/* Nav items inside sidebar and desktop */
+.nav-item {
+  @apply flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-700 transition-colors cursor-pointer text-yellow-200/70;
+}
+
+.nav-item {
+  @apply flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-700 transition-colors cursor-pointer;
+}
+
+.nav-item.active {
+  @apply bg-purple-500/30  font-semibold;
+}
+
+.nav-icon {
+  @apply text-pretty;
 }
