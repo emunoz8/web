@@ -1,18 +1,11 @@
 // components/Navbar.tsx
-import React from 'react';
-import NavItem from './NavItem';
-
-const publicRoutes = [
-  {to: "/", label:"Home"},
-  {to: "/about", label:"About"},
-  {to: "/projects", label:"Projects"},
-  {to: "/contact", label: "Contact"},
-  {to: "/login", label: "Login"},
-]
+import React from "react";
+import NavItem from "./NavItem";
+import { publicRoutes } from "../../routes/publicRoutes";
 
 function Navbar() {
   return (
-    <nav className="navbar-desktop">
+    <nav className="navbar">
       {publicRoutes.map(({ to, label }) => (
         <NavItem key={to} to={to} label={label} />
       ))}

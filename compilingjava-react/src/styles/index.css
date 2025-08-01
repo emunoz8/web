@@ -1,46 +1,43 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body{
-  @apply bg-gray-700 text-gray-900
+.code-theme {
+  @apply font-mono bg-gray-900 text-green-400 min-h-screen p-8 box-border;
 }
 
-/* Desktop navbar */
-.navbar-desktop {
-  @apply hidden md:flex bg-gray-800 text-white shadow-md px-6 py-4 justify-center space-x-8;
+.navbar {
+  @apply flex items-center justify-between border-b border-green-400 pb-4 mb-8;
 }
 
-/* Mobile top bar with hamburger */
-.navbar-mobile-top {
-  @apply flex md:hidden bg-gray-800 text-white items-center justify-between px-6 py-4;
+.nav-link {
+  @apply px-4 py-2 rounded-md transition-colors text-green-400 hover:text-green-200 cursor-pointer font-semibold;
 }
 
-/* Sidebar menu */
-.sidebar {
-  @apply fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-lg transform transition-transform duration-300 ease-in-out md:hidden;
-  /* Hidden by default - shifted left */
-  transform: translateX(-100%);
+.nav-link-active {
+  @apply px-4 py-2 rounded-md transition-colors bg-green-400 text-gray-900 font-bold;
 }
 
-/* Sidebar open */
-.sidebar-open {
-  transform: translateX(0);
+
+.text-area {
+  @apply bg-gray-800 text-green-300 border border-green-400 rounded-md p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-400;
+  font-family: "Courier New", Courier, monospace;
 }
 
-/* Nav items inside sidebar and desktop */
-.nav-item {
-  @apply flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-700 transition-colors cursor-pointer text-yellow-200/70;
+.btn {
+  @apply bg-green-500 text-gray-900 font-semibold py-2 px-6 rounded shadow hover:bg-green-600 transition-colors duration-300;
+  font-family: "Courier New", Courier, monospace;
+  user-select: none;
 }
 
-.nav-item {
-  @apply flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-700 transition-colors cursor-pointer;
+
+.img-frame {
+  @apply border-4 border-green-400 rounded-lg shadow-lg max-w-full h-auto;
 }
 
-.nav-item.active {
-  @apply bg-purple-500/30  font-semibold;
+
+.blinking-cursor {
+  font-weight: 700;
+  color: #68d391; /* green */
+  animation: blink 1s step-start infinite;
 }
 
-.nav-icon {
-  @apply text-pretty;
+@keyframes blink {
+  50% { opacity: 0; }
 }

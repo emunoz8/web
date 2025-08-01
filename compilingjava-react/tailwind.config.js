@@ -5,7 +5,11 @@ module.exports = {
     "./public/index.html",        // Include your public HTML if needed
   ],
   theme: {
-    extend: {}, // You can customize your theme here
+    extend: {
+      fontFamily:{
+        mono: ['"Courier New"','Courier', 'monospace'],
+      },
+    }, // You can customize your theme here
   },
   plugins: [],
 };

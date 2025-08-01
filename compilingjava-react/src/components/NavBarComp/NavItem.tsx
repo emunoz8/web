@@ -13,7 +13,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, label }) => {
       to={to}
       className={({ isActive }) =>
         `px-4 py-2 rounded-md transition-colors ${
-          isActive ? 'nav-item.active' : 'nav-item'
+          isActive ? 'nav-link-active' : 'nav-link'
         }`
       }
     >
