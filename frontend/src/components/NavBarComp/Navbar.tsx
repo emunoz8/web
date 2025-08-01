@@ -1,5 +1,3 @@
-// components/Navbar.tsx
-import React from "react";
 import NavItem from "./NavItem";
 import { publicRoutes } from "../../routes/publicRoutes";
 
