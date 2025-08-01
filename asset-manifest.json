@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/web/static/css/main.1cb7175e.css",
-    "main.js": "/web/static/js/main.fd8f69a9.js",
-    "index.html": "/web/index.html",
-    "main.1cb7175e.css.map": "/web/static/css/main.1cb7175e.css.map",
-    "main.fd8f69a9.js.map": "/web/static/js/main.fd8f69a9.js.map"
+    "main.css": "/compilingjava.com/static/css/main.1cb7175e.css",
+    "main.js": "/compilingjava.com/static/js/main.eb0a1ec6.js",
+    "index.html": "/compilingjava.com/index.html",
+    "main.1cb7175e.css.map": "/compilingjava.com/static/css/main.1cb7175e.css.map",
+    "main.eb0a1ec6.js.map": "/compilingjava.com/static/js/main.eb0a1ec6.js.map"
   },
   "entrypoints": [
     "static/css/main.1cb7175e.css",
-    "static/js/main.fd8f69a9.js"
+    "static/js/main.eb0a1ec6.js"
   ]
 }
