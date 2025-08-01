@@ -1,17 +1,17 @@
 # ---------------------------
 # Java / Spring Boot ignores
 # ---------------------------
-compilingjava-web/target/
+backend/target/
 
 # Maven wrapper files to keep
 !.mvn/wrapper/maven-wrapper.jar
 !.mvn/wrapper/maven-wrapper.properties
 
 # Logs
-compilingjava-web/*.log
+backend/*.log
 
 # Compiled Java classes
-compilingjava-web/*.class
+backend/*.class
 
 # IDE folders and project files
 .idea/
@@ -27,27 +27,29 @@ Thumbs.db
 # ---------------------------
 # Node / React frontend ignores
 # ---------------------------
-compilingjava-react/node_modules/
-compilingjava-react/build/
+frontend/node_modules/
+frontend/build/
 
 # Logs for npm/yarn
-compilingjava-react/npm-debug.log*
-compilingjava-react/yarn-debug.log*
-compilingjava-react/yarn-error.log*
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
 
 # Environment config files
-compilingjava-react/.env
-compilingjava-react/.env.*.local
+frontend/.env
+frontend/.env.*.local
 
 # Coverage reports
-compilingjava-react/coverage/
+frontend/coverage/
 
 # Cache and local config files
-compilingjava-react/*.local
-compilingjava-react/*.cache
+frontend/*.local
+frontend/*.cache
 
 .env
 
 # Prevent this if you ever copy it locally
-compilingjava-web/src/main/resources/application.properties
+backend/src/main/resources/application.properties
 node_modules
+
+frontend/build
