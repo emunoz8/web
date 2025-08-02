@@ -1,11 +1,9 @@
 import React from "react";
+import Paragrapher from "../components/Paragrapher";
 
 const Home: React.FC = () => {
   return (
-    <div className="text-area">
-      Hello World!
-    <div className="blinking-cursor">|</div>
-    </div>
+    <Paragrapher text="Hello World"/>
   );
 };
 
