@@ -5,7 +5,7 @@ import AppRoutes from "./routes/AppRoutes";
 function App() {
   return (
     <div className="code-theme">
-      <Router basename="/compilingjava-react">
+      <Router>
         <Navbar />
         <AppRoutes />
       </Router>

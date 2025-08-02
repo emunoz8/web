@@ -3,7 +3,7 @@
 }
 
 .navbar {
-  @apply flex items-center justify-between border-b border-green-400 pb-4 mb-8;
+  @apply flex items-center justify-center gap-x-8 border-b border-green-400 pb-4 mb-8;
 }
 
 .nav-link {
