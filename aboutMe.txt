@@ -1,11 +1,7 @@
-Hi, I’m Edwin — a software engineer who enjoys building things and figuring out bugs. I like working across the stack, especially with Java and Spring Boot on the backend and React on the frontend. Clean architecture, strong typing, and component-based design — that’s where I feel most at home.
+Hello! I’m Edwin, a friendly yet introspective software engineer with a passion for transforming complex challenges into innovative solutions. My journey through the tech landscape has been anything but ordinary, driven by a commitment to excellence and a desire to push boundaries.
 
-Before diving into software, I served four years in the Marine Corps as a diesel mechanic. That experience shaped how I work: goal-oriented, detail-focused, and calm under pressure. After the military, I continued working with engines — first at a bus company, then a dealership, and eventually at an armored vehicle shop, where I was promoted to Lead Diesel Technician. I managed a small team of three techs and oversaw a fleet of over 40 vehicles.
+Before diving into software, I served as a diesel mechanic in the Marine Corps, where I honed my technical skills and learned the importance of precision and teamwork under pressure. Today, I bring that same dedication to my role as a high school as a program coordinator/ youth mentor,  where I guide students through their academic and personal journeys, helping them navigate challenges and discover their potential.
 
-Troubleshooting manuals, diagnostic codes, and electrical systems taught me the value of good documentation, methodical problem-solving, and never skipping the basics. In a lot of ways, debugging code feels like diagnosing an engine — you isolate symptoms, test hypotheses, and work your way toward the fix. Whether it’s replacing a fuel injector or refactoring a brittle function, the mindset is the same: be patient, be precise, and trust the process.
+When I’m not immersed in code or counseling, you’ll find me exploring the local gaming scene strategizing over board games or diving into immersive video games. Balancing work and play is essential to me, and I’m always eager to learn and grow.
 
-Now, I apply those same principles to writing clean, reliable software — and I’m always learning something new along the way. One of the ways I like to explore new programming languages or frameworks is by diving into Codecademy courses. I also enjoy learning the “lore” of computer science — understanding how things used to work and why they evolved helps me visualize problems and build more thoughtfully.
-
-When I’m not programming, you’ll probably find me at the gym, out on a walk, or playing a few games at the local chess club.
-
-This website is a work in progress, so feel free to check back from time to time and watch it grow. I’m currently open to full-time software engineering roles, especially ones that involve backend development, full-stack projects, or opportunities to mentor and grow as a developer. If you're working on something interesting, I’d love to hear from you.
+If you’re interested in connecting or exchanging ideas, feel free to reach out. Let’s innovate and inspire each other!
