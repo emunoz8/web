@@ -1,0 +1,11 @@
+Hi, I’m Edwin — a software engineer who enjoys building things and figuring out bugs. I like working across the stack, especially with Java and Spring Boot on the backend and React on the frontend. Clean architecture, strong typing, and component-based design — that’s where I feel most at home.
+
+Before diving into software, I served four years in the Marine Corps as a diesel mechanic. That experience shaped how I work: goal-oriented, detail-focused, and calm under pressure. After the military, I continued working with engines — first at a bus company, then a dealership, and eventually at an armored vehicle shop, where I was promoted to Lead Diesel Technician. I managed a small team of three techs and oversaw a fleet of over 40 vehicles.
+
+Troubleshooting manuals, diagnostic codes, and electrical systems taught me the value of good documentation, methodical problem-solving, and never skipping the basics. In a lot of ways, debugging code feels like diagnosing an engine — you isolate symptoms, test hypotheses, and work your way toward the fix. Whether it’s replacing a fuel injector or refactoring a brittle function, the mindset is the same: be patient, be precise, and trust the process.
+
+Now, I apply those same principles to writing clean, reliable software — and I’m always learning something new along the way. One of the ways I like to explore new programming languages or frameworks is by diving into Codecademy courses. I also enjoy learning the “lore” of computer science — understanding how things used to work and why they evolved helps me visualize problems and build more thoughtfully.
+
+When I’m not programming, you’ll probably find me at the gym, out on a walk, or playing a few games at the local chess club.
+
+This website is a work in progress, so feel free to check back from time to time and watch it grow. I’m currently open to full-time software engineering roles, especially ones that involve backend development, full-stack projects, or opportunities to mentor and grow as a developer. If you're working on something interesting, I’d love to hear from you.
