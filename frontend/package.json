@@ -1,5 +1,5 @@
 {
-  "name": "compilingjava-react",
+  "name": "frontend",
   "version": "0.1.0",
   "private": true,
   "proxy": "http://localhost:8080",
@@ -15,7 +15,7 @@
     "react-scripts": "^5.0.1",
     "web-vitals": "^5.0.3"
   },
-  "homepage": "https://emunoz8.github.io/compilingjava-web/",
+  "homepage": "https://compilingjava.com",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
