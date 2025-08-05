@@ -1,48 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply overflow-y-scroll;
+  }
+}
+
 
 .body-main {
-  @apply w-full max-w-4xl px-8 sm:px-12 lg:px-20 bg-gray-900;
+  @apply w-full max-w-4xl px-4 sm:px-8 md:px-12 lg:px-20 bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-green-300;
 }
-
 
 .code-theme {
-  @apply min-h-screen flex justify-center items-start bg-gray-900 text-green-400 font-mono p-20 box-border;
+  @apply min-h-screen flex flex-col justify-start items-center bg-gray-50 text-gray-800 font-mono p-4 sm:p-8 md:p-12 lg:p-10 box-border dark:bg-gray-900 dark:text-green-300 overflow-x-hidden;
+  word-break: break-word;
 }
 
-
 .navbar {
-  @apply flex items-center justify-center gap-x-8 border-b border-green-400 pb-4 mb-8;
+  @apply flex flex-wrap justify-center gap-4 sm:gap-x-6 md:gap-x-8 pb-4 mb-8;
 }
 
 .nav-link {
-  @apply px-4 py-2 rounded-md transition-colors text-green-400 hover:text-green-200 cursor-pointer font-semibold;
+  @apply px-4 py-2 rounded-md transition-colors text-indigo-600 hover:text-indigo-800 cursor-pointer font-semibold dark:text-emerald-400 dark:hover:text-emerald-300;
 }
 
 .nav-link-active {
-  @apply px-4 py-2 rounded-md transition-colors bg-green-400 text-gray-900 font-bold;
+  @apply px-4 py-2 rounded-md transition-colors border-2 border-indigo-600 text-indigo-800 font-bold dark:border-emerald-400 dark:text-emerald-300;
 }
 
 
+.nav-link::after {
+  content: '';
+  @apply absolute left-0 bottom-0 w-full h-0.5 bg-indigo-600 dark:bg-emerald-400
+    transition-transform duration-300 ease-in-out origin-left scale-x-0;
+  transform-origin: left;
+}
+
+.nav-link-active {
+  @apply relative inline-block px-4 py-2 rounded-md transition-colors
+    text-indigo-800 font-bold dark:text-emerald-300;
+  padding-bottom: 0.5rem;
+}
+
+.nav-link-active::after {
+  @apply absolute left-0 bottom-0 w-full h-0.5 bg-indigo-600 dark:bg-emerald-400
+    transition-transform duration-300 ease-in-out origin-left scale-x-100;
+  transform-origin: left;
+}
+
+
+
+/* Text area with softer gray and updated ring colors */
 .text-area {
-  @apply bg-gray-800 text-green-300 border-b-8 border-green-400 rounded-md p-8 resize-none focus:outline-none focus:ring-2 focus:ring-green-400;
+  @apply bg-white text-gray-900 border-b-8 border-transparent rounded-md p-4 sm:p-6 md:p-8 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-800 dark:text-emerald-300 dark:border-transparent dark:focus:ring-emerald-400;
   font-family: "Courier New", Courier, monospace;
 }
 
+/* Buttons with updated colors */
 .btn {
-  @apply bg-green-500 text-gray-900 font-semibold py-2 px-6 rounded shadow hover:bg-green-600 transition-colors duration-300;
+  @apply bg-indigo-500 text-white font-semibold py-2 px-4 sm:px-6 rounded shadow hover:bg-indigo-600 transition-colors duration-300 dark:bg-emerald-500 dark:text-gray-900 dark:hover:bg-emerald-600;
   font-family: "Courier New", Courier, monospace;
   user-select: none;
 }
 
-
+/* Image frames with richer border colors */
 .img-frame {
-  @apply border-4 border-green-400 rounded-lg shadow-lg max-w-full h-auto;
+  @apply border-4 border-indigo-400 rounded-lg shadow-lg max-w-full h-auto dark:border-emerald-400;
 }
-
 
 .blinking-cursor {
   font-weight: 700;
-  color: #68d391; /* green */
+  color: #5a67d8; /* indigo-500 for light mode */
   animation: blink 1s step-start infinite;
+}
+
+.dark .blinking-cursor {
+  color: #34d399; /* emerald-400 for dark mode */
 }
 
 @keyframes blink {

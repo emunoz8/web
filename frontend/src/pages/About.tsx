@@ -1,6 +1,5 @@
-// About.tsx (manages state and returns multiple elements)
 import React, { useEffect, useState } from "react";
-import Paragrapher from "../components/Paragrapher";
+import Paragrapher from "../components/helpers/Paragrapher";
 
 const About: React.FC = () => {
   const [text, setText] = useState("");

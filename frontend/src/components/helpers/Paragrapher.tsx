@@ -1,4 +1,3 @@
-// Paragrapher.tsx (pure renderer)
 interface ParagrapherProps {
   text: string;
 }
@@ -13,7 +12,7 @@ const Paragrapher: React.FC<ParagrapherProps> = ({ text }) => {
           {para}
         </p>
       ))}
-      <div className="blinking-cursor">|</div>
+      
     </div>
   );
 };
