@@ -1,0 +1,20 @@
+package com.compilingjava.service;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class EmailVerificationService {
+
+    private final JwtService jwtService;
+
+    public String generateToken(String email) {
+        return jwtService.generateEmailVerificationToken(email);
+    }
+
+    public String validateTokenAndExtractEmail(String token) {
+        return jwtService.extractEmailFromToken(token);
+    }
+}

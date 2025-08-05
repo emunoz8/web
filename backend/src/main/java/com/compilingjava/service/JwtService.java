@@ -51,6 +51,24 @@ public class JwtService {
                 .before(new Date());
     }
 
+    public String generateEmailVerificationToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getEmailExpiration()))
+                .signWith(signingKey)
+                .compact();
+    }
+
+    public String extractEmailFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);

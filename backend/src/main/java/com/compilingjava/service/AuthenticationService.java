@@ -28,6 +28,10 @@ public class AuthenticationService {
             throw new BadCredentialsException("Invalid password");
         }
 
+        if (!user.isEmailVerified()) {
+            throw new IllegalStateException("Email not verified. Please check your inbox.");
+        }
+
         String token = jwtService.generateToken(user);
 
         return new AuthResponse(token);

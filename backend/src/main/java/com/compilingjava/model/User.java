@@ -29,6 +29,9 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(nullable = false)
     private String password;
 
@@ -38,6 +41,9 @@ public class User implements UserDetails {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Column(nullable = false)
+    private boolean emailVerified = false;
 
     @PrePersist
     public void prePersist() {
