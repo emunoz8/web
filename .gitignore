@@ -63,4 +63,3 @@ frontend/build
 .env.local
 .env.*.local
 
-application.properties
