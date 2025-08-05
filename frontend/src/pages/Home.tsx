@@ -1,10 +1,19 @@
-import React from "react";
-import Paragrapher from "../components/Paragrapher";
+import React, { useEffect, useState } from "react";
+import MarkdownRenderer from "../components/helpers/MarkdownRenderer";
 
 const Home: React.FC = () => {
-  return (
-    <Paragrapher text="Hello World"/>
-  );
+  const [markdown, setMarkdown] = useState("");
+
+  useEffect(() => {
+    if (!markdown) {
+      fetch("/home.md")
+        .then((res) => res.text())
+        .then(setMarkdown)
+        .catch(console.error);
+    }
+  }, [markdown]);
+
+  return <MarkdownRenderer content={markdown} />;
 };
 
 export default Home;

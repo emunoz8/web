@@ -1,15 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // Adjust if your source files are elsewhere
-    "./public/index.html",        // Include your public HTML if needed
+    "./src/**/*.{js,jsx,ts,tsx}", 
+    "./public/index.html",        
   ],
   theme: {
     extend: {
       fontFamily:{
         mono: ['"Courier New"','Courier', 'monospace'],
       },
-    }, // You can customize your theme here
+    }, 
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };
