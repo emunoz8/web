@@ -1,4 +1,4 @@
-package com.compilingjava.service;
+package main.java.com.compilingjava.service;
 
 import com.compilingjava.dto.UserRequestDto;
 import com.compilingjava.dto.UserResponseDto;

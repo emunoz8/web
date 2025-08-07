@@ -30,4 +30,11 @@ public class TestController {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+    @DeleteMapping("/delete-all")
+    public String deleteAllUsers() {
+        userRepository.deleteAll();
+        return "All users have been deleted.";
+    }
+
 }

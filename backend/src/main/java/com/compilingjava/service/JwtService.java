@@ -24,10 +24,15 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtProperties.getEmailExpiration());
+        System.out.println(jwtProperties.getExpiration());
+        System.out.println(expiryDate);
+
         return Jwts.builder()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
                 .signWith(signingKey)
                 .compact();
     }
