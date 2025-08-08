@@ -23,16 +23,23 @@ public class JwtService {
         this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtProperties.getEmailExpiration());
-        System.out.println(jwtProperties.getExpiration());
-        System.out.println(expiryDate);
+    public String generateSessionToken(String email) {
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
+                .claim("type", "session")
+                .signWith(signingKey)
+                .compact();
+    }
+
+    public String generateEmailConfirmationToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getEmailExpiration()))
+                .claim("type", "email_confirmation")
                 .signWith(signingKey)
                 .compact();
     }
