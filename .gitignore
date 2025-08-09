@@ -63,3 +63,9 @@ frontend/build
 .env.local
 .env.*.local
 
+backend/target/
+**/target/
+*.class
+.idea/
+.vscode/
+*.log
