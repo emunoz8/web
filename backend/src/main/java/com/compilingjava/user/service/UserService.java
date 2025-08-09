@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,8 +39,11 @@ public class UserService {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("Email already in use");
         }
+
         User user = userMapper.toEntity(dto);
-        user.setRole(User.Role.USER);
+
+        user.setRole(userRepository.count() == 0 ? User.Role.ADMIN : User.Role.USER);
+
         user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         user.setEmailVerified(false);
 

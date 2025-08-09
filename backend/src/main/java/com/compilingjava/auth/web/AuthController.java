@@ -3,15 +3,18 @@ package com.compilingjava.auth.web;
 import com.compilingjava.auth.dto.AuthRequest;
 import com.compilingjava.auth.dto.AuthResponse;
 import com.compilingjava.auth.service.email.EmailSender;
+import com.compilingjava.auth.service.email.EmailVerificationException;
 import com.compilingjava.auth.service.email.EmailVerificationService;
 import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.user.dto.UserRequestDto;
 import com.compilingjava.user.dto.UserResponseDto;
-import com.compilingjava.user.model.User;
 import com.compilingjava.user.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.net.URI;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,40 +53,44 @@ public class AuthController {
     }
 
     @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam String token) {
-        String email = emailVerificationService.validateTokenAndExtractEmail(token);
+    public ResponseEntity<Void> confirmEmail(@RequestParam String token) {
+        // Frontend landing pages
+        var success = URI.create("https://compilingjava.com/verified?status=success");
+        var already = URI.create("https://compilingjava.com/verified?status=already");
+        var invalid = URI.create("https://compilingjava.com/verified?status=invalid");
+        var expired = URI.create("https://compilingjava.com/verified?status=expired");
 
-        User user = userService.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Email not registered"));
+        try {
+            // Validate token (signature + TTL) and mark it "used" atomically
+            String email = emailVerificationService.validateAndConsume(token);
 
-        if (user.isEmailVerified()) {
-            return ResponseEntity.ok("Email already verified.");
+            var user = userService.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Email not registered"));
+
+            if (user.isEmailVerified()) {
+                return ResponseEntity.status(303).location(already).build();
+            }
+
+            user.setEmailVerified(true);
+            userService.save(user);
+
+            // optional: delete/mark token used inside the service to prevent replay
+            emailVerificationService.validateAndConsume(token);
+
+            return ResponseEntity.status(303).location(success).build();
+
+        } catch (EmailVerificationException e) {
+            // Custom exception from your service with a reason enum
+            URI where = switch (e.getReason()) {
+                case EXPIRED -> expired;
+                case INVALID, USED -> invalid;
+            };
+            return ResponseEntity.status(303).location(where).build();
+
+        } catch (RuntimeException e) {
+            // Fallback: treat as invalid
+            return ResponseEntity.status(303).location(invalid).build();
         }
-
-        user.setEmailVerified(true);
-        userService.save(user);
-        return ResponseEntity.ok("Email verified successfully.");
     }
 
-    // -------- Password reset flow --------
-
-    // // 1) User submits email to receive a reset link
-    // @PostMapping("/password/forgot")
-    // public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
-    //     var tokenOpt = userService.issuePasswordResetToken(email);
-    //     tokenOpt.ifPresent(token -> {
-    //         String link = "http://localhost:8080/api/auth/password/reset?token=" + token;
-    //         emailSender.send(email, "Reset your password", "Click to reset: " + link);
-    //     });
-    //     return ResponseEntity.ok("If that account exists, we sent an email with reset instructions.");
-    // }
-
-    // // 2) User posts token + new password
-    // @PostMapping("/password/reset")
-    // public ResponseEntity<String> resetPassword(
-    //         @RequestParam("token") String token,
-    //         @RequestParam("newPassword") String newPassword) {
-    //     userService.resetPasswordWithToken(token, newPassword); // implement in your UserService (or PasswordResetService)
-    //     return ResponseEntity.ok("Password updated.");
-    // }
 }
