@@ -49,7 +49,6 @@ frontend/*.cache
 .env
 
 # Prevent this if you ever copy it locally
-backend/src/main/resources/application.properties
 node_modules
 
 frontend/build
