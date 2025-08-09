@@ -6,14 +6,18 @@ import com.compilingjava.auth.repository.PasswordResetTokenRepository;
 import com.compilingjava.auth.service.email.EmailSender;
 import com.compilingjava.user.model.User;
 import com.compilingjava.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,80 +29,97 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
 
-    // Where your frontend reset page lives (query param token is appended)
-    @Value("${app.reset.base-url:https://compilingjava.com/reset-password}")
-    private String resetBaseUrl;
+    /**
+     * BACKEND redirect endpoint base (recommended):
+     *   https://api.compilingjava.com/api/auth/password/reset-link
+     * It will redirect the browser to your SPA: https://compilingjava.com/reset-password?token=...
+     *
+     * If you prefer linking straight to the SPA, set this to:
+     *   https://compilingjava.com/reset-password
+     */
+    @Value("${app.urls.password-reset-link-base:https://api.compilingjava.com/api/auth/password/reset-link}")
+    private String resetLinkBase;
 
     private static final Duration TOKEN_TTL = Duration.ofHours(1);
 
-    /**
-     * Public: user typed an email to request a reset.
-     * Return nothing; always 204 so we don't leak whether the email exists.
-     */
+    /** Step 1: user typed an email. Enumeration-safe (always silent). */
     @Transactional
     public void issueToken(String email) {
         userRepository.findByEmail(email).ifPresent(user -> {
-            // kill old tokens (optional but recommended)
-            tokenRepository.deleteById(user.getId());
+            // Revoke any outstanding tokens for this user (don’t use deleteById(user.getId()))
+            tokenRepository.revokeAllForUser(user, Instant.now());
 
             UUID token = UUID.randomUUID();
             PasswordResetToken prt = PasswordResetToken.builder()
                     .user(user)
                     .token(token)
+                    .createdAt(Instant.now())
                     .expiresAt(Instant.now().plus(TOKEN_TTL))
                     .build();
+
             tokenRepository.save(prt);
 
-            String link = resetBaseUrl + "?token=" + token;
-            emailSender.send(
-                    user.getEmail(),
-                    "Reset your password",
-                    """
-                            Hi %s,
+            String link = resetLinkBase + "?token=" + URLEncoder.encode(token.toString(), StandardCharsets.UTF_8);
+            String body = """
+                    Hi %s,
 
-                            Someone (hopefully you) requested a password reset.
-                            Click the link to set a new password:
+                    Someone (hopefully you) requested a password reset.
+                    Click the link below to set a new password (valid for %d hour%s):
 
-                            %s
+                    %s
 
-                            This link expires in %d hour(s).
+                    If you didn’t request this, you can ignore this email.
+                    """.formatted(user.getUsername(), TOKEN_TTL.toHours(),
+                    TOKEN_TTL.toHours() == 1 ? "" : "s", link);
 
-                            If you didn’t request this, you can ignore this email.
-                            """.formatted(user.getUsername(), link, TOKEN_TTL.toHours()));
+            emailSender.send(user.getEmail(), "Reset your password", body);
         });
     }
 
-    /**
-     * Public: front-end posts token + new password.
-     */
+    /** Optional pre-check for the SPA: is this token valid & unused right now? */
+    @Transactional(readOnly = true)
+    public boolean isTokenUsable(String tokenString) {
+        UUID token = parse(tokenString);
+        Instant now = Instant.now();
+        return tokenRepository.findActiveByToken(token, now).isPresent();
+    }
+
+    /** Step 2: user submits token + new password. Atomically consumes the token. */
     @Transactional
     public void resetPassword(String tokenString, String newPassword) {
         UUID token = parse(tokenString);
+        Instant now = Instant.now();
 
-        PasswordResetToken prt = tokenRepository.findActiveByToken(token, Instant.now())
+        PasswordResetToken prt = tokenRepository.findActiveByToken(token, now)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
 
-        if (prt.isUsed() || prt.isExpired()) {
-            throw new IllegalArgumentException("Invalid or expired token");
-        }
-
+        // Update password
         User user = prt.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        prt.setUsedAt(Instant.now());
-        tokenRepository.save(prt);
+        // Atomically mark token used
+        int updated = tokenRepository.markUsed(token, now);
+        if (updated == 0) {
+            // Someone raced and used it first
+            throw new IllegalArgumentException("Invalid or expired token");
+        }
+
+        // (Optional) revoke all refresh tokens so the user is logged out everywhere
+        // refreshTokenService.revokeAllForUser(user.getUsername());
     }
 
-    // Optional housekeeping you can call on a cron or @Scheduled
+    /** Nightly cleanup (expired or already-used tokens). */
     @Transactional
-    public void cleanupExpired() {
-        tokenRepository.deleteAllExpiredForUser(null, null);
+    public int cleanupExpired() {
+        return tokenRepository.cleanup(Instant.now());
     }
 
-    private UUID parse(String token) {
+    // ---- helpers ----
+
+    private UUID parse(String raw) {
         try {
-            return UUID.fromString(token);
+            return UUID.fromString(raw);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid token");
         }

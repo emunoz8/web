@@ -112,8 +112,6 @@ public class UserService {
         prt.setUsedAt(Instant.now());
         resetTokenRepository.save(prt);
 
-        // Optional cleanup: delete old/used tokens
-        resetTokenRepository.deleteAllExpiredForUser(user.getId(), Instant.now());
     }
 
 }

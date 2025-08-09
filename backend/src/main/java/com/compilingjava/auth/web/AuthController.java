@@ -14,7 +14,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +32,10 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
     private final EmailSender emailSender;
 
-    // If you want to keep a friendly hint endpoint:
+    @Value("${app.urls.email-verify-base}")
+    private String emailVerifyBase;
+
+    // Optional hint endpoint for humans
     @GetMapping("/login")
     public ResponseEntity<String> loginPage() {
         return ResponseEntity.ok("POST username/password to /api/auth/login");
@@ -36,8 +43,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-        AuthResponse response = authenticationService.authenticate(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
     @PostMapping("/register")
@@ -45,52 +51,54 @@ public class AuthController {
         UserResponseDto createdUser = userService.createUser(request);
 
         String token = emailVerificationService.generateToken(createdUser.getEmail());
-        // TODO: externalize base URL
-        String link = "http://localhost:8080/api/auth/confirm-email?token=" + token;
-        emailSender.send(createdUser.getEmail(), "Verify your email", "Click to confirm: " + link);
+        String link = emailVerifyBase + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
 
-        return ResponseEntity.ok(createdUser);
+        emailSender.send(
+                createdUser.getEmail(),
+                "Verify your email",
+                "Hi " + createdUser.getUsername() + ",\n\nClick to confirm: " + link);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @GetMapping("/confirm-email")
     public ResponseEntity<Void> confirmEmail(@RequestParam String token) {
-        // Frontend landing pages
-        var success = URI.create("https://compilingjava.com/verified?status=success");
-        var already = URI.create("https://compilingjava.com/verified?status=already");
-        var invalid = URI.create("https://compilingjava.com/verified?status=invalid");
-        var expired = URI.create("https://compilingjava.com/verified?status=expired");
+        URI success = URI.create("https://compilingjava.com/verified?status=success");
+        URI invalid = URI.create("https://compilingjava.com/verified?status=invalid");
+        URI expired = URI.create("https://compilingjava.com/verified?status=expired");
 
         try {
-            // Validate token (signature + TTL) and mark it "used" atomically
-            String email = emailVerificationService.validateAndConsume(token);
+            String email = emailVerificationService.validateAndConsume(token); // single-use
+            var user = userService.findByEmail(email).orElseThrow();
 
-            var user = userService.findByEmail(email)
-                    .orElseThrow(() -> new IllegalArgumentException("Email not registered"));
-
-            if (user.isEmailVerified()) {
-                return ResponseEntity.status(303).location(already).build();
+            if (!user.isEmailVerified()) {
+                user.setEmailVerified(true);
+                userService.save(user);
             }
-
-            user.setEmailVerified(true);
-            userService.save(user);
-
-            // optional: delete/mark token used inside the service to prevent replay
-            emailVerificationService.validateAndConsume(token);
-
-            return ResponseEntity.status(303).location(success).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(success).build();
 
         } catch (EmailVerificationException e) {
-            // Custom exception from your service with a reason enum
             URI where = switch (e.getReason()) {
                 case EXPIRED -> expired;
                 case INVALID, USED -> invalid;
             };
-            return ResponseEntity.status(303).location(where).build();
-
-        } catch (RuntimeException e) {
-            // Fallback: treat as invalid
-            return ResponseEntity.status(303).location(invalid).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(where).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(invalid).build();
         }
     }
 
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resend(@RequestParam String email) {
+        userService.findByEmail(email)
+                .filter(u -> !u.isEmailVerified())
+                .ifPresent(u -> {
+                    String token = emailVerificationService.generateToken(u.getEmail()); // revokes old
+                    String link = emailVerifyBase + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+                    emailSender.send(u.getEmail(), "Verify your email", "Click to confirm: " + link);
+                });
+
+        // Always 204 to avoid account enumeration
+        return ResponseEntity.noContent().build();
+    }
 }
