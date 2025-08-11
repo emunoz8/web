@@ -9,6 +9,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.compilingjava.auth.service.exceptions.EmailDeliveryException;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -26,13 +28,20 @@ public class EmailSender {
     /** Plain-text email (current behavior) */
     @Async
     public void send(String to, String subject, String body) {
-        SimpleMailMessage m = new SimpleMailMessage();
-        m.setFrom(defaultFrom);
-        m.setTo(to);
-        m.setSubject(subject);
-        m.setText(body);
-        mailSender.send(m);
-        log.debug("Sent plain email to {}", to);
+
+        try {
+
+            SimpleMailMessage m = new SimpleMailMessage();
+            m.setFrom(defaultFrom);
+            m.setTo(to);
+            m.setSubject(subject);
+            m.setText(body);
+            mailSender.send(m);
+            log.debug("Sent plain email to {}", to);
+        } catch (Exception e) {
+            log.warn("Plain email send failed to {}: {}", to, e.toString());
+            throw new EmailDeliveryException("Failed to send email", e);
+        }
     }
 
     /** HTML email (for nicer templates / clickable CTAs) */
@@ -48,7 +57,11 @@ public class EmailSender {
             mailSender.send(mime);
             log.debug("Sent HTML email to {}", to);
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send HTML email", e);
+            log.warn("HTML email build failed to {}: {}", to, e.toString());
+            throw new EmailDeliveryException("Failed to build HTML email", e);
+        } catch (Exception e) {
+            log.warn("HTML email send failed to {}: {}", to, e.toString());
+            throw new EmailDeliveryException("Failed to send HTML email", e);
         }
     }
 }

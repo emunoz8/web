@@ -2,14 +2,18 @@ package com.compilingjava.auth.web;
 
 import com.compilingjava.auth.dto.AuthRequest;
 import com.compilingjava.auth.dto.AuthResponse;
+import com.compilingjava.auth.dto.VerificationResendRequest;
 import com.compilingjava.auth.service.email.EmailSender;
 import com.compilingjava.auth.service.email.EmailVerificationException;
 import com.compilingjava.auth.service.email.EmailVerificationService;
+import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
+import com.compilingjava.auth.service.exceptions.InvalidTokenException;
 import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.user.dto.UserRequestDto;
 import com.compilingjava.user.dto.UserResponseDto;
 import com.compilingjava.user.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,8 +37,14 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
     private final EmailSender emailSender;
 
-    @Value("${app.urls.email-verify-base}")
+    @Value("${app.urls.email-verify-base:http://localhost:8080/api/auth/confirm-email}")
     private String emailVerifyBase;
+
+    @Value("${app.web.base-url:https://compilingjava.com}")
+    private String webBaseUrl;
+
+    @Value("${app.web.base-url:https://compilingjava.com}")
+    private URI webBaseUri; // Spring converts String -> URI
 
     // Optional hint endpoint for humans
     @GetMapping("/login")
@@ -63,42 +74,43 @@ public class AuthController {
 
     @GetMapping("/confirm-email")
     public ResponseEntity<Void> confirmEmail(@RequestParam String token) {
-        URI success = URI.create("https://compilingjava.com/verified?status=success");
-        URI invalid = URI.create("https://compilingjava.com/verified?status=invalid");
-        URI expired = URI.create("https://compilingjava.com/verified?status=expired");
-
         try {
-            String email = emailVerificationService.validateAndConsume(token); // single-use
-            var user = userService.findByEmail(email).orElseThrow();
-
-            if (!user.isEmailVerified()) {
-                user.setEmailVerified(true);
-                userService.save(user);
-            }
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(success).build();
-
-        } catch (EmailVerificationException e) {
-            URI where = switch (e.getReason()) {
-                case EXPIRED -> expired;
-                case INVALID, USED -> invalid;
-            };
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(where).build();
+            emailVerificationService.verify(token);
+            return seeOther(verifiedUri("success"));
+        } catch (ExpiredOrUsedTokenException e) {
+            return seeOther(verifiedUri("expired"));
+        } catch (InvalidTokenException e) {
+            return seeOther(verifiedUri("invalid"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(invalid).build();
+            return seeOther(verifiedUri("invalid"));
         }
     }
 
-    @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resend(@RequestParam String email) {
-        userService.findByEmail(email)
-                .filter(u -> !u.isEmailVerified())
-                .ifPresent(u -> {
-                    String token = emailVerificationService.generateToken(u.getEmail()); // revokes old
-                    String link = emailVerifyBase + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
-                    emailSender.send(u.getEmail(), "Verify your email", "Click to confirm: " + link);
-                });
+    // com.compilingjava.auth.web.AuthController (or VerificationController)
+    @PostMapping("/api/auth/verify/resend")
+    public ResponseEntity<Void> resend(@Valid @RequestBody VerificationResendRequest req,
+            HttpServletRequest http) {
+        // optional: rate-limit by email + IP
+        // rateLimiter.tryConsume("verify:email:"+req.email().toLowerCase());
+        // rateLimiter.tryConsume("verify:ip:"+clientIp(http));
 
         // Always 204 to avoid account enumeration
+        emailVerificationService.resend(req.email()); // no-op if unknown/already verified
         return ResponseEntity.noContent().build();
     }
+
+    // ----- helpers -----
+    private URI verifiedUri(String status) {
+        return UriComponentsBuilder
+                .fromUri(webBaseUri) // not deprecated
+                .path("/verified")
+                .queryParam("status", status)
+                .build()
+                .toUri();
+    }
+
+    private static ResponseEntity<Void> seeOther(URI where) {
+        return ResponseEntity.status(HttpStatus.SEE_OTHER).location(where).build();
+    }
+
 }

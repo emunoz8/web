@@ -4,12 +4,19 @@ import com.compilingjava.auth.model.EmailVerificationToken;
 import com.compilingjava.auth.repository.EmailVerificationTokenRepository;
 import com.compilingjava.security.jwt.JwtService;
 import com.compilingjava.security.jwt.JwtService.EmailVerifyClaims;
-import com.compilingjava.auth.service.email.EmailVerificationException.Reason;
+import com.compilingjava.user.model.User;
+import com.compilingjava.user.repository.UserRepository;
+import com.compilingjava.auth.service.exceptions.EmailDeliveryException;
+import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
+import com.compilingjava.auth.service.exceptions.InvalidTokenException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -19,12 +26,18 @@ public class EmailVerificationService {
 
     private final JwtService jwt;
     private final EmailVerificationTokenRepository repo;
+    private final EmailVerificationTokenRepository tokens;
+    private final UserRepository users;
+    private final EmailSender emailer;
+
+    @Value("${app.web.base-url:https://compilingjava.com}")
+    private String webBaseUrl;
 
     /**
      * TTL for email verification tokens.
      * Default 45 minutes if not provided.
      */
-    @Value("${jwt.email-verify.ttl-ms:2700000}") // 45 * 60 * 1000
+    @Value("${jwt.access.ttl-ms:2700000}") // 45 * 60 * 1000
     private long ttlMs;
 
     /**
@@ -33,10 +46,11 @@ public class EmailVerificationService {
      * - Generates a new short-lived JWT (typ=email_verify)
      * - Persists JTI to enforce single-use
      */
+
     @Transactional
     public String generateToken(String email) {
-        // Revoke older outstanding tokens so only the latest link works
-        repo.revokeAllForEmail(email, Instant.now());
+        // Revoke any outstanding tokens so only the latest works
+        repo.revokeAllForEmail(email, Instant.now(Clock.systemUTC()));
 
         // Create JWT and persist its JTI
         String token = jwt.generateEmailVerificationToken(email, Duration.ofMillis(ttlMs));
@@ -51,6 +65,14 @@ public class EmailVerificationService {
         return token;
     }
 
+    private String htmlBody(String link) {
+        return """
+                <p>Confirm your email for compilingjava.com</p>
+                <p><a href="%s">Click here to verify</a></p>
+                <p>If you didn’t request this, you can ignore this email.</p>
+                """.formatted(link);
+    }
+
     /**
      * Validate and CONSUME the token in a race-safe, single-call operation.
      * Returns the associated email if valid.
@@ -62,12 +84,12 @@ public class EmailVerificationService {
         // Ensure it is still valid (not used, not expired) from DB
         var now = Instant.now();
         var row = repo.findValidByJti(c.jti(), now)
-                .orElseThrow(() -> new EmailVerificationException(Reason.INVALID, "token not valid"));
+                .orElseThrow(() -> new ExpiredOrUsedTokenException());
 
         // Atomically mark used; if 0 rows updated someone already used it
         int updated = repo.markUsed(c.jti(), now);
         if (updated == 0) {
-            throw new EmailVerificationException(Reason.USED, "token already used");
+            throw new ExpiredOrUsedTokenException();
         }
         return row.getEmail();
     }
@@ -80,12 +102,25 @@ public class EmailVerificationService {
         return repo.cleanup(Instant.now());
     }
 
-    /**
-     * Convenience: resend a fresh token (revokes prior outstanding token(s)).
-     */
-    @Transactional
-    public String resend(String email) {
-        return generateToken(email);
+    public void resend(String email) {
+        // No enumeration: only act if the user exists and is not verified
+        users.findByEmail(email).ifPresent(u -> {
+            if (u.isEmailVerified())
+                return;
+            String token = generateToken(email); // revokes older, persists new
+            // Build link and send outside of transaction boundary
+            String link = UriComponentsBuilder.fromUriString(webBaseUrl)
+                    .path("/confirm-email")
+                    .queryParam("token", token)
+                    .build()
+                    .toUriString();
+            try {
+                emailer.sendHtml(email, "Verify your email", htmlBody(link));
+            } catch (EmailDeliveryException e) {
+                // Keep the endpoint blind; log if you want—don't surface to client
+                // Optionally: metrics/alerting here
+            }
+        });
     }
 
     // ---- helpers ----
@@ -95,12 +130,39 @@ public class EmailVerificationService {
         try {
             c = jwt.parseEmailVerificationToken(token); // verifies signature + typ=email_verify + required claims
         } catch (Exception e) {
-            throw new EmailVerificationException(Reason.INVALID, "malformed token");
+            throw new InvalidTokenException();
         }
         // Extra explicit exp check (defensive; parser normally throws if exp < now)
         if (Instant.now().isAfter(c.exp())) {
-            throw new EmailVerificationException(Reason.EXPIRED, "token expired");
+            throw new ExpiredOrUsedTokenException();
         }
         return c;
     }
+
+    @Transactional
+    public void verify(String rawToken) {
+        EmailVerificationToken t = tokens.findByToken(rawToken)
+                .orElseThrow(InvalidTokenException::new);
+
+        if (t.getUsedAt() != null || t.getExpiresAt().isBefore(Instant.now())) {
+            throw new ExpiredOrUsedTokenException();
+        }
+
+        // Assuming the token references the User entity:
+        User u = users.findByEmail(t.getEmail())
+                .orElseThrow(InvalidTokenException::new);
+
+        if (u == null) {
+            throw new InvalidTokenException(); // or adapt if your token stores only an email string
+        }
+
+        if (!u.isEmailVerified()) {
+            u.setEmailVerified(true);
+            users.save(u);
+        }
+
+        t.setUsedAt(Instant.now());
+        tokens.save(t);
+    }
+
 }

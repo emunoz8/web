@@ -1,6 +1,8 @@
 // src/main/java/com/compilingjava/auth/service/PasswordResetService.java
 package com.compilingjava.auth.service;
 
+import com.compilingjava.auth.dto.TokenInspection;
+import com.compilingjava.auth.dto.TokenReason;
 import com.compilingjava.auth.model.PasswordResetToken;
 import com.compilingjava.auth.repository.PasswordResetTokenRepository;
 import com.compilingjava.auth.service.email.EmailSender;
@@ -17,7 +19,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -47,7 +48,7 @@ public class PasswordResetService {
     public void issueToken(String email) {
         userRepository.findByEmail(email).ifPresent(user -> {
             // Revoke any outstanding tokens for this user (don’t use deleteById(user.getId()))
-            tokenRepository.revokeAllForUser(user, Instant.now());
+            tokenRepository.markAllUnusedTokensExpiredForUser(user.getId(), Instant.now());
 
             UUID token = UUID.randomUUID();
             PasswordResetToken prt = PasswordResetToken.builder()
@@ -123,5 +124,28 @@ public class PasswordResetService {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid token");
         }
+    }
+
+    @Transactional
+    public TokenInspection inspect(String rawToken) {
+        return tokenRepository.findByToken(rawToken)
+                .map(t -> {
+                    if (t.getUsedAt() != null)
+                        return new TokenInspection(false, TokenReason.USED, null, t.getExpiresAt());
+                    if (t.getExpiresAt().isBefore(Instant.now()))
+                        return new TokenInspection(false, TokenReason.EXPIRED, null, t.getExpiresAt());
+
+                    return new TokenInspection(true, TokenReason.OK, maskEmail(t.getUser().getEmail()),
+                            t.getExpiresAt());
+
+                })
+                .orElseGet(() -> new TokenInspection(false, TokenReason.INVALID, null, null));
+    }
+
+    private static String maskEmail(String email) {
+        int at = email.indexOf('@');
+        if (at <= 1)
+            return "***" + email.substring(Math.max(0, at));
+        return email.charAt(0) + "***" + email.substring(at);
     }
 }

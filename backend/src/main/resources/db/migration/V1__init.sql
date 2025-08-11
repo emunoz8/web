@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
   created_at     TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
+
+
 -- CONTENTS (parent)
 -- NOTE: both "type" and "content_type" are present because your query selects both
 --   type:          'PROJECT' | 'BLOG'
@@ -68,6 +70,19 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   created_at  TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- REFRESH TOKENS (session tokens)
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id           BIGSERIAL PRIMARY KEY,
+  jti          UUID        NOT NULL UNIQUE,             -- token id stored in cookie/header
+  user_id      BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  issued_at    TIMESTAMP   NOT NULL DEFAULT NOW(),
+  last_used_at TIMESTAMP   NULL,                        -- update on each /auth/refresh
+  expires_at   TIMESTAMP   NOT NULL,                    -- e.g., now() + 7 days
+  user_agent   TEXT        NULL,                        -- optional: device info
+  ip           INET        NULL,                        -- optional: audit
+  revoked      BOOLEAN     NOT NULL DEFAULT FALSE
+);
+
 -- Helpful indexes
 CREATE INDEX IF NOT EXISTS idx_contents_created_at ON contents(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_content_id ON comments(content_id);
@@ -75,3 +90,5 @@ CREATE INDEX IF NOT EXISTS idx_comments_parent_id  ON comments(parent_id);
 CREATE INDEX IF NOT EXISTS idx_likes_user_id       ON likes(user_id);
 CREATE INDEX IF NOT EXISTS idx_likes_content_id    ON likes(content_id);
 CREATE INDEX IF NOT EXISTS idx_pwdreset_user_expires ON password_reset_tokens(user_id, expires_at);
+CREATE INDEX IF NOT EXISTS idx_refresh_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_valid ON refresh_tokens(revoked, expires_at);
