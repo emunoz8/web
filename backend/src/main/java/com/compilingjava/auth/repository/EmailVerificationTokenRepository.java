@@ -14,49 +14,45 @@ import jakarta.persistence.LockModeType;
 @Repository
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
 
-        Optional<EmailVerificationToken> findByJti(UUID jti);
+  Optional<EmailVerificationToken> findByJti(UUID jti);
 
-        // Use this if you store the raw token
-        Optional<EmailVerificationToken> findByToken(String token);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select t from EmailVerificationToken t where t.jti = :jti")
+  Optional<EmailVerificationToken> findByJtiForUpdate(@Param("jti") UUID jti);
 
-        // Or use this if you store a hash (remove the raw version above)
-        Optional<EmailVerificationToken> findByTokenHash(String tokenHash);
+  // Fetch only if it's still usable (avoids extra checks in service)
+  @Query("""
+      select t from EmailVerificationToken t
+      where t.jti = :jti and t.used = false and t.expiresAt > :now
+      """)
+  Optional<EmailVerificationToken> findValidByJti(@Param("jti") UUID jti, @Param("now") Instant now);
 
-        // Optional: lock to enforce single-use under concurrency
-        @Lock(LockModeType.PESSIMISTIC_WRITE)
-        @Query("select t from EmailVerificationToken t where t.token = :token")
-        Optional<EmailVerificationToken> findByTokenForUpdate(@Param("token") String token);
+  // Atomically mark as used (prevents replay if two clicks happen quickly)
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("""
+      update EmailVerificationToken t
+         set t.used = true, t.usedAt = :now
+       where t.jti = :jti and t.used = false
+      """)
+  int markUsed(@Param("jti") UUID jti, @Param("now") Instant now);
 
-        // Fetch only if it's still usable (avoids extra checks in service)
-        @Query("""
-                        select t from EmailVerificationToken t
-                        where t.jti = :jti and t.used = false and t.expiresAt > :now
-                        """)
-        Optional<EmailVerificationToken> findValidByJti(@Param("jti") UUID jti, @Param("now") Instant now);
+  // Optional: revoke all outstanding tokens for an email (e.g., when resending)
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("""
+      update EmailVerificationToken t
+         set t.used = true, t.usedAt = :now
+       where t.email = :email and t.used = false
+      """)
+  int revokeAllForEmail(@Param("email") String email, @Param("now") Instant now);
 
-        // Atomically mark as used (prevents replay if two clicks happen quickly)
-        @Modifying(clearAutomatically = true, flushAutomatically = true)
-        @Transactional
-        @Query("""
-                        update EmailVerificationToken t
-                           set t.used = true, t.usedAt = :now
-                         where t.jti = :jti and t.used = false
-                        """)
-        int markUsed(@Param("jti") UUID jti, @Param("now") Instant now);
+  // Periodic cleanup
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("delete from EmailVerificationToken t where t.expiresAt < :now or t.used = true")
+  int cleanup(@Param("now") Instant now);
 
-        // Optional: revoke all outstanding tokens for an email (e.g., when resending)
-        @Modifying(clearAutomatically = true, flushAutomatically = true)
-        @Transactional
-        @Query("""
-                        update EmailVerificationToken t
-                           set t.used = true, t.usedAt = :now
-                         where t.email = :email and t.used = false
-                        """)
-        int revokeAllForEmail(@Param("email") String email, @Param("now") Instant now);
-
-        // Periodic cleanup
-        @Modifying(clearAutomatically = true, flushAutomatically = true)
-        @Transactional
-        @Query("delete from EmailVerificationToken t where t.expiresAt < :now or t.used = true")
-        int cleanup(@Param("now") Instant now);
+  @Modifying
+  int deleteByExpiresAtBefore(Instant cutoff);
 }

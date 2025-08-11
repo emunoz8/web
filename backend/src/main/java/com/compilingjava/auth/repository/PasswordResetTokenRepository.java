@@ -15,9 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
-  Optional<PasswordResetToken> findByToken(String token);
-
-  Optional<PasswordResetToken> findByTokenHash(String tokenHash);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select t from PasswordResetToken t where t.token = :token")

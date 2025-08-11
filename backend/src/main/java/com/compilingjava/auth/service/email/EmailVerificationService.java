@@ -27,7 +27,6 @@ public class EmailVerificationService {
 
     private final JwtService jwt;
     private final EmailVerificationTokenRepository repo;
-    private final EmailVerificationTokenRepository tokens;
     private final UserRepository users;
     private final EmailSender emailer;
     private final RateLimiterService rateLimiter;
@@ -141,7 +140,8 @@ public class EmailVerificationService {
 
     @Transactional
     public void verify(String rawToken) {
-        EmailVerificationToken t = tokens.findByToken(rawToken)
+        var claims = jwt.parseEmailVerificationToken(rawToken);
+        EmailVerificationToken t = repo.findByJtiForUpdate(claims.jti())
                 .orElseThrow(InvalidTokenException::new);
 
         if (t.getUsedAt() != null || t.getExpiresAt().isBefore(Instant.now())) {
@@ -162,7 +162,7 @@ public class EmailVerificationService {
         }
 
         t.setUsedAt(Instant.now());
-        tokens.save(t);
+        repo.save(t);
     }
 
 }
