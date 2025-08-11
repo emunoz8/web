@@ -6,12 +6,8 @@ import com.compilingjava.auth.dto.TokenReason;
 import com.compilingjava.auth.model.PasswordResetToken;
 import com.compilingjava.auth.repository.PasswordResetTokenRepository;
 import com.compilingjava.auth.service.email.EmailSender;
-import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
-import com.compilingjava.auth.service.exceptions.InvalidTokenException;
-import com.compilingjava.security.jwt.JwtService;
 import com.compilingjava.user.model.User;
 import com.compilingjava.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -129,41 +125,36 @@ public class PasswordResetService {
         }
     }
 
+    /**
+     * Inspection for the SPA: returns status + masked email + expiry.
+     * Uses the same UUID token model as the rest of this service.
+     */
     @Transactional(readOnly = true)
     public TokenInspection inspect(String rawToken) {
-        // Parse JWT and convert parse errors to inspection results
-        JwtService.EmailVerifyClaims claims; // replace with ResetClaims if you have a separate type
+        final UUID tokenUuid;
         try {
-            // Prefer a reset-specific parser, e.g. jwt.parsePasswordResetToken(rawToken)
-            claims = jwt.parseEmailVerificationToken(rawToken); // <-- if you haven't built reset parser yet
-        } catch (ExpiredOrUsedTokenException e) {
-            return new TokenInspection(false, TokenReason.EXPIRED, null, null);
-        } catch (InvalidTokenException e) {
+            tokenUuid = UUID.fromString(rawToken);
+        } catch (IllegalArgumentException e) {
             return new TokenInspection(false, TokenReason.INVALID, null, null);
         }
 
-        // Look up DB row by JTI and compute status
-        return tokenRepository.findByJti(claims.jti())
-                .map(t -> {
-                    if (t.getUsedAt() != null) {
-                        return new TokenInspection(false, TokenReason.USED, null, t.getExpiresAt());
-                    }
-                    if (t.getExpiresAt().isBefore(Instant.now())) {
-                        return new TokenInspection(false, TokenReason.EXPIRED, null, t.getExpiresAt());
-                    }
-                    // OK
-                    String masked = (t.getUser() != null)
-                            ? maskEmail(t.getUser().getEmail())
-                            : maskEmail(claims.email()); // fallback if you don't store User on the token
-                    return new TokenInspection(true, TokenReason.OK, masked, t.getExpiresAt());
-                })
+        Instant now = Instant.now();
+
+        return tokenRepository.findActiveByToken(tokenUuid, now)
+                .map(t -> new TokenInspection(
+                        true,
+                        TokenReason.OK,
+                        t.getUser() != null ? maskEmail(t.getUser().getEmail()) : null,
+                        t.getExpiresAt()))
+                // Without a "findAnyByToken", we can't tell USED vs EXPIRED
                 .orElseGet(() -> new TokenInspection(false, TokenReason.INVALID, null, null));
     }
 
     private static String maskEmail(String email) {
         int at = email.indexOf('@');
-        if (at <= 1)
+        if (at <= 1) {
             return "***" + email.substring(Math.max(0, at));
+        }
         return email.charAt(0) + "***" + email.substring(at);
     }
 }
