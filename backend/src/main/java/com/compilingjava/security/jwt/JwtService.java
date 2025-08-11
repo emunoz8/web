@@ -1,14 +1,12 @@
 package com.compilingjava.security.jwt;
 
 import com.compilingjava.config.JwtProperties;
-import com.compilingjava.auth.service.email.EmailVerificationException;
-import com.compilingjava.auth.service.email.EmailVerificationException.Reason;
+import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
+import com.compilingjava.auth.service.exceptions.InvalidTokenException;
 
 import java.util.Date;
 import java.util.UUID;
-
 import javax.crypto.SecretKey;
-
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,7 +29,6 @@ public class JwtService {
     }
 
     public String generateSessionToken(String email) {
-
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
@@ -70,15 +67,6 @@ public class JwtService {
                 .before(new Date());
     }
 
-    public String generateEmailVerificationToken(String email) {
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getEmailExpiration()))
-                .signWith(signingKey)
-                .compact();
-    }
-
     public String extractEmailFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)
@@ -114,15 +102,15 @@ public class JwtService {
     public EmailVerifyClaims parseEmailVerificationToken(String token) {
         try {
             var payload = Jwts.parser()
-                    .verifyWith(signingKey) // jjwt 0.12.x
+                    .verifyWith(signingKey)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
 
-            // Type guard: must be an email verification token
+            // Must be our verification token
             Object typ = payload.get("typ");
             if (!(typ instanceof String t) || !"email_verify".equals(t)) {
-                throw new EmailVerificationException(Reason.INVALID, "wrong token type");
+                throw new InvalidTokenException("Wrong token type");
             }
 
             String email = payload.getSubject();
@@ -130,19 +118,19 @@ public class JwtService {
             Date exp = payload.getExpiration();
 
             if (email == null || jti == null || exp == null) {
-                throw new EmailVerificationException(Reason.INVALID, "missing required claims");
+                throw new InvalidTokenException("Missing required claims");
             }
 
-            // jjwt throws on expired by default when parsing with verify; still return exp for caller logic
             return new EmailVerifyClaims(email, UUID.fromString(jti), exp.toInstant());
 
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            throw new EmailVerificationException(Reason.EXPIRED, "token expired", e);
-        } catch (EmailVerificationException e) {
+            // Signature verified but token exp is in the past
+            throw new ExpiredOrUsedTokenException();
+        } catch (InvalidTokenException | ExpiredOrUsedTokenException e) {
             throw e;
         } catch (Exception e) {
-            throw new EmailVerificationException(Reason.INVALID, "invalid token", e);
+            // Any other parse/verify problem
+            throw new InvalidTokenException("Invalid token");
         }
     }
-
 }

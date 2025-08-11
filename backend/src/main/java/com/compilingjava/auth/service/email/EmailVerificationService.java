@@ -9,6 +9,7 @@ import com.compilingjava.user.repository.UserRepository;
 import com.compilingjava.auth.service.exceptions.EmailDeliveryException;
 import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
 import com.compilingjava.auth.service.exceptions.InvalidTokenException;
+import com.compilingjava.common.ratelimit.RateLimiterService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class EmailVerificationService {
     private final EmailVerificationTokenRepository tokens;
     private final UserRepository users;
     private final EmailSender emailer;
+    private final RateLimiterService rateLimiter;
 
     @Value("${app.web.base-url:https://compilingjava.com}")
     private String webBaseUrl;
@@ -102,28 +104,26 @@ public class EmailVerificationService {
         return repo.cleanup(Instant.now());
     }
 
+    @Transactional
     public void resend(String email) {
-        // No enumeration: only act if the user exists and is not verified
+        String kEmail = "verify:email:" + email.toLowerCase();
+        if (!rateLimiter.tryConsume(kEmail)) {
+            return; // quietly drop to avoid enumeration
+        }
+
         users.findByEmail(email).ifPresent(u -> {
             if (u.isEmailVerified())
                 return;
-            String token = generateToken(email); // revokes older, persists new
-            // Build link and send outside of transaction boundary
+            String token = generateToken(email);
             String link = UriComponentsBuilder.fromUriString(webBaseUrl)
-                    .path("/confirm-email")
-                    .queryParam("token", token)
-                    .build()
-                    .toUriString();
+                    .path("/confirm-email").queryParam("token", token)
+                    .build().toUriString();
             try {
                 emailer.sendHtml(email, "Verify your email", htmlBody(link));
-            } catch (EmailDeliveryException e) {
-                // Keep the endpoint blind; log if you want—don't surface to client
-                // Optionally: metrics/alerting here
+            } catch (EmailDeliveryException ignored) {
             }
         });
     }
-
-    // ---- helpers ----
 
     private EmailVerifyClaims parseAndBasicCheck(String token) {
         EmailVerifyClaims c;
