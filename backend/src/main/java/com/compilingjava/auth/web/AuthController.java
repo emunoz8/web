@@ -4,7 +4,6 @@ import com.compilingjava.auth.dto.AuthRequest;
 import com.compilingjava.auth.dto.AuthResponse;
 import com.compilingjava.auth.dto.VerificationResendRequest;
 import com.compilingjava.auth.service.email.EmailSender;
-import com.compilingjava.auth.service.email.EmailVerificationException;
 import com.compilingjava.auth.service.email.EmailVerificationService;
 import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
 import com.compilingjava.auth.service.exceptions.InvalidTokenException;
