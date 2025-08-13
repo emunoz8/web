@@ -1,6 +1,5 @@
-package com.compilingjava;
+package com.compilingjava.api;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -16,6 +15,9 @@ import com.compilingjava.user.web.UserController;
 import com.compilingjava.user.repository.UserRepository;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+
+import org.junit.jupiter.api.Test;
+
 import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.content.service.BlogPostService;
 import com.compilingjava.comment.service.CommentService;

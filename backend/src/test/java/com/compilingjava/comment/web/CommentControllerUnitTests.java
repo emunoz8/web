@@ -1,4 +1,4 @@
-package com.compilingjava;
+package com.compilingjava.comment.web;
 
 import com.compilingjava.comment.dto.CommentCreateRequest;
 import com.compilingjava.comment.dto.CommentTreeDto;
@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.compilingjava.comment.web.CommentController;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.lang.reflect.Field;

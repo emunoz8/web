@@ -128,7 +128,12 @@
       <scope>test</scope>
     </dependency>
 
-
+        <!-- In-memory DB for tests -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
 
 
 
@@ -169,7 +174,92 @@
           </compilerArgs>
         </configuration>
       </plugin>
+
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.3</version>
+      </plugin>
+
+<!-- Code coverage with JaCoCo; enforce project-wide coverage -->
+<plugin>
+  <groupId>org.jacoco</groupId>
+  <artifactId>jacoco-maven-plugin</artifactId>
+  <version>0.8.11</version>
+  <executions>
+    <!-- Attach agent for tests -->
+    <execution>
+      <goals>
+        <goal>prepare-agent</goal>
+      </goals>
+    </execution>
+
+    <!-- Generate HTML/XML reports at verify -->
+    <execution>
+      <id>report</id>
+      <phase>verify</phase>
+      <goals>
+        <goal>report</goal>
+      </goals>
+    </execution>
+
+    <!-- Enforce minimum project-wide coverage (bundle) -->
+    <execution>
+      <id>check</id>
+      <phase>verify</phase>
+      <goals>
+        <goal>check</goal>
+      </goals>
+      <configuration>
+        <rules>
+          <rule>
+            <element>BUNDLE</element>
+            <limits>
+              <limit>
+                <counter>LINE</counter>
+                <value>COVEREDRATIO</value>
+                <minimum>0.60</minimum> <!-- start at 60%, ratchet up later -->
+              </limit>
+            </limits>
+            <!-- Exclude low-value/boilerplate classes from the gate -->
+            <excludes>
+              <exclude>**/App.class</exclude>
+              <exclude>**/*Application.class</exclude>
+              <exclude>**/*Config*.class</exclude>
+              <exclude>**/*Configuration*.class</exclude>
+              <exclude>**/dto/**</exclude>
+              <exclude>**/common/errors/ErrorResponse*</exclude>
+            </excludes>
+          </rule>
+        </rules>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
     </plugins>
+
+    
+
+
+
+
   </build>
 
 </project>

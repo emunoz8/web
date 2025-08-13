@@ -53,4 +53,9 @@ public class CommentController {
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + username));
         return u.getId();
     }
+
+    public Object listTreeByContent(long l) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listTreeByContent'");
+    }
 }

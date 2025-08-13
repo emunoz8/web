@@ -1,4 +1,4 @@
-package com.compilingjava;
+package com.compilingjava.testsupport;
 
 import java.time.Instant;
 

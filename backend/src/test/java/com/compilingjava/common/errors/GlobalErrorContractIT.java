@@ -1,4 +1,4 @@
-package com.compilingjava;
+package com.compilingjava.common.errors;
 
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;

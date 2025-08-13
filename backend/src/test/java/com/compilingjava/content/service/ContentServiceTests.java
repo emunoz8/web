@@ -1,6 +1,5 @@
-package com.compilingjava;
+package com.compilingjava.content.service;
 
-import com.compilingjava.content.service.ContentService;
 import com.compilingjava.content.model.BlogPost;
 import com.compilingjava.content.model.Content;
 import com.compilingjava.content.model.ContentType;

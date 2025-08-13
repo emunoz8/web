@@ -1,4 +1,4 @@
-package com.compilingjava;
+package com.compilingjava.auth;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

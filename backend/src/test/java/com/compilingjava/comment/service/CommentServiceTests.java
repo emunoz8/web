@@ -1,11 +1,11 @@
-package com.compilingjava;
+package com.compilingjava.comment.service;
 
-import com.compilingjava.comment.service.CommentService;
 import com.compilingjava.comment.dto.CommentTreeDto;
 import com.compilingjava.comment.model.Comment;
 import com.compilingjava.comment.repository.CommentRepository;
 import com.compilingjava.content.model.Content;
 import com.compilingjava.content.repository.ContentRepository;
+import com.compilingjava.testsupport.TestContent;
 import com.compilingjava.user.model.User;
 import com.compilingjava.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
