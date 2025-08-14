@@ -1,58 +1,64 @@
 package com.compilingjava.auth.repository;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
+import com.compilingjava.auth.model.EmailVerificationToken;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-import com.compilingjava.auth.model.EmailVerificationToken;
 
-import jakarta.persistence.LockModeType;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
 
+  /** Look up by JTI (no validity checks). */
   Optional<EmailVerificationToken> findByJti(UUID jti);
 
+  /** Lock a row if you need to run critical section logic. */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select t from EmailVerificationToken t where t.jti = :jti")
   Optional<EmailVerificationToken> findByJtiForUpdate(@Param("jti") UUID jti);
 
-  // Fetch only if it's still usable (avoids extra checks in service)
+  /** Active = not used and not expired at the given time. */
   @Query("""
       select t from EmailVerificationToken t
-      where t.jti = :jti and t.used = false and t.expiresAt > :now
+       where t.jti = :jti
+         and t.used = false
+         and t.expiresAt > :now
       """)
-  Optional<EmailVerificationToken> findValidByJti(@Param("jti") UUID jti, @Param("now") Instant now);
+  Optional<EmailVerificationToken> findActiveByJti(@Param("jti") UUID jti, @Param("now") Instant now);
 
-  // Atomically mark as used (prevents replay if two clicks happen quickly)
+  /** Single-use consumption; idempotent (updates only if currently unused). */
   @Modifying(clearAutomatically = true, flushAutomatically = true)
-  @Transactional
   @Query("""
       update EmailVerificationToken t
          set t.used = true, t.usedAt = :now
-       where t.jti = :jti and t.used = false
+       where t.jti = :jti
+         and t.used = false
       """)
-  int markUsed(@Param("jti") UUID jti, @Param("now") Instant now);
+  int consumeByJti(@Param("jti") UUID jti, @Param("now") Instant now);
 
-  // Optional: revoke all outstanding tokens for an email (e.g., when resending)
+  /** Revoke any outstanding tokens for an email (e.g., before re-sending). */
   @Modifying(clearAutomatically = true, flushAutomatically = true)
-  @Transactional
   @Query("""
       update EmailVerificationToken t
          set t.used = true, t.usedAt = :now
-       where t.email = :email and t.used = false
+       where t.email = :email
+         and t.used = false
       """)
   int revokeAllForEmail(@Param("email") String email, @Param("now") Instant now);
 
-  // Periodic cleanup
+  /**
+   * Cleanup: remove expired tokens or those used long ago.
+   * Use a cutoff so you retain a short audit tail (e.g., 7 days).
+   */
   @Modifying(clearAutomatically = true, flushAutomatically = true)
-  @Transactional
-  @Query("delete from EmailVerificationToken t where t.expiresAt < :now or t.used = true")
-  int cleanup(@Param("now") Instant now);
-
-  @Modifying
-  int deleteByExpiresAtBefore(Instant cutoff);
+  @Query("""
+      delete from EmailVerificationToken t
+       where t.expiresAt < :cutoff
+          or (t.used = true and t.usedAt < :cutoff)
+      """)
+  int cleanup(@Param("cutoff") Instant cutoff);
 }

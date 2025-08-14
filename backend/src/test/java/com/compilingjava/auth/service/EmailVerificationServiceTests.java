@@ -2,21 +2,20 @@ package com.compilingjava.auth.service;
 
 import com.compilingjava.auth.model.EmailVerificationToken;
 import com.compilingjava.auth.repository.EmailVerificationTokenRepository;
-import com.compilingjava.auth.service.email.EmailSender;
-import com.compilingjava.auth.service.email.EmailVerificationService;
 import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
 import com.compilingjava.auth.service.exceptions.InvalidTokenException;
+import com.compilingjava.common.ratelimit.RateLimiterService;
 import com.compilingjava.security.jwt.JwtService;
 import com.compilingjava.user.model.User;
 import com.compilingjava.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+
+import com.compilingjava.auth.service.email.EmailSender;
+import com.compilingjava.auth.service.email.EmailVerificationService;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -24,125 +23,161 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmailVerificationServiceTests {
 
-    @Mock
-    JwtService jwt;
-    @Mock
-    EmailVerificationTokenRepository tokenRepository;
-    @Mock
-    UserRepository userRepository;
-    @Mock
-    EmailSender emailSender;
+        @Mock
+        JwtService jwt;
+        @Mock
+        EmailVerificationTokenRepository tokenRepo;
+        @Mock
+        UserRepository userRepo;
+        @Mock
+        EmailSender emailSender; // used by resend(), not exercised here
+        @Mock
+        RateLimiterService rateLimiter; // constructor dependency in service
 
-    @InjectMocks
-    EmailVerificationService service;
+        @InjectMocks
+        EmailVerificationService service;
 
-    @BeforeEach
-    void maybeSetLinkBase() {
-        try {
-            ReflectionTestUtils.setField(service, "verifyLinkBase", "https://app.example/verify?token=");
-        } catch (IllegalArgumentException ignored) {
-            // Field not present in your service — that's fine.
+        private static EmailVerificationToken row(UUID jti, String email, Instant exp, boolean used) {
+                var t = new EmailVerificationToken();
+                t.setJti(jti);
+                t.setEmail(email);
+                t.setExpiresAt(exp);
+                t.setUsed(used);
+                return t;
         }
-    }
 
-    private static User user(long id, String email) {
-        User u = new User();
-        u.setId(id);
-        u.setEmail(email);
-        u.setUsername(email);
-        u.setEmailVerified(false);
-        return u;
-    }
+        private static User user(String email, boolean verified) {
+                var u = new User();
+                u.setEmail(email);
+                u.setUsername(email);
+                u.setEmailVerified(verified);
+                return u;
+        }
 
-    // Use the real entity, not a mock (avoids final-method stubbing issues)
-    private static EmailVerificationToken token(Instant exp, boolean used) {
-        EmailVerificationToken t = new EmailVerificationToken();
-        t.setExpiresAt(exp);
-        t.setUsedAt(used ? Instant.EPOCH : null);
-        return t;
-    }
+        @Test
+        void verify_happyPath_marksUserVerified_andConsumesToken() {
+                String raw = "ey.token";
+                UUID jti = UUID.randomUUID();
+                String email = "bob@example.com";
+                Instant exp = Instant.now().plusSeconds(1800);
 
-    @Test
-    void verify_happy_path_marks_user_verified_and_token_used() {
-        String raw = "abc.def.ghi";
-        UUID jti = UUID.randomUUID();
-        var claims = new JwtService.EmailVerifyClaims("bob@example.com", jti, Instant.now().plusSeconds(3600));
+                when(jwt.parseEmailVerificationToken(raw))
+                                .thenReturn(new JwtService.EmailVerifyClaims(email, jti, exp));
 
-        when(jwt.parseEmailVerificationToken(raw)).thenReturn(claims);
-        var t = token(Instant.now().plusSeconds(3600), false);
-        when(tokenRepository.findByJtiForUpdate(jti)).thenReturn(Optional.of(t));
+                when(tokenRepo.findActiveByJti(eq(jti), any(Instant.class)))
+                                .thenReturn(Optional.of(row(jti, email, exp, false)));
 
-        User u = user(1L, "bob@example.com");
-        // IMPORTANT: use any() here so null is accepted (anyString() would NOT match null)
-        when(userRepository.findByEmail(any())).thenReturn(Optional.of(u));
+                when(userRepo.findByEmail(email)).thenReturn(Optional.of(user(email, false)));
+                when(tokenRepo.consumeByJti(eq(jti), any(Instant.class))).thenReturn(1);
 
-        service.verify(raw);
+                service.verify(raw);
 
-        assertThat(u.isEmailVerified()).isTrue();
-        verify(tokenRepository).save(t);
-        verify(userRepository).save(u);
+                verify(tokenRepo).consumeByJti(eq(jti), any(Instant.class));
+                verify(userRepo).save(argThat(u -> u.isEmailVerified() && email.equals(u.getEmail())));
+        }
 
-    }
+        @Test
+        void verify_throwsOnExpiredOrUsed() {
+                UUID jti = UUID.randomUUID();
+                String email = "e@e.com";
+                Instant exp = Instant.now().plusSeconds(60);
 
-    @Test
-    void verify_invalid_jwt_throws_InvalidTokenException() {
-        when(jwt.parseEmailVerificationToken("bad")).thenThrow(new InvalidTokenException("x"));
-        assertThatThrownBy(() -> service.verify("bad")).isInstanceOf(InvalidTokenException.class);
-        verifyNoInteractions(tokenRepository, userRepository);
-    }
+                when(jwt.parseEmailVerificationToken("t"))
+                                .thenReturn(new JwtService.EmailVerifyClaims(email, jti, exp));
+                when(tokenRepo.findActiveByJti(eq(jti), any(Instant.class)))
+                                .thenReturn(Optional.empty()); // simulate expired/used
 
-    @Test
-    void verify_token_record_missing_throws_InvalidTokenException() {
-        UUID jti = UUID.randomUUID();
-        var claims = new JwtService.EmailVerifyClaims("e@e.com", jti, Instant.now().plusSeconds(60));
-        when(jwt.parseEmailVerificationToken("t")).thenReturn(claims);
-        when(tokenRepository.findByJtiForUpdate(jti)).thenReturn(Optional.empty());
+                assertThatThrownBy(() -> service.verify("t"))
+                                .isInstanceOf(ExpiredOrUsedTokenException.class);
 
-        assertThatThrownBy(() -> service.verify("t")).isInstanceOf(InvalidTokenException.class);
-        verifyNoInteractions(userRepository);
-    }
+                verifyNoInteractions(userRepo);
+        }
 
-    @Test
-    void verify_used_or_expired_throws_ExpiredOrUsedTokenException() {
-        UUID jti = UUID.randomUUID();
-        var claims = new JwtService.EmailVerifyClaims("e@e.com", jti, Instant.now().plusSeconds(60));
-        when(jwt.parseEmailVerificationToken("t")).thenReturn(claims);
-        when(tokenRepository.findByJtiForUpdate(jti))
-                .thenReturn(Optional.of(token(Instant.now().plusSeconds(60), true)));
+        @Test
+        void verify_throwsOnEmailMismatch() {
+                UUID jti = UUID.randomUUID();
+                Instant exp = Instant.now().plusSeconds(600);
 
-        assertThatThrownBy(() -> service.verify("t")).isInstanceOf(ExpiredOrUsedTokenException.class);
-        verifyNoInteractions(userRepository);
-    }
+                when(jwt.parseEmailVerificationToken("t"))
+                                .thenReturn(new JwtService.EmailVerifyClaims("fake@example.com", jti, exp));
 
-    @Test
-    void verify_user_missing_throws_InvalidTokenException() {
-        UUID jti = UUID.randomUUID();
-        var claims = new JwtService.EmailVerifyClaims("ghost@example.com", jti, Instant.now().plusSeconds(60));
-        when(jwt.parseEmailVerificationToken("t")).thenReturn(claims);
-        when(tokenRepository.findByJtiForUpdate(jti))
-                .thenReturn(Optional.of(token(Instant.now().plusSeconds(60), false)));
+                // DB row says a different email
+                when(tokenRepo.findActiveByJti(eq(jti), any(Instant.class)))
+                                .thenReturn(Optional.of(row(jti, "real@example.com", exp, false)));
 
-        // IMPORTANT: make it missing for ANY (including null)
-        when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+                assertThatThrownBy(() -> service.verify("t"))
+                                .isInstanceOf(InvalidTokenException.class);
 
-        assertThatThrownBy(() -> service.verify("t")).isInstanceOf(InvalidTokenException.class);
-    }
+                verify(tokenRepo, never()).consumeByJti(any(), any());
+                verifyNoInteractions(userRepo);
+        }
 
-    @Test
-    void verify_expired_token_throws_ExpiredOrUsedTokenException() {
-        UUID jti = UUID.randomUUID();
-        var claims = new JwtService.EmailVerifyClaims("user@example.com", jti, Instant.now().minusSeconds(1));
-        when(jwt.parseEmailVerificationToken("t")).thenReturn(claims);
-        when(tokenRepository.findByJtiForUpdate(jti))
-                .thenReturn(Optional.of(token(Instant.now().minusSeconds(1), false)));
+        @Test
+        void validateAndConsume_returnsEmail_andConsumes() {
+                String raw = "ey.token";
+                UUID jti = UUID.randomUUID();
+                String email = "alice@example.com";
+                Instant exp = Instant.now().plusSeconds(900);
 
-        assertThatThrownBy(() -> service.verify("t")).isInstanceOf(ExpiredOrUsedTokenException.class);
-        verifyNoInteractions(userRepository);
-    }
+                when(jwt.parseEmailVerificationToken(raw))
+                                .thenReturn(new JwtService.EmailVerifyClaims(email, jti, exp));
+
+                when(tokenRepo.findActiveByJti(eq(jti), any(Instant.class)))
+                                .thenReturn(Optional.of(row(jti, email, exp, false)));
+
+                when(tokenRepo.consumeByJti(eq(jti), any(Instant.class))).thenReturn(1);
+
+                String out = service.validateAndConsume(raw);
+
+                assertThat(out).isEqualTo(email);
+                verify(tokenRepo).consumeByJti(eq(jti), any(Instant.class));
+        }
+
+        @Test
+        void validateAndConsume_throwsWhenAlreadyConsumed_race() {
+                String raw = "ey.token";
+                UUID jti = UUID.randomUUID();
+                String email = "race@example.com";
+                Instant exp = Instant.now().plusSeconds(900);
+
+                when(jwt.parseEmailVerificationToken(raw))
+                                .thenReturn(new JwtService.EmailVerifyClaims(email, jti, exp));
+
+                when(tokenRepo.findActiveByJti(eq(jti), any(Instant.class)))
+                                .thenReturn(Optional.of(row(jti, email, exp, false)));
+
+                // Another request consumed it just before this one updates:
+                when(tokenRepo.consumeByJti(eq(jti), any(Instant.class))).thenReturn(0);
+
+                assertThatThrownBy(() -> service.validateAndConsume(raw))
+                                .isInstanceOf(ExpiredOrUsedTokenException.class);
+        }
+
+        @Test
+        void parse_throwsInvalidToken_bubblesUp() {
+                when(jwt.parseEmailVerificationToken("bad"))
+                                .thenThrow(new InvalidTokenException("bad"));
+                assertThatThrownBy(() -> service.validateAndConsume("bad"))
+                                .isInstanceOf(InvalidTokenException.class);
+                verifyNoInteractions(tokenRepo, userRepo);
+        }
+
+        @Test
+        void expiredClaimsThrowBeforeDbLookup() {
+                UUID jti = UUID.randomUUID();
+                var pastExp = Instant.now().minusSeconds(1);
+                when(jwt.parseEmailVerificationToken("t"))
+                                .thenReturn(new JwtService.EmailVerifyClaims("x@y.com", jti, pastExp));
+
+                assertThatThrownBy(() -> service.validateAndConsume("t"))
+                                .isInstanceOf(ExpiredOrUsedTokenException.class);
+
+                verifyNoInteractions(tokenRepo, userRepo);
+        }
 }

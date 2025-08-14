@@ -83,6 +83,22 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   revoked      BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
+-- VXX__email_verification_tokens.sql
+create table if not exists email_verification_tokens (
+  id          bigserial primary key,
+  jti         uuid        not null unique,
+  email       varchar(254) not null,
+  issued_at   timestamptz not null default now(),
+  expires_at  timestamptz not null,
+  used        boolean     not null default false,
+  used_at     timestamptz,
+  constraint chk_evt_time order check (expires_at > issued_at),
+  constraint chk_evt_used check (
+    (used = false and used_at is null) or
+    (used = true  and used_at is not null)
+  )
+);
+
 -- Helpful indexes
 CREATE INDEX IF NOT EXISTS idx_contents_created_at ON contents(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_content_id ON comments(content_id);
@@ -92,3 +108,5 @@ CREATE INDEX IF NOT EXISTS idx_likes_content_id    ON likes(content_id);
 CREATE INDEX IF NOT EXISTS idx_pwdreset_user_expires ON password_reset_tokens(user_id, expires_at);
 CREATE INDEX IF NOT EXISTS idx_refresh_user ON refresh_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_valid ON refresh_tokens(revoked, expires_at);
+create index if not exists idx_evt_email  on email_verification_tokens(email);
+create index if not exists idx_evt_active on email_verification_tokens(expires_at, used);

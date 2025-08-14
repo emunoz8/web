@@ -11,24 +11,20 @@ import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.user.dto.UserRequestDto;
 import com.compilingjava.user.dto.UserResponseDto;
 import com.compilingjava.user.service.UserService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
+
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
@@ -36,14 +32,13 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
     private final EmailSender emailSender;
 
-    @Value("${app.urls.email-verify-base:http://localhost:8080/api/auth/confirm-email}")
+    /** The API endpoint we send in emails to handle verification. */
+    @Value("${app.urls.email-verify-base:http://localhost:8080/auth/confirm-email}")
     private String emailVerifyBase;
 
+    /** Base URL for web app to redirect users after verification. */
     @Value("${app.web.base-url:https://compilingjava.com}")
-    private String webBaseUrl;
-
-    @Value("${app.web.base-url:https://compilingjava.com}")
-    private URI webBaseUri; // Spring converts String -> URI
+    private URI webBaseUri;
 
     // Optional hint endpoint for humans
     @GetMapping("/login")
@@ -60,21 +55,27 @@ public class AuthController {
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRequestDto request) {
         UserResponseDto createdUser = userService.createUser(request);
 
+        // Create single-use, short-lived token and email it
         String token = emailVerificationService.generateToken(createdUser.getEmail());
-        String link = emailVerifyBase + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String link = UriComponentsBuilder.fromUriString(emailVerifyBase)
+                .queryParam("token", token)
+                .build(true) // keep token as-is (encoded already if needed)
+                .toUriString();
 
         emailSender.send(
                 createdUser.getEmail(),
                 "Verify your email",
-                "Hi " + createdUser.getUsername() + ",\n\nClick to confirm: " + link);
+                "Hi " + createdUser.getUsername() + ",\n\nClick to confirm: " + link + "\n\n"
+                        + "If you didn’t request this, you can ignore this email.");
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    /** Public: user clicks the email link. */
     @GetMapping("/confirm-email")
     public ResponseEntity<Void> confirmEmail(@RequestParam String token) {
         try {
-            emailVerificationService.verify(token);
+            emailVerificationService.verify(token); // validate + consume + mark user verified
             return seeOther(verifiedUri("success"));
         } catch (ExpiredOrUsedTokenException e) {
             return seeOther(verifiedUri("expired"));
@@ -85,23 +86,16 @@ public class AuthController {
         }
     }
 
-    // com.compilingjava.auth.web.AuthController (or VerificationController)
-    @PostMapping("/api/auth/verify/resend")
-    public ResponseEntity<Void> resend(@Valid @RequestBody VerificationResendRequest req,
-            HttpServletRequest http) {
-        // optional: rate-limit by email + IP
-        // rateLimiter.tryConsume("verify:email:"+req.email().toLowerCase());
-        // rateLimiter.tryConsume("verify:ip:"+clientIp(http));
-
-        // Always 204 to avoid account enumeration
-        emailVerificationService.resend(req.email()); // no-op if unknown/already verified
-        return ResponseEntity.noContent().build();
+    /** Alias for compatibility if you ever send /api/auth/verify?token=... */
+    @GetMapping("/verify")
+    public ResponseEntity<Void> verifyAlias(@RequestParam String token) {
+        return confirmEmail(token);
     }
 
     // ----- helpers -----
     private URI verifiedUri(String status) {
         return UriComponentsBuilder
-                .fromUri(webBaseUri) // not deprecated
+                .fromUri(webBaseUri)
                 .path("/verified")
                 .queryParam("status", status)
                 .build()
@@ -111,5 +105,4 @@ public class AuthController {
     private static ResponseEntity<Void> seeOther(URI where) {
         return ResponseEntity.status(HttpStatus.SEE_OTHER).location(where).build();
     }
-
 }
