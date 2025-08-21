@@ -1,0 +1,9 @@
+server:
+  port: ${PORT:8080}   # Render provides PORT; this binds to it (fallback 8080 locally)
+
+spring:
+  flyway:
+    enabled: true      # run migrations on startup in prod
+  jpa:
+    hibernate:
+      ddl-auto: none   # schema managed by Flyway, not Hibernate

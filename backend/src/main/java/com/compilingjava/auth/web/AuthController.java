@@ -2,7 +2,6 @@ package com.compilingjava.auth.web;
 
 import com.compilingjava.auth.dto.AuthRequest;
 import com.compilingjava.auth.dto.AuthResponse;
-import com.compilingjava.auth.dto.VerificationResendRequest;
 import com.compilingjava.auth.service.email.EmailSender;
 import com.compilingjava.auth.service.email.EmailVerificationService;
 import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
@@ -11,7 +10,6 @@ import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.user.dto.UserRequestDto;
 import com.compilingjava.user.dto.UserResponseDto;
 import com.compilingjava.user.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

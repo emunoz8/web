@@ -26,9 +26,7 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,7 +36,6 @@ class AuthControllerSecurityTests {
         private static final String BASE = "/auth";
         private static final String CONFIRM = BASE + "/confirm-email";
         private static final String VERIFY = BASE + "/verify";
-        private static final String RESEND = BASE + "/verify/resend";
         private static final String LOGIN = BASE + "/login";
 
         private MockMvc mvc;

@@ -1,70 +1,99 @@
 # ---------------------------
-# Java / Spring Boot ignores
+# Global OS / editor cruft
 # ---------------------------
-backend/target/
-
-# Maven wrapper files to keep
-!.mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
-
-# Logs
-backend/*.log
-
-# Compiled Java classes
-*.class
-
-# IDE folders and project files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
 .idea/
 *.iml
 *.ipr
 *.iws
-.vscode/
-
-# OS system files
-.DS_Store
-Thumbs.db
 
 # ---------------------------
-# Node / React frontend ignores
+# Java / Spring Boot
+# ---------------------------
+target/
+**/target/
+*.class
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# Maven wrapper: keep the wrapper files
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# Spring config files that may hold secrets (commit non-secret application.yml only)
+backend/src/main/resources/application-local.*
+backend/src/main/resources/application-*.local.*
+backend/src/main/resources/application-*-secrets.*
+backend/src/main/resources/*-secrets.*
+backend/src/main/resources/keys/**
+backend/src/main/resources/**/*.jks
+backend/src/main/resources/**/*.p12
+backend/src/main/resources/**/*.pfx
+backend/src/main/resources/**/*.pem
+backend/src/main/resources/**/*.der
+backend/src/main/resources/**/*.crt
+backend/src/main/resources/**/*.cer
+backend/src/main/resources/**/*.key
+
+# JWT/SSL keys anywhere in repo
+**/*.pem
+**/*.der
+**/*.crt
+**/*.cer
+**/*.key
+**/*.jks
+**/*.p12
+**/*.pfx
+**/*.keystore
+
+# ---------------------------
+# Env / secrets
+# ---------------------------
+.env
+.env.*
+.envrc
+dotenv.env
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+.env.keys
+
+# ---------------------------
+# Node / React (frontend)
 # ---------------------------
 frontend/node_modules/
+node_modules/
 frontend/build/
+frontend/dist/
+frontend/coverage/
+frontend/.cache/
+frontend/*.cache
+frontend/.parcel-cache/
+frontend/.eslintcache
+# (Intentionally NOT ignoring lockfiles; keep package-lock.json/yarn.lock/pnpm-lock.yaml in VCS)
 
 # Logs for npm/yarn
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
-# Environment config files
-frontend/.env
-frontend/.env.*.local
+# Framework caches (if you ever use them)
+.frontend/**/.next/
+.next/
+.svelte-kit/
+.nuxt/
 
-# Coverage reports
-frontend/coverage/
-
-# Cache and local config files
-frontend/*.local
-frontend/*.cache
-
-.env
-
-# Prevent this if you ever copy it locally
-node_modules
-
-frontend/build
-
-# Supabase
+# ---------------------------
+# Tooling / misc
+# ---------------------------
 .branches
 .temp
-
-# dotenvx
-.env.keys
-.env.local
-.env.*.local
-
-backend/target/
-**/target/
-*.class
-.idea/
-.vscode/
-*.log
+docker-compose.override.yml
