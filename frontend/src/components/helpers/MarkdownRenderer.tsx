@@ -10,11 +10,24 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   return (
-    <div className="prose prose-xl dark:prose-invert max-w-none p-4 md:p-8">
+    <div className="prose sm:prose-lg lg:prose-xl dark:prose-invert max-w-none p-3 sm:p-4 md:p-8">
       <ReactMarkdown
         children={content}
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
+        components={{
+          a: ({ href, children, ...props }) => (
+            <a
+              {...props}
+              href={href}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-semibold text-indigo-600 underline underline-offset-4 hover:text-indigo-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              {children}
+            </a>
+          ),
+        }}
       />
     </div>
   );

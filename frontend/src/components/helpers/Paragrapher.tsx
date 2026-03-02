@@ -8,11 +8,10 @@ const Paragrapher: React.FC<ParagrapherProps> = ({ text }) => {
   return (
     <div className="text-area">
       {paragraphs.map((para, i) => (
-        <p key={i} className="mb-4 whitespace-pre-wrap">
+        <p key={i} className="mb-4 whitespace-pre-wrap leading-relaxed">
           {para}
         </p>
       ))}
-      
     </div>
   );
 };

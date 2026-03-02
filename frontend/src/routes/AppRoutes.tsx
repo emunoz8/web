@@ -1,15 +1,41 @@
 // src/routes/AppRoutes.tsx
-import { Routes, Route } from "react-router-dom";
+import { Location, Routes, Route, useLocation } from "react-router-dom";
 import { publicRoutes } from "./publicRoutes";
+import RequireAdmin from "./RequireAdmin";
+import Login from "../pages/Login";
 
+const AppRoutes = () => {
+  const location = useLocation();
+  const state = location.state as { backgroundLocation?: Location } | null;
+  const backgroundLocation = state?.backgroundLocation;
 
-const AppRoutes = () => (
-  <Routes>
-    {publicRoutes.map(({ to, Component }) => (
-      <Route key={to} path={to} element={<Component/>} />
-    ))}
+  return (
+    <>
+      <Routes location={backgroundLocation || location}>
+        {publicRoutes.map(({ to, Component, requiresAdmin }) => (
+          <Route
+            key={to}
+            path={to}
+            element={
+              requiresAdmin ? (
+                <RequireAdmin>
+                  <Component />
+                </RequireAdmin>
+              ) : (
+                <Component />
+              )
+            }
+          />
+        ))}
+      </Routes>
 
-  </Routes>
-);
+      {backgroundLocation && (
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      )}
+    </>
+  );
+};
 
 export default AppRoutes;

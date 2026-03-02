@@ -1,26 +1,18 @@
-// src/pages/Projects.tsx
-import React, { useEffect, useState } from "react";
-import MarkdownRenderer from "../components/helpers/MarkdownRenderer";
-import TicTacToe from "./TicTacToe";
+import React from "react";
+import ContentBrowserPage from "../components/content/ContentBrowserPage";
 
 const Projects: React.FC = () => {
-  const [markdown, setMarkdown] = useState("");
-
-  useEffect(() => {
-    if (!markdown) {
-      fetch("/project0_tictactoe.md")
-        .then((res) => res.text())
-        .then(setMarkdown)
-        .catch(console.error);
-    }
-  }, [markdown]);
-
-  return( 
-    <>
-    <MarkdownRenderer content={markdown} />
-    <TicTacToe/>
-    </>
-    );
+  return (
+    <ContentBrowserPage
+      title="Projects"
+      subtitle="Browse top projects and filter by project subcategories."
+      type="PROJECT"
+      allCategoriesLabel="All Project Categories"
+      emptyMessage="No projects found for this category yet."
+      adminPath="/admin/projects"
+    />
+  );
 };
 
 export default Projects;
+

@@ -25,6 +25,21 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>CompilingJava</title>
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var encodedPath = params.get("spa-path");
+        if (!encodedPath) {
+          return;
+        }
+        var restoredPath = decodeURIComponent(encodedPath);
+        params.delete("spa-path");
+        var remainingQuery = params.toString();
+        var queryPrefix = restoredPath.indexOf("?") >= 0 ? "&" : "?";
+        var target = remainingQuery ? restoredPath + queryPrefix + remainingQuery : restoredPath;
+        window.history.replaceState(null, "", target);
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -1,6 +1,6 @@
 // src/components/PrivateRoute.tsx
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 // Check for the presence of a token
 const isAuthenticated = (): boolean => {
@@ -9,7 +9,8 @@ const isAuthenticated = (): boolean => {
 };
 
 const PrivateRoute: React.FC = () => {
-  return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace />;
+  const location = useLocation();
+  return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace state={{ from: location }} />;
 };
 
 export default PrivateRoute;

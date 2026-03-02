@@ -5,13 +5,15 @@ import { NavLink } from 'react-router-dom';
 interface NavItemProps {
   to: string;
   label: string;
+  onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, label }) => {
+const NavItem: React.FC<NavItemProps> = ({ to, label, onClick }) => {
   return (
     <NavLink
       to={to}
       className={({ isActive }) => (isActive ? 'nav-link-active' : 'nav-link')}
+      onClick={onClick}
     >
       {label}
     </NavLink>
