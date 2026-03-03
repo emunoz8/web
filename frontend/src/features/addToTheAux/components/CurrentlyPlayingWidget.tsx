@@ -36,6 +36,7 @@ function CurrentlyPlayingWidget({
 
   return (
     <aside
+      data-orbit-drag-ignore="true"
       className={`${wrapperClass} ${className} overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/78 shadow-[0_24px_60px_rgba(2,6,23,0.5)] backdrop-blur-2xl`}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.22),transparent_38%)]" />

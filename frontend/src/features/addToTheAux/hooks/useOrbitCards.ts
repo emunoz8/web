@@ -1,21 +1,30 @@
 import { useEffect, useState } from "react";
-import { EXIT_ANIMATION_MS, createOrbitCardState, mergeOrbitCards, type OrbitCardState } from "../lib/orbitStage";
+import {
+  EXIT_ANIMATION_MS,
+  createOrbitCardState,
+  mergeOrbitCards,
+  type OrbitCardState,
+  type OrbitMotionDirection,
+} from "../lib/orbitStage";
 import type { PlaylistTrackView } from "../types/spotify";
 
-export function useOrbitCards(visiblePlaylistItems: PlaylistTrackView[]): OrbitCardState[] {
+export function useOrbitCards(
+  visiblePlaylistItems: PlaylistTrackView[],
+  motionDirection: OrbitMotionDirection,
+): OrbitCardState[] {
   const [orbitCards, setOrbitCards] = useState<OrbitCardState[]>(() =>
-    visiblePlaylistItems.map((track, slotIndex) => createOrbitCardState(track, slotIndex, "active")),
+    visiblePlaylistItems.map((track, visibleIndex) => createOrbitCardState(track, visibleIndex, "active")),
   );
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      setOrbitCards((currentCards) => mergeOrbitCards(currentCards, visiblePlaylistItems));
+      setOrbitCards((currentCards) => mergeOrbitCards(currentCards, visiblePlaylistItems, motionDirection));
     });
 
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [visiblePlaylistItems]);
+  }, [motionDirection, visiblePlaylistItems]);
 
   useEffect(() => {
     if (!orbitCards.some((card) => card.status === "exiting")) {
@@ -38,7 +47,9 @@ export function useOrbitCards(visiblePlaylistItems: PlaylistTrackView[]): OrbitC
 
     const frameId = window.requestAnimationFrame(() => {
       setOrbitCards((currentCards) =>
-        currentCards.map((card) => (card.status === "entering" ? { ...card, status: "active" } : card)),
+        currentCards.map((card) =>
+          card.status === "entering" ? { ...card, status: "active", motionDirection: "idle" } : card,
+        ),
       );
     });
 

@@ -6,6 +6,7 @@ export type UsePlaylistResult = {
   playlist: PlaylistViewResponse | null;
   playlistLoading: boolean;
   playlistError: string;
+  orderedPlaylistItems: PlaylistTrackView[];
   visiblePlaylistItems: PlaylistTrackView[];
   showingCount: number;
   totalTracks: number;
@@ -58,6 +59,7 @@ export function usePlaylist(visibleCount: number): UsePlaylistResult {
     playlist,
     playlistLoading,
     playlistError,
+    orderedPlaylistItems,
     visiblePlaylistItems,
     showingCount,
     totalTracks,

@@ -4,6 +4,8 @@ export type OrbitSlot = {
   top: string;
   left: string;
   rotate: number;
+  centered?: boolean;
+  hero?: boolean;
 };
 
 export type SuggestionSlot = {
@@ -13,12 +15,14 @@ export type SuggestionSlot = {
 };
 
 export type OrbitCardStatus = "active" | "entering" | "exiting";
+export type OrbitMotionDirection = "forward" | "backward" | "idle";
 
 export type OrbitCardState = {
   key: string;
   track: PlaylistTrackView;
   slotIndex: number;
   status: OrbitCardStatus;
+  motionDirection: OrbitMotionDirection;
 };
 
 export type OrbitCardDisplayTrack = {
@@ -43,17 +47,37 @@ const SLOT_CENTER = { x: 50, y: 46 };
 export const EXIT_ANIMATION_MS = 720;
 
 export const DESKTOP_SLOTS: OrbitSlot[] = [
-  { top: "8%", left: "11%", rotate: -4 },
-  { top: "4%", left: "30%", rotate: -2 },
-  { top: "5%", left: "52%", rotate: 2 },
-  { top: "10%", left: "70%", rotate: 4 },
-  { top: "30%", left: "79%", rotate: 3 },
-  { top: "58%", left: "76%", rotate: 2 },
-  { top: "72%", left: "56%", rotate: -2 },
-  { top: "72%", left: "31%", rotate: -3 },
-  { top: "57%", left: "10%", rotate: -4 },
-  { top: "31%", left: "3%", rotate: -3 },
+  { top: "2%", left: "50%", rotate: 0, centered: true, hero: true },
+  { top: "14%", left: "71%", rotate: 7 },
+  { top: "29%", left: "83%", rotate: 8 },
+  { top: "50%", left: "85%", rotate: 5 },
+  { top: "70%", left: "73%", rotate: 3 },
+  { top: "79%", left: "50%", rotate: 0, centered: true },
+  { top: "70%", left: "27%", rotate: -3 },
+  { top: "50%", left: "15%", rotate: -5 },
+  { top: "29%", left: "17%", rotate: -8 },
+  { top: "14%", left: "29%", rotate: -7 },
 ];
+
+export const VISIBLE_SLOT_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0] as const;
+
+export function getOrbitSlotIndex(visibleIndex: number): number {
+  return VISIBLE_SLOT_ORDER[visibleIndex] ?? visibleIndex;
+}
+
+function getOrbitPathIndex(slotIndex: number): number {
+  return VISIBLE_SLOT_ORDER.indexOf(slotIndex as (typeof VISIBLE_SLOT_ORDER)[number]);
+}
+
+function getOrbitNeighborSlotIndex(slotIndex: number, step: -1 | 1): number {
+  const pathIndex = getOrbitPathIndex(slotIndex);
+  if (pathIndex === -1) {
+    return slotIndex;
+  }
+
+  const neighborPathIndex = Math.max(0, Math.min(pathIndex + step, VISIBLE_SLOT_ORDER.length - 1));
+  return VISIBLE_SLOT_ORDER[neighborPathIndex];
+}
 
 export const SUGGESTION_SLOTS: SuggestionSlot[] = [
   { top: "13%", left: "24%", rotate: -5 },
@@ -82,34 +106,44 @@ export function createTrackKey(track: PlaylistTrackView): string {
 
 export function createOrbitCardState(
   track: PlaylistTrackView,
-  slotIndex: number,
+  visibleIndex: number,
   status: OrbitCardStatus,
+  motionDirection: OrbitMotionDirection = "idle",
 ): OrbitCardState {
   return {
     key: createTrackKey(track),
     track,
-    slotIndex,
+    slotIndex: getOrbitSlotIndex(visibleIndex),
     status,
+    motionDirection,
   };
 }
 
-export function mergeOrbitCards(currentCards: OrbitCardState[], nextTracks: PlaylistTrackView[]): OrbitCardState[] {
-  const currentKeys = new Set(currentCards.map((card) => card.key));
+export function mergeOrbitCards(
+  currentCards: OrbitCardState[],
+  nextTracks: PlaylistTrackView[],
+  motionDirection: OrbitMotionDirection,
+): OrbitCardState[] {
+  const stableCurrentCards = currentCards.filter((card) => card.status !== "exiting");
+  const stableCurrentKeys = new Set(stableCurrentCards.map((card) => card.key));
   const nextKeys = new Set(nextTracks.map(createTrackKey));
   const exitingCards = currentCards.filter((card) => card.status === "exiting" && !nextKeys.has(card.key));
-  const shouldAnimateEntry = currentCards.length > 0;
+  const reenteringKeys = new Set(
+    currentCards.filter((card) => card.status === "exiting" && nextKeys.has(card.key)).map((card) => card.key),
+  );
+  const shouldAnimateEntry = stableCurrentCards.length > 0 && motionDirection !== "idle";
 
-  const nextCards = nextTracks.map((track, slotIndex) => {
+  const nextCards = nextTracks.map((track, visibleIndex) => {
     const trackKey = createTrackKey(track);
     const status: OrbitCardStatus =
-      shouldAnimateEntry && slotIndex === 0 && !currentKeys.has(trackKey) ? "entering" : "active";
+      shouldAnimateEntry && (!stableCurrentKeys.has(trackKey) || reenteringKeys.has(trackKey)) ? "entering" : "active";
 
-    return createOrbitCardState(track, slotIndex, status);
+    return createOrbitCardState(track, visibleIndex, status, motionDirection);
   });
 
-  const newExitingCards = currentCards
-    .filter((card) => card.status === "active" && !nextKeys.has(card.key))
-    .map((card) => ({ ...card, status: "exiting" as const }));
+  const newExitingCards = stableCurrentCards
+    .filter((card) => !nextKeys.has(card.key))
+    .map((card) => ({ ...card, status: "exiting" as const, motionDirection }));
 
   return [
     ...nextCards,
@@ -146,6 +180,46 @@ export function getEnteringOffset(slot: OrbitSlot): { x: number; y: number } {
 
 export function getExitOffset(slot: OrbitSlot): { x: number; y: number } {
   return createOffset(slot, 7.4, 5.1, 49, SLOT_CENTER.y);
+}
+
+function createPathContinuationOffset(slotIndex: number, previousSlotIndex: number, multiplier: number): { x: number; y: number } {
+  const currentSlot = parseSlotPosition(DESKTOP_SLOTS[slotIndex]);
+  const previousSlot = parseSlotPosition(DESKTOP_SLOTS[previousSlotIndex]);
+
+  return {
+    x: (currentSlot.leftPercent - previousSlot.leftPercent) * multiplier,
+    y: (currentSlot.topPercent - previousSlot.topPercent) * multiplier,
+  };
+}
+
+export function getDirectionalEnteringOffset(
+  slotIndex: number,
+  motionDirection: OrbitMotionDirection,
+): { x: number; y: number } {
+  if (motionDirection === "idle") {
+    return getEnteringOffset(DESKTOP_SLOTS[slotIndex]);
+  }
+
+  if (motionDirection === "forward") {
+    return createPathContinuationOffset(slotIndex, getOrbitNeighborSlotIndex(slotIndex, -1), 9.4);
+  }
+
+  return createPathContinuationOffset(slotIndex, getOrbitNeighborSlotIndex(slotIndex, 1), 9.4);
+}
+
+export function getDirectionalExitOffset(
+  slotIndex: number,
+  motionDirection: OrbitMotionDirection,
+): { x: number; y: number } {
+  if (motionDirection === "idle") {
+    return getExitOffset(DESKTOP_SLOTS[slotIndex]);
+  }
+
+  if (motionDirection === "forward") {
+    return createPathContinuationOffset(slotIndex, getOrbitNeighborSlotIndex(slotIndex, 1), 8.8);
+  }
+
+  return createPathContinuationOffset(slotIndex, getOrbitNeighborSlotIndex(slotIndex, -1), 8.8);
 }
 
 export function getSearchOffset(slot: OrbitSlot): { x: number; y: number } {

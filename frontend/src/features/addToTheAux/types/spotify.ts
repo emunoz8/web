@@ -38,6 +38,7 @@ export type TrackSearchResponse = {
 
 export type CurrentlyPlayingResponse = {
   playing: boolean;
+  trackId: string | null;
   trackName: string | null;
   artistName: string | null;
   albumName: string | null;
