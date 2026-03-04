@@ -1,11 +1,9 @@
 # Edwin Muñoz 👋
 
-**Engineer. Mentor. Builder of things that work.**
+**Software Engineer building practical systems that solve real problems.**
 
-I specialize in building reliable, full-stack web applications using Java, Spring Boot, and React — with a focus on clarity, performance, and long-term maintainability.
+I develop full-stack applications using **Java, Spring Boot, and React**, with a focus on reliability, clear architecture, and long-term maintainability.
 
-I care deeply about writing clean code, mentoring future developers, and staying curious in a fast-moving field.
+Most of the projects here were built to support real programs — from internal data tools to applications that help organizations operate more effectively.
 
-When I’m not coding, I’m probably overthinking a chess move or sipping coffee and refining a side project.
-
-[Download Resume](/Edwin_Resume.pdf)
+[View Projects](/projects) | [Download Resume](/Edwin_Munoz_CV2026.pdf)

@@ -1,7 +1,11 @@
-Hey, I’m Edwin — a laid-back but focused software engineer who loves solving tough problems and making things work better. I’ve always been drawn to the challenge of turning messy ideas into clean, functional code.
+Hey, I’m Edwin — a software engineer who enjoys building practical tools that solve real problems. I’m especially interested in systems that help organizations work smarter, whether that’s internal platforms, data tools, or applications that support community programs.
 
-Before tech, I was a diesel mechanic in the Marine Corps, where I got used to fixing things under pressure and leading with precision. These days, I bring that same mindset to my work as a high school program coordinator and youth mentor. I help students figure things out — academically and personally — and it’s one of the most rewarding parts of what I do.
+Before getting into tech, I served four years in the U.S. Marine Corps as a diesel mechanic, eventually becoming a Corporal responsible for supervising other Marines. That experience shaped the way I approach engineering today: stay calm under pressure, break problems down systematically, and build solutions that are reliable in the real world.
 
-When I’m not deep in code or supporting students, I’m probably playing a few too many games of chess or getting way too into a board game. I like keeping a good balance between building and unwinding — always learning, always improving.
+Today I work closely with high school students as a program coordinator and mentor in Chicago. Alongside mentoring, I design and build software systems that help manage program data, automate workflows, and reduce administrative overhead. Many of the tools I create started as quick solutions in Google Sheets or Apps Script and have grown into full applications using technologies like Java, Spring Boot, cloud services, and modern web frameworks.
 
-If you want to connect or swap ideas, hit me up. I’m always down to talk code, education, or games.
+I enjoy working across the stack — from backend architecture and APIs to data systems and interactive frontends — and I’m always exploring new ways to connect software with real-world environments, whether through APIs, hardware projects like Arduino/ESP32, or data-driven applications.
+
+Outside of programming, I’m usually experimenting with new projects, listening to rock music, playing strategy games, or working on ideas that blend technology, education, and community.
+
+If you’re interested in building tools that make organizations more effective or using technology to create real-world impact, I’d love to connect.
