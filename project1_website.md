@@ -1,59 +1,80 @@
-# This Website
-### Ongoing Build
+# CompilingJava Web Platform
+### Full-Stack Portfolio and Publishing System
 **2026**
 
-This project is a little recursive: one of the first projects on the site is the site itself.
+This project is the platform behind my portfolio site. Rather than treating the website as a static set of pages, I designed it as a small full-stack application with its own content model, publishing workflow, authentication, and administrative tooling.
 
-What started as a place to host a few links has slowly turned into a full portfolio platform with its own content system, project pages, blog support, protected admin tools, and interactive demos.
-
-The goal was not just to make a website that looks good. The goal was to build something I could actually use and keep extending over time.
+The objective was to build a portfolio that functions like a maintainable product: content can be created and updated through the application itself, public pages remain fast and structured, and the platform can continue to absorb new features over time without being rebuilt from scratch.
 
 ---
 
-## What it does
+## Overview
 
-- Showcases projects and blog posts in one place
-- Supports category-based browsing for content
-- Renders markdown cleanly for longer writeups
-- Includes a protected admin workflow for publishing content online
-- Lets me update projects and blogs without manually redeploying the frontend for every change
-- Acts as a sandbox for experiments like **AddToTheAUX** and other interactive features
+The platform supports both public content delivery and authenticated content management.
 
----
+Public-facing capabilities include:
 
-## Why I built it this way
+- project and blog presentation through a unified content system
+- category-based browsing and filtering
+- markdown-backed long-form content rendering
+- interactive project pages integrated into the portfolio experience
 
-I wanted the portfolio itself to demonstrate how I think about software:
+Administrative capabilities include:
 
-- build tools that solve a real problem
-- keep the system maintainable
-- make it easy to extend over time
-- treat content management as part of the product, not an afterthought
-
-Instead of a static portfolio where every update means editing hardcoded files, this site is designed to behave more like a small platform.
-
-That means I can write a new project, publish a blog post, refine content, and continue improving the site from the admin side while keeping the public experience clean and focused.
+- authenticated content publishing and editing
+- online management of projects and blog entries
+- category management for content organization
+- protected admin workflows separated from the public experience
 
 ---
 
-## What I am most proud of
+## Architecture
 
-The most useful part of this project is that it became infrastructure for everything else.
+The application is built as a React and TypeScript frontend backed by a Java Spring Boot API with a PostgreSQL data layer.
 
-Once the core site was working, I could use it to:
+At a high level, the system is responsible for:
 
-- publish new projects
-- write technical blog posts
-- test new UI ideas
-- improve content organization
-- ship interactive demos directly into the portfolio
+- serving structured content through API endpoints
+- persisting portfolio and blog data in a relational schema
+- rendering public-facing content in a browser-first frontend
+- handling authenticated admin operations through protected backend routes
+- supporting iterative feature development without coupling all changes to static page edits
 
-In other words, the site stopped being just a portfolio and became the environment where the portfolio keeps growing.
+This architecture lets the site behave more like a lightweight content platform than a traditional portfolio.
 
 ---
 
-## Notes
+## Technical Focus
 
-For obvious reasons, this writeup focuses on user-facing features and product design rather than internal security or admin implementation details.
+Several engineering decisions shaped the project:
 
-If you are reading this on the live site, you are looking at both the project and the result of the project at the same time.
+- content is modeled centrally so projects and blog posts can share querying, browsing, and management flows
+- markdown support is used to keep long-form content maintainable without hardcoding presentation into the frontend
+- admin workflows are handled through the application itself, reducing the need for manual content deployments
+- the backend is structured to support authenticated operations, public read APIs, and future feature expansion
+- the platform doubles as a safe place to ship experimental interfaces and product ideas
+
+Recent platform work has also included improving production auth behavior, session handling, CSRF protection, and deployment readiness for the live environment.
+
+---
+
+## Why It Matters
+
+The most valuable outcome of this project is not the website alone, but the system it created.
+
+Once the platform existed, it became infrastructure for everything else on the site:
+
+- new projects can be published through the admin flow
+- blog content can be managed as application data rather than hardcoded UI
+- new interactive experiences can be added as first-class parts of the portfolio
+- the site can evolve continuously without rethinking the entire foundation each time
+
+In practice, this project turned the portfolio into a reusable software platform rather than a one-off presentation layer.
+
+---
+
+## Scope
+
+This writeup intentionally focuses on product architecture, system design, and public-facing functionality. It avoids implementation details that are better kept out of a public project summary, particularly around internal security and operational configuration.
+
+If you are viewing this on the live site, then this project description is being served by the same platform it describes.
