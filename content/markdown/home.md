@@ -6,4 +6,4 @@ I develop full-stack applications using **Java, Spring Boot, and React**, with a
 
 Most of the projects here were built to support real programs — from internal data tools to applications that help organizations operate more effectively.
 
-[View Projects](/projects) | [Download Resume](/Edwin_Munoz_CV2026.pdf)
+[View Projects](/projects) | [Download Resume](/assets/documents/Edwin_Munoz_CV2026.pdf)

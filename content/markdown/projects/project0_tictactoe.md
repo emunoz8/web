@@ -6,7 +6,7 @@ It was the spring semester of 2023, right after winter break — that winter bre
 
 We were required to get *Artificial Intelligence: A Modern Approach* (4th edition). On the cover, you see Alan Turing, what appears to be Garry Kasparov, the Mars rover, a robot, a statue, a painting, a game of Go, and many more small details — all on a chessboard background. If I judged a book by its cover, I would say this was going to be a great book.
 
-![Book Cover](./book-cover.jpg)  
+![Book Cover](/assets/images/projects/book-cover.jpg)  
 *Artificial Intelligence: A Modern Approach - 4th Edition*
 
 The professor of the class was none other than one of the best professors at NEIU at the time: **Professor Kimmel** — feared by many, avoided by even more. Professor Kimmel was not an easy professor; he made sure you knew the subject. His exams were on paper — no multiple choice answers. You had to write down the algorithms on paper, and your code had to be correct — no syntax errors, no pseudocode allowed. 
@@ -17,7 +17,7 @@ Great book, great professor, and Python — which we only got a cheat sheet for,
 
 One of the things we did a lot was create AI agents to play games. One such game was the **Divisor Game**, which utilized the **Minimax algorithm**. In Chapter 5 of the book, where Minimax is covered, there was a diagram of a Tic-Tac-Toe game with an image of the Minimax algorithm doing its work, but I did not have the skills to implement that then. I tried for about a day, but it was definitely a skill issue — that and I had taken two of Professor Kimmel’s classes (AI and Algorithms), both equally challenging, and we used Java for Algorithms (context switch programming languages).
 
-![Tic-Tac-Toe Minimax Diagram](./tictactoe-minimax-diagram.jpg)  
+![Tic-Tac-Toe Minimax Diagram](/assets/images/projects/tictactoe-minimax-diagram.jpg)  
 *Diagram from Chapter 5 showing Minimax algorithm in Tic-Tac-Toe*
 
 
