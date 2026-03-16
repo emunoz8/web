@@ -21,11 +21,11 @@ function isSiteUiMode(value: string | null): value is SiteUiMode {
 
 function readStoredUiMode(): SiteUiMode {
   if (typeof window === "undefined") {
-    return "terminal";
+    return "standard";
   }
 
   const storedValue = window.localStorage.getItem(STORAGE_KEY);
-  return isSiteUiMode(storedValue) ? storedValue : "terminal";
+  return isSiteUiMode(storedValue) ? storedValue : "standard";
 }
 
 function readTerminalAvailability(): boolean {

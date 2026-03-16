@@ -34,7 +34,7 @@ export const portfolioNavItems: PortfolioNavItem[] = [
 
 export const portfolioProfile = {
   name: "Edwin Munoz",
-  title: "Software Engineer - Full Stack Developer",
+  title: "Software Engineer | Backend Systems and Product Engineering",
   techStackLine: "Java | Spring Boot | React | PostgreSQL | Cloud",
   techHighlights: [
     { label: "Primary backend", value: "Java and Spring Boot" },
@@ -44,10 +44,10 @@ export const portfolioProfile = {
   ] satisfies PortfolioTechHighlight[],
   location: "Chicago, Illinois",
   summary:
-    "I build full-stack web applications with a focus on practical systems, clear architecture, and software that solves real operational problems.",
+    "I build backend-first web products that turn real operational workflows into maintainable software, from Spring Boot APIs and relational models to React interfaces and production deployment.",
   heroFacts: [
-    { label: "Focus", value: "Full-stack product engineering" },
-    { label: "Backend", value: "Java and Spring Boot" },
+    { label: "Focus", value: "Backend-first product systems" },
+    { label: "Backend", value: "Java, Spring Boot, PostgreSQL" },
     { label: "Frontend", value: "React and TypeScript" },
     { label: "Location", value: "Chicago, Illinois" },
   ] satisfies PortfolioFact[],

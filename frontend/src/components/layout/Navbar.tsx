@@ -85,6 +85,7 @@ function Navbar() {
       : feedback?.tone === "success"
         ? "border-brand-frame/35 text-brand-contrast"
         : "border-brand-line/20 text-brand-muted";
+  const showSessionActions = !authLoading && (isAdmin || isAuthenticated);
 
   return (
     <header className="sticky top-0 z-40 py-4">
@@ -168,16 +169,11 @@ function Navbar() {
             </section>
 
             <section className="brand-terminal-subpanel">
-              <p className="brand-eyebrow">session controls</p>
+              <p className="brand-eyebrow">{showSessionActions ? "workspace" : "operator context"}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {!authLoading && isAdmin ? (
                   <Link to="/admin/projects" className="brand-terminal-chip">
                     sudo admin
-                  </Link>
-                ) : null}
-                {!authLoading && !isAuthenticated ? (
-                  <Link to="/login" className="brand-terminal-chip">
-                    ssh login
                   </Link>
                 ) : null}
                 {!authLoading && isAuthenticated ? (

@@ -9,11 +9,18 @@ function StandardHome() {
     <div className="space-y-16 py-6 sm:py-8">
       <section className="grid gap-10 border-b border-brand-line/16 pb-14 lg:grid-cols-[minmax(0,1.12fr)_minmax(20rem,0.88fr)] lg:items-start">
         <div className="max-w-4xl">
-          <p className="portfolio-kicker">Portfolio</p>
+          <p className="portfolio-kicker">{portfolioProfile.name}</p>
+          <p className="mt-5 font-mono text-xs uppercase tracking-[0.24em] text-brand-frame">
+            {portfolioProfile.title}
+          </p>
           <h1 className="portfolio-display-hero mt-5 max-w-5xl">
-            Full-stack software engineering with a product and systems mindset
+            Backend-first web products built for real operational problems
           </h1>
           <p className="mt-8 max-w-3xl portfolio-copy-strong">{portfolioProfile.summary}</p>
+          <p className="mt-4 max-w-3xl portfolio-copy">
+            Current work spans content platforms, workflow tools, interactive demos, and public-facing
+            products that need to stay readable, fast, and maintainable in production.
+          </p>
 
           <div className="mt-10 flex flex-wrap gap-3">
             <Link to="/projects" className="portfolio-button-primary">
@@ -47,7 +54,8 @@ function StandardHome() {
             <div className="border-t border-brand-line/20 pt-4">
               <p className="portfolio-kicker">Current Focus</p>
               <p className="mt-4 portfolio-copy">
-                Shipping production-ready APIs and frontend surfaces that feel deliberate, maintainable, and fast.
+                Shipping production-ready APIs and portfolio case studies that show the engineering
+                decisions behind the interface, not just the interface itself.
               </p>
             </div>
           </div>

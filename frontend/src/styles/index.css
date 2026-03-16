@@ -556,6 +556,81 @@ body.portfolio-body-scroll-locked {
   color: rgb(var(--brand-muted));
 }
 
+.portfolio-header-resume {
+  position: relative;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+  min-width: 9.5rem;
+  border-radius: 20px;
+  border: 1px solid rgb(var(--brand-frame) / 0.22);
+  padding: 0.7rem 1rem 0.72rem 1.1rem;
+  background:
+    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-panel) / 0.88) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--brand-contrast) / 0.04),
+    0 14px 30px rgb(var(--brand-shadow-ink) / 0.16);
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+.portfolio-header-resume::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--brand-stripes);
+  opacity: 0.9;
+}
+
+.portfolio-header-resume::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--brand-accent) / 0.55) 16%,
+    rgb(var(--brand-frame) / 0.28) 54%,
+    transparent 100%
+  );
+}
+
+.portfolio-header-resume:hover {
+  transform: translateY(-1px);
+  border-color: rgb(var(--brand-frame) / 0.36);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--brand-contrast) / 0.06),
+    0 18px 34px rgb(var(--brand-shadow-ink) / 0.2);
+}
+
+.portfolio-header-resume-kicker {
+  position: relative;
+  z-index: 1;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--brand-frame));
+}
+
+.portfolio-header-resume-title {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgb(var(--brand-contrast));
+}
+
 .portfolio-display-hero,
 .brand-display-hero {
   font-family: "IBM Plex Mono", "Courier New", monospace;

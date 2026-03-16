@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { HiArrowUpRight, HiOutlineDocumentText } from "react-icons/hi2";
 import UiModeToggle from "../../../components/common/UiModeToggle";
 import { portfolioNavItems, portfolioProfile } from "../../portfolio/data/profile";
 
@@ -34,9 +35,14 @@ function StandardHeader() {
             href={portfolioProfile.resumeUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="hidden rounded-full border border-brand-line/24 bg-brand-surface/82 px-4 py-2 text-sm font-medium text-brand-muted transition hover:border-brand-frame/32 hover:bg-brand-panel/56 hover:text-brand-contrast sm:inline-flex"
+            className="portfolio-header-resume group hidden sm:inline-flex"
           >
-            Resume PDF
+            <span className="portfolio-header-resume-kicker">Resume / 2026</span>
+            <span className="portfolio-header-resume-title">
+              <HiOutlineDocumentText className="h-4 w-4 shrink-0" />
+              Open PDF
+              <HiArrowUpRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </span>
           </a>
           <UiModeToggle appearance="standard" />
         </div>
