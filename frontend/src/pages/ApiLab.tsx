@@ -1,5 +1,6 @@
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiBaseUrl, apiUrl, CategoryDomain, CategoryItem } from "../lib/api";
+import { fetchWithCsrf } from "../lib/csrf";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -21,7 +22,6 @@ type ApiCallOptions = {
   path: string;
   body?: unknown;
   requiresAuth?: boolean;
-  captureToken?: boolean;
 };
 
 type ApiCallResult = {
@@ -153,16 +153,6 @@ const initialFormState: FormState = {
 const inputClass = "form-input";
 const textareaClass = "form-textarea";
 
-const hasToken = (value: unknown): value is { token: string } => {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-  if (!("token" in value)) {
-    return false;
-  }
-  return typeof value.token === "string";
-};
-
 const hasNumericId = (value: unknown): value is { id: number } => {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -257,25 +247,17 @@ const ApiLab: React.FC = () => {
   };
 
   const runApiCall = async (options: ApiCallOptions): Promise<ApiCallResult> => {
-    if (options.requiresAuth && !form.authToken.trim()) {
-      appendLocalError(options.label, options.path, "Missing Bearer token. Login first or paste token in API Lab.");
-      return {
-        status: 0,
-        parsed: undefined,
-        responseBody: "Missing Bearer token. Login first or paste token in API Lab.",
-      };
-    }
-
     setPendingLabel(options.label);
     const startedAt = performance.now();
     const requestBody = options.body !== undefined ? serializeBody(options.body) : undefined;
     const headers: HeadersInit = {};
+    const bearerToken = form.authToken.trim();
 
     if (requestBody !== undefined) {
       headers["Content-Type"] = "application/json";
     }
-    if (options.requiresAuth) {
-      headers.Authorization = `Bearer ${form.authToken.trim()}`;
+    if (options.requiresAuth && bearerToken) {
+      headers.Authorization = `Bearer ${bearerToken}`;
     }
 
     let status = 0;
@@ -283,7 +265,7 @@ const ApiLab: React.FC = () => {
     let parsed: unknown | undefined;
 
     try {
-      const response = await fetch(apiUrl(options.path), {
+      const response = await fetchWithCsrf(apiUrl(options.path), {
         method: options.method,
         headers,
         body: requestBody,
@@ -293,13 +275,6 @@ const ApiLab: React.FC = () => {
       const rawBody = await response.text();
       parsed = parseJsonSafe(rawBody);
       responseBody = parsed !== undefined ? JSON.stringify(parsed, null, 2) : rawBody || "(empty body)";
-
-      if (options.captureToken && parsed !== undefined) {
-        const tokenPayload = parsed;
-        if (hasToken(tokenPayload)) {
-          setForm((prev) => ({ ...prev, authToken: tokenPayload.token }));
-        }
-      }
     } catch (err) {
       responseBody = (err as Error).message;
     } finally {
@@ -330,8 +305,8 @@ const ApiLab: React.FC = () => {
     setAdminCategoryError(null);
     try {
       const [projectRes, blogRes] = await Promise.all([
-        fetch(apiUrl("/api/categories?domain=PROJECT")),
-        fetch(apiUrl("/api/categories?domain=BLOG")),
+        fetchWithCsrf(apiUrl("/api/categories?domain=PROJECT")),
+        fetchWithCsrf(apiUrl("/api/categories?domain=BLOG")),
       ]);
 
       if (!projectRes.ok || !blogRes.ok) {
@@ -448,7 +423,6 @@ const ApiLab: React.FC = () => {
         username: form.loginUsername.trim(),
         password: form.loginPassword,
       },
-      captureToken: true,
     });
   };
 
@@ -783,12 +757,16 @@ const ApiLab: React.FC = () => {
           Full local test console for your backend endpoints. Base URL: <code>{displayedBase}</code>
         </p>
         <p className="text-sm opacity-80">
-          For first local login: register, set <code>email_verified=true</code> in Postgres, then login to capture JWT.
+          Browser requests now use the session cookie automatically. Paste a bearer token only if you want to test header-based auth manually.
         </p>
       </header>
 
       <section className="border rounded-md p-4 space-y-3">
         <h2 className="font-semibold">Session</h2>
+        <p className="text-sm opacity-80">
+          Authenticated calls use <code>credentials: "include"</code>. The bearer token field below is optional and only overrides requests that
+          mark <code>requiresAuth</code>.
+        </p>
         <div className="flex flex-col gap-2">
           <label htmlFor="authToken">Bearer Token</label>
           <textarea
@@ -796,7 +774,7 @@ const ApiLab: React.FC = () => {
             className={textareaClass}
             value={form.authToken}
             onChange={setField("authToken")}
-            placeholder="Paste JWT here or use login below"
+            placeholder="Optional: paste JWT here for manual Authorization header testing"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -808,6 +786,12 @@ const ApiLab: React.FC = () => {
           </button>
           <button className="btn" onClick={() => runApiCall({ label: "GET /api/auth/login", method: "GET", path: "/api/auth/login" })}>
             Auth Hint
+          </button>
+          <button className="btn" onClick={() => runApiCall({ label: "GET /api/auth/session", method: "GET", path: "/api/auth/session", requiresAuth: true })}>
+            Session
+          </button>
+          <button className="btn" onClick={() => runApiCall({ label: "POST /api/auth/logout", method: "POST", path: "/api/auth/logout", requiresAuth: true })}>
+            Logout
           </button>
           <button className="btn" onClick={() => setHistory([])}>
             Clear History
@@ -834,7 +818,7 @@ const ApiLab: React.FC = () => {
         </form>
 
         <form className="space-y-2" onSubmit={submitLogin}>
-          <h3 className="font-medium">POST /api/auth/login (captures token)</h3>
+          <h3 className="font-medium">POST /api/auth/login (sets session cookie)</h3>
           <div className="grid md:grid-cols-2 gap-2">
             <input className={inputClass} placeholder="username" value={form.loginUsername} onChange={setField("loginUsername")} />
             <input className={inputClass} type="password" placeholder="password" value={form.loginPassword} onChange={setField("loginPassword")} />
@@ -1137,7 +1121,7 @@ const ApiLab: React.FC = () => {
       </details>
 
       <details open className="border rounded-md p-4 space-y-3">
-        <summary className="font-semibold cursor-pointer">Admin Endpoints (requires ADMIN token)</summary>
+        <summary className="font-semibold cursor-pointer">Admin Endpoints (requires ADMIN session or bearer token)</summary>
 
         <div className="space-y-2">
           <h3 className="font-medium">Category Options For Create Forms</h3>

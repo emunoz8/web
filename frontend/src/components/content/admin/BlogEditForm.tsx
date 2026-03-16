@@ -1,6 +1,6 @@
 import React, { FormEvent } from "react";
 
-type BlogEditFormProps = {
+export type BlogEditFormProps = {
   editId: number;
   editTitle: string;
   setEditTitle: (value: string) => void;

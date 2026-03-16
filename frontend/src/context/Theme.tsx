@@ -1,34 +1,52 @@
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import Layout from "../components/layout/Layout";
+import { SiteUiModeProvider, useSiteUiMode } from "./SiteUiModeContext";
+import { getShellPathname, isChromelessPath, isViewportLockedPath } from "../lib/authRouting";
 import { AuthProvider } from "./AuthContext";
 
-function normalizePathname(pathname: string): string {
-  if (!pathname || pathname === "/") {
-    return "/";
-  }
-
-  return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
-}
-
-function AppShell() {
+function AppShellContent() {
   const location = useLocation();
-  const pathname = normalizePathname(location.pathname);
-  const chromeless = pathname === "/add-to-the-aux";
+  const { mode } = useSiteUiMode();
+  const pathname = getShellPathname(location);
+  const chromeless = isChromelessPath(pathname);
+  const viewportLocked = isViewportLockedPath(pathname);
 
   return (
     <div
       className={
-        chromeless
-          ? "min-h-screen overflow-hidden bg-gray-50 text-gray-800 font-mono dark:bg-gray-900 dark:text-green-300"
-          : "code-theme"
+        viewportLocked
+          ? "min-h-screen overflow-hidden bg-zinc-950 text-zinc-100"
+          : chromeless
+            ? "min-h-screen bg-zinc-950 text-zinc-100"
+            : mode === "terminal"
+              ? "min-h-screen bg-brand-canvas text-brand-contrast"
+              : "min-h-screen bg-brand-canvas text-brand-contrast"
       }
     >
-      <div className={chromeless ? "min-h-screen w-full overflow-hidden" : "body-main"}>
+      <div
+        className={
+          viewportLocked
+            ? "min-h-screen w-full overflow-hidden"
+            : chromeless
+              ? "min-h-screen w-full"
+              : mode === "terminal"
+                ? "flex min-h-screen w-full flex-col bg-brand-canvas"
+                : "flex min-h-screen w-full flex-col bg-transparent"
+        }
+      >
         <AuthProvider>
           <Layout />
         </AuthProvider>
       </div>
     </div>
+  );
+}
+
+function AppShell() {
+  return (
+    <SiteUiModeProvider>
+      <AppShellContent />
+    </SiteUiModeProvider>
   );
 }
 

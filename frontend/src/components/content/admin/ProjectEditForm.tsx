@@ -1,6 +1,6 @@
 import React, { FormEvent } from "react";
 
-type ProjectEditFormProps = {
+export type ProjectEditFormProps = {
   editId: number;
   editTitle: string;
   setEditTitle: (value: string) => void;
@@ -11,10 +11,12 @@ type ProjectEditFormProps = {
   editProjectUrl: string;
   setEditProjectUrl: (value: string) => void;
   editLoading: boolean;
+  deleteLoading: boolean;
   editError: string | null;
   editSuccess: string | null;
   onSubmit: (event: FormEvent) => Promise<void>;
   onCancel: () => void;
+  onDelete: () => Promise<void>;
 };
 
 const ProjectEditForm: React.FC<ProjectEditFormProps> = ({
@@ -28,11 +30,15 @@ const ProjectEditForm: React.FC<ProjectEditFormProps> = ({
   editProjectUrl,
   setEditProjectUrl,
   editLoading,
+  deleteLoading,
   editError,
   editSuccess,
   onSubmit,
   onCancel,
+  onDelete,
 }) => {
+  const isBusy = editLoading || deleteLoading;
+
   return (
     <div className="border rounded-lg p-3 sm:p-4 space-y-3">
       <h2 className="font-semibold">Edit Project #{editId}</h2>
@@ -69,11 +75,24 @@ const ProjectEditForm: React.FC<ProjectEditFormProps> = ({
         {editError && <p className="text-sm text-red-500">{editError}</p>}
         {editSuccess && <p className="text-sm text-green-500">{editSuccess}</p>}
         <div className="flex flex-wrap gap-2">
-          <button className="btn" type="submit" disabled={editLoading}>
+          <button className="btn" type="submit" disabled={isBusy}>
             {editLoading ? "Saving..." : "Save Changes"}
           </button>
-          <button className="btn" type="button" onClick={onCancel}>
+          <button className="btn" type="button" onClick={onCancel} disabled={isBusy}>
             Cancel Edit
+          </button>
+          <button
+            className="min-h-11 rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/40"
+            type="button"
+            disabled={isBusy}
+            onClick={() => {
+              if (!window.confirm("Delete this project? This cannot be undone.")) {
+                return;
+              }
+              void onDelete();
+            }}
+          >
+            {deleteLoading ? "Deleting..." : "Delete Project"}
           </button>
         </div>
       </form>

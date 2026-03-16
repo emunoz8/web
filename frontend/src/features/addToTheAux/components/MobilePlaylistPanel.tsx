@@ -1,15 +1,5 @@
-import type { CSSProperties } from "react";
 import type { PlaylistTrackView } from "../types/spotify";
 import { ArtworkTile, LeadBadge, createDisplayTrack, getTrackBadgeLabel } from "./orbitStageShared";
-
-function buildActiveTrackStyle(active: boolean): CSSProperties | undefined {
-  return active
-    ? {
-        boxShadow:
-          "0 0 0 1px rgba(110,231,183,0.82), 0 0 22px rgba(34,197,94,0.32), 0 0 40px rgba(34,197,94,0.14)",
-      }
-    : undefined;
-}
 
 function MobilePlaylistCard({
   track,
@@ -28,25 +18,24 @@ function MobilePlaylistCard({
 
   return (
     <article
-      className="relative overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/52 shadow-[0_14px_30px_rgba(2,6,23,0.34)]"
-      style={buildActiveTrackStyle(isActiveTrack)}
+      className={`aux-mobile-playlist-card${isActiveTrack ? " aux-mobile-playlist-card-active" : ""}`}
       title={track.name ?? track.albumName ?? undefined}
     >
-      <div className="flex flex-col gap-3 p-3">
-        <div className="min-w-0">
+      <div className="aux-mobile-playlist-card-body">
+        <div>
           {leadBadgeLabel ? <LeadBadge label={leadBadgeLabel} /> : null}
-          <p className={`truncate font-semibold text-slate-50 ${leadBadgeLabel ? "mt-3 text-sm" : "text-sm"}`}>
+          <p className={`aux-mobile-playlist-title${leadBadgeLabel ? " aux-mobile-playlist-title-with-badge" : ""}`}>
             {displayTrack.name || "Unknown track"}
           </p>
-          <p className="mt-1 truncate text-[11px] text-slate-300">
+          <p className="aux-mobile-playlist-meta">
             {displayTrack.artistName || displayTrack.albumName || "Unknown artist"}
           </p>
-          {displayTrack.addedBy && <p className="mt-1 truncate text-[11px] text-slate-400">added by {displayTrack.addedBy}</p>}
+          {displayTrack.addedBy && <p className="aux-mobile-playlist-submeta">added by {displayTrack.addedBy}</p>}
         </div>
         <ArtworkTile
           imageUrl={displayTrack.imageUrl}
           alt={displayTrack.albumName ?? displayTrack.name ?? "Album art"}
-          className="aspect-square w-full overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,#263870,#0a1124_78%)]"
+          className="aux-mobile-playlist-artwork"
         />
       </div>
     </article>
@@ -55,7 +44,7 @@ function MobilePlaylistCard({
 
 function MobilePlaylistEmptyState() {
   return (
-    <div className="mt-3 rounded-[24px] border border-white/10 bg-slate-950/40 px-4 py-5 text-center text-sm text-slate-300">
+    <div className="aux-mobile-playlist-empty">
       No songs in the playlist yet.
     </div>
   );
@@ -63,10 +52,10 @@ function MobilePlaylistEmptyState() {
 
 function MobilePlaylistHeader({ itemCount }: { itemCount: number }) {
   return (
-    <div className="w-full border-b border-white/10 px-1 pb-3">
+    <div className="aux-mobile-playlist-header">
       <div>
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-indigo-200/70">Playlist</p>
-        <p className="mt-1 text-sm text-slate-200">{itemCount > 0 ? `${itemCount} songs, latest to first` : "No songs loaded"}</p>
+        <p className="aux-mobile-playlist-kicker">Playlist</p>
+        <p className="aux-mobile-playlist-copy">{itemCount > 0 ? `${itemCount} songs, latest to first` : "No songs loaded"}</p>
       </div>
     </div>
   );
@@ -86,16 +75,16 @@ function MobilePlaylistPanel({
   return (
     <div
       data-orbit-drag-ignore="true"
-      className="pointer-events-auto mt-4 grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/38 p-3 backdrop-blur-md lg:hidden"
+      className="aux-mobile-playlist-panel"
     >
       <MobilePlaylistHeader itemCount={items.length} />
 
       {items.length > 0 ? (
         <div
           data-orbit-drag-ignore="true"
-          className="mt-3 min-h-0 w-full overflow-y-auto overscroll-contain pr-1 touch-pan-y [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent]"
+          className="aux-mobile-playlist-scroll"
         >
-          <div className="space-y-3">
+          <div className="aux-mobile-playlist-list">
             {items.map((track) => (
               <MobilePlaylistCard
                 key={`${track.uri}-${track.addedAt ?? track.id ?? track.name}`}

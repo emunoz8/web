@@ -8,8 +8,8 @@ type ContentCardProps = {
   commentsDisplay: string;
   liked: boolean;
   showEdit: boolean;
-  onOpen: (item: ContentItem) => void;
-  onEdit?: (item: ContentItem) => void;
+  onOpen: (item: ContentItem) => void | Promise<void>;
+  onEdit?: (item: ContentItem) => void | Promise<void>;
 };
 
 const ContentCard: React.FC<ContentCardProps> = ({

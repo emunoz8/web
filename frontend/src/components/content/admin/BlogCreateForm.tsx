@@ -1,7 +1,7 @@
 import React, { FormEvent } from "react";
 import { CategoryItem } from "../../../lib/api";
 
-type BlogCreateFormProps = {
+export type BlogCreateFormProps = {
   categories: CategoryItem[];
   createTitle: string;
   setCreateTitle: (value: string) => void;

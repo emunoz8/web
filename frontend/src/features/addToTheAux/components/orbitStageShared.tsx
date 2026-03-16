@@ -2,20 +2,12 @@ import type { CSSProperties, ReactNode } from "react";
 import { createOrbitCardDisplayTrack, createTrackKey, type OrbitCardDisplayTrack } from "../lib/orbitStage";
 import type { PlaylistTrackView, TrackSearchResult } from "../types/spotify";
 
-const FALLBACK_ART_CLASS =
-  "grid h-full w-full place-items-center bg-[radial-gradient(circle_at_top,#2c4db8,#071122_70%)] text-center text-sm font-semibold text-indigo-100/80";
-
-export const SUBTLE_GLASS_PANEL_CLASS = "border border-white/10 bg-slate-950/45 backdrop-blur-md";
-export const SEARCH_SHELL_CLASS =
-  "mx-auto rounded-full border border-white/12 bg-slate-950/50 backdrop-blur-xl shadow-[0_18px_48px_rgba(2,6,23,0.45)] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]";
 export const SEARCH_KEEP_OPEN_ATTR = { "data-search-keep-open": "true" } as const;
 
 type ActionBubbleTone = "warning" | "error";
 
 export function buildActiveTrackGlowClass(active: boolean): string {
-  return active
-    ? "ring-2 ring-emerald-300/85 shadow-[0_0_0_1px_rgba(110,231,183,0.85),0_0_28px_rgba(34,197,94,0.55),0_0_60px_rgba(34,197,94,0.28)]"
-    : "";
+  return active ? "aux-orbit-card-active" : "";
 }
 
 export function getTrackBadgeLabel(
@@ -47,9 +39,9 @@ export function ArtworkTile({
   return (
     <div className={className}>
       {imageUrl ? (
-        <img src={imageUrl} alt={alt} className="h-full w-full object-cover" loading="lazy" />
+        <img src={imageUrl} alt={alt} className="aux-artwork-cover" loading="lazy" />
       ) : (
-        <div className={FALLBACK_ART_CLASS}>
+        <div className="aux-artwork-fallback">
           <span className="sr-only">No cover</span>
         </div>
       )}
@@ -59,28 +51,20 @@ export function ArtworkTile({
 
 function CardCaption({ track }: { track: OrbitCardDisplayTrack }) {
   return (
-    <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-[22px] border border-white/10 bg-slate-950/56 px-3 py-2 backdrop-blur-md">
-      <p className="truncate text-sm font-semibold text-slate-50">{track.name || "Unknown track"}</p>
-      <p className="truncate text-[11px] text-slate-300">{track.artistName || track.albumName || "Unknown artist"}</p>
-      {track.addedBy && <p className="truncate text-[11px] text-slate-400">added by {track.addedBy}</p>}
+    <div className="aux-orbit-card-caption">
+      <p className="aux-orbit-card-title">{track.name || "Unknown track"}</p>
+      <p className="aux-orbit-card-meta">{track.artistName || track.albumName || "Unknown artist"}</p>
+      {track.addedBy && <p className="aux-orbit-card-submeta">added by {track.addedBy}</p>}
     </div>
   );
 }
 
 export function LeadBadge({ label, hero = false }: { label: string; hero?: boolean }) {
   if (hero) {
-    return (
-      <div className="absolute right-3 top-3 z-20 rounded-full border border-sky-100/28 bg-slate-950/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-100 shadow-[0_10px_24px_rgba(56,189,248,0.18)] backdrop-blur-md">
-        {label}
-      </div>
-    );
+    return <div className="aux-lead-badge aux-lead-badge-hero">{label}</div>;
   }
 
-  return (
-    <div className="absolute right-3 top-3 z-20 rounded-full border border-sky-100/28 bg-slate-950/70 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-sky-100 shadow-[0_10px_24px_rgba(56,189,248,0.18)] backdrop-blur-md">
-      {label}
-    </div>
-  );
+  return <div className="aux-lead-badge aux-lead-badge-default">{label}</div>;
 }
 
 export function AddTrackButton({
@@ -95,7 +79,7 @@ export function AddTrackButton({
   return (
     <button
       type="button"
-      className="inline-flex items-center justify-center rounded-full border border-indigo-300/18 bg-[linear-gradient(135deg,rgba(79,70,229,0.92),rgba(124,58,237,0.92))] p-2 text-slate-50 transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-60 disabled:hover:translate-y-0"
+      className="aux-gradient-icon-button"
       onClick={onClick}
       onPointerDown={(event) => {
         event.stopPropagation();
@@ -107,7 +91,7 @@ export function AddTrackButton({
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"
-        className="h-4 w-4"
+        className="aux-gradient-icon-button-icon"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -121,13 +105,10 @@ export function AddTrackButton({
 }
 
 export function ActionBubble({ tone, children }: { tone: ActionBubbleTone; children: ReactNode }) {
-  const toneClass =
-    tone === "warning"
-      ? "border-amber-300/18 bg-amber-400/10 text-amber-100"
-      : "border-red-300/18 bg-red-500/10 text-red-100";
+  const toneClass = tone === "warning" ? "aux-action-bubble-warning" : "aux-action-bubble-error";
 
   return (
-    <div className={`mx-auto mt-3 max-w-[22rem] rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md ${toneClass}`}>
+    <div className={`aux-action-bubble ${toneClass}`}>
       {children}
     </div>
   );
@@ -161,8 +142,8 @@ export function OrbitVisualCard({
     >
       {showLeadBadge && leadBadgeLabel ? <LeadBadge label={leadBadgeLabel} hero={hero} /> : null}
       {actionSlot}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/72" />
-      <ArtworkTile imageUrl={track.imageUrl} alt={track.albumName ?? track.name ?? "Album art"} className="h-full w-full" />
+      <ArtworkTile imageUrl={track.imageUrl} alt={track.albumName ?? track.name ?? "Album art"} className="aux-orbit-card-artwork" />
+      <div className="aux-orbit-card-overlay" />
       <CardCaption track={track} />
     </article>
   );
@@ -183,27 +164,20 @@ export function SearchResultRow({
 
   return (
     <article
-      className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[22px] p-2.5 shadow-[0_8px_22px_rgba(2,6,23,0.34)] ${SUBTLE_GLASS_PANEL_CLASS}`}
+      className="aux-search-result-row"
       {...SEARCH_KEEP_OPEN_ATTR}
     >
-      <div className="grid min-w-0 grid-cols-[52px_minmax(0,1fr)] items-center gap-2.5">
+      <div className="aux-search-result-media">
         <ArtworkTile
           imageUrl={track.imageUrl}
           alt={track.albumName ?? track.name}
-          className="aspect-square overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,#263870,#0a1124_78%)]"
+          className="aux-search-result-artwork"
         />
-        <div className="min-w-0">
-          <p
-            className="overflow-hidden text-sm font-semibold leading-tight text-slate-50"
-            style={{
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 2,
-            }}
-          >
+        <div className="aux-search-result-body">
+          <p className="aux-search-result-title aux-search-result-title-clamp">
             {track.name}
           </p>
-          <p className="truncate text-[11px] text-slate-300">{track.artistName || track.albumName || "Unknown artist"}</p>
+          <p className="aux-search-result-meta">{track.artistName || track.albumName || "Unknown artist"}</p>
         </div>
       </div>
       <AddTrackButton
@@ -226,24 +200,24 @@ export function SearchResultRow({
 export function SearchResultSkeletonRow() {
   return (
     <div
-      className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[22px] border border-white/8 bg-slate-950/32 p-2.5 shadow-[0_8px_22px_rgba(2,6,23,0.24)] backdrop-blur-md"
+      className="aux-search-result-row aux-search-result-skeleton"
       {...SEARCH_KEEP_OPEN_ATTR}
     >
-      <div className="grid min-w-0 grid-cols-[52px_minmax(0,1fr)] items-center gap-2.5">
-        <div className="aspect-square animate-pulse rounded-[18px] bg-white/10" />
-        <div className="min-w-0 space-y-2">
-          <div className="h-3.5 w-4/5 animate-pulse rounded-full bg-white/10" />
-          <div className="h-2.5 w-3/5 animate-pulse rounded-full bg-white/8" />
+      <div className="aux-search-result-media">
+        <div className="aux-search-skeleton-art" />
+        <div className="aux-search-skeleton-lines">
+          <div className="aux-search-skeleton-line" />
+          <div className="aux-search-skeleton-line-short" />
         </div>
       </div>
-      <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" />
+      <div className="aux-search-skeleton-button" />
     </div>
   );
 }
 
 export function EmptyPlaylistState() {
   return (
-    <div className="pointer-events-none mx-auto mt-6 max-w-[24rem] rounded-[26px] border border-white/10 bg-slate-950/36 px-5 py-4 text-center text-sm font-medium text-slate-200/92 backdrop-blur-md">
+    <div className="aux-empty-playlist-state">
       Be the first person to add a song to the playlist
     </div>
   );

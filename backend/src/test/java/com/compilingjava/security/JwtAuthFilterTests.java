@@ -1,5 +1,6 @@
 package com.compilingjava.security;
 
+import com.compilingjava.auth.service.AuthCookieService;
 import com.compilingjava.security.jwt.JwtService;
 import com.compilingjava.security.jwt.JwtService.AccessClaims;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,8 @@ class JwtAuthFilterTests {
     void validBearer_setsAuthentication() throws Exception {
         var jwt = mock(JwtService.class);
         var uds = mock(UserDetailsService.class);
-        var filter = new JwtAuthFilter(jwt, uds);
+        var authCookieService = mock(AuthCookieService.class);
+        var filter = new JwtAuthFilter(jwt, uds, authCookieService);
 
         var req = mock(HttpServletRequest.class);
         var res = mock(HttpServletResponse.class);
@@ -35,7 +37,7 @@ class JwtAuthFilterTests {
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer abc");
 
         var claims = new AccessClaims("edwin", "edwin@example.com",
-                UUID.randomUUID(), Instant.now().plusSeconds(600), List.of("ROLE_USER"));
+                UUID.randomUUID(), Instant.now().plusSeconds(600), List.of("ROLE_USER"), true);
         when(jwt.parseAccessToken("abc")).thenReturn(claims);
 
         var user = new TestUser("edwin", "pw", List.of(new SimpleGrantedAuthority("ROLE_USER")));

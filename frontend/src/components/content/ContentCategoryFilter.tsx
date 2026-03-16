@@ -1,7 +1,7 @@
 import React from "react";
 import { CategoryItem } from "../../lib/api";
 
-type ContentCategoryFilterProps = {
+export type ContentCategoryFilterProps = {
   title: string;
   categories: CategoryItem[];
   selectedCategory: string;

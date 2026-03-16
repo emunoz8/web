@@ -1,6 +1,7 @@
 // src/main/java/com/compilingjava/security/JwtAuthFilter.java
 package com.compilingjava.security;
 
+import com.compilingjava.auth.service.AuthCookieService;
 import com.compilingjava.security.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,6 +30,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwt;
     private final UserDetailsService users;
+    private final AuthCookieService authCookieService;
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -48,14 +50,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Must be "Authorization: Bearer <token>"
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header == null || !header.startsWith("Bearer ")) {
+        String token = resolveToken(request);
+        if (token == null) {
             chain.doFilter(request, response);
             return;
         }
 
-        String token = header.substring(7);
         try {
             var c = jwt.parseAccessToken(token); // validates iss/aud/typ/signature/exp/nbf
             // Use subject (username) to load the user; make sure AuthenticationService sets sub=username
@@ -71,5 +71,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+
+        return authCookieService.readAccessToken(request);
     }
 }

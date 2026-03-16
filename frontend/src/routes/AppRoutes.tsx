@@ -1,13 +1,31 @@
 // src/routes/AppRoutes.tsx
-import { Location, Routes, Route, useLocation } from "react-router-dom";
+import { Suspense, createElement } from "react";
+import { Location, Route, Routes, useLocation } from "react-router-dom";
 import { publicRoutes } from "./publicRoutes";
 import RequireAdmin from "./RequireAdmin";
-import Login from "../pages/Login";
+import type { RoutePageComponent } from "./types";
+
+const routeLoadingFallback = (
+  <div className="p-4 text-sm opacity-80" aria-busy="true">
+    Loading page...
+  </div>
+);
+
+function renderRouteElement(Component: RoutePageComponent, requiresAdmin = false) {
+  const page = (
+    <Suspense fallback={routeLoadingFallback}>
+      {createElement(Component)}
+    </Suspense>
+  );
+
+  return requiresAdmin ? <RequireAdmin>{page}</RequireAdmin> : page;
+}
 
 const AppRoutes = () => {
   const location = useLocation();
   const state = location.state as { backgroundLocation?: Location } | null;
   const backgroundLocation = state?.backgroundLocation;
+  const loginRoute = publicRoutes.find((route) => route.to === "/login");
 
   return (
     <>
@@ -16,22 +34,17 @@ const AppRoutes = () => {
           <Route
             key={to}
             path={to}
-            element={
-              requiresAdmin ? (
-                <RequireAdmin>
-                  <Component />
-                </RequireAdmin>
-              ) : (
-                <Component />
-              )
-            }
+            element={renderRouteElement(Component, requiresAdmin)}
           />
         ))}
       </Routes>
 
-      {backgroundLocation && (
+      {backgroundLocation && loginRoute && (
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route
+            path={loginRoute.to}
+            element={renderRouteElement(loginRoute.Component, loginRoute.requiresAdmin)}
+          />
         </Routes>
       )}
     </>

@@ -1,9 +1,13 @@
+import React from "react";
+
 interface ParagrapherProps {
   text: string;
 }
 
-const Paragrapher: React.FC<ParagrapherProps> = ({ text }) => {
-  const paragraphs = text.split(/\n\s*\n/);
+const PARAGRAPH_BREAK_PATTERN = /\n\s*\n/;
+
+const Paragrapher: React.FC<ParagrapherProps> = React.memo(function Paragrapher({ text }) {
+  const paragraphs = text.split(PARAGRAPH_BREAK_PATTERN);
 
   return (
     <div className="text-area">
@@ -14,6 +18,8 @@ const Paragrapher: React.FC<ParagrapherProps> = ({ text }) => {
       ))}
     </div>
   );
-};
+});
+
+Paragrapher.displayName = "Paragrapher";
 
 export default Paragrapher;

@@ -39,4 +39,9 @@ export type ContentItem = {
   description?: string;
   bodyMd?: string;
   projectUrl?: string | null;
+  engagement?: {
+    likes: number;
+    comments: number;
+    likedByMe: boolean;
+  };
 };

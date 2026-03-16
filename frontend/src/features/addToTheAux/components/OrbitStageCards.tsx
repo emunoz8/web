@@ -21,12 +21,12 @@ import {
 } from "./orbitStageShared";
 
 const ORBIT_CARD_CLASS =
-  "absolute hidden h-[228px] w-[176px] overflow-hidden rounded-[28px] border border-white/8 bg-slate-950/80 shadow-[0_22px_44px_rgba(2,6,23,0.36)] ring-1 ring-indigo-200/6 lg:block";
+  "aux-orbit-card aux-orbit-card-stage";
 const HERO_ORBIT_CARD_CLASS =
-  "absolute hidden h-[251px] w-[194px] overflow-hidden rounded-[30px] border border-white/10 bg-slate-950/84 shadow-[0_30px_65px_rgba(2,6,23,0.42)] ring-1 ring-sky-200/12 lg:block";
-const SUGGESTION_CARD_CLASS = `${ORBIT_CARD_CLASS} z-20 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5`;
-const ORBIT_TRANSITION_CLASS = `${ORBIT_CARD_CLASS} ease-[cubic-bezier(0.22,1,0.36,1)]`;
-const HERO_TRANSITION_CLASS = `${HERO_ORBIT_CARD_CLASS} ease-[cubic-bezier(0.22,1,0.36,1)]`;
+  "aux-orbit-card aux-orbit-card-hero";
+const SUGGESTION_CARD_CLASS = `${ORBIT_CARD_CLASS} aux-orbit-card-suggestion`;
+const ORBIT_TRANSITION_CLASS = `${ORBIT_CARD_CLASS} aux-orbit-card-transition`;
+const HERO_TRANSITION_CLASS = `${HERO_ORBIT_CARD_CLASS} aux-orbit-card-transition`;
 
 function buildOrbitTransform(
   slot: OrbitSlot,
@@ -86,11 +86,14 @@ export function OrbitCard({
   const isHero = Boolean(slot.hero);
   const isActiveTrack = Boolean(activeTrackId && track.id === activeTrackId);
   const baseTransform = buildOrbitTransform(slot, slotIndex, status, isSearchingAway, motionDirection, isFirstSong);
+  const activeTrackClass = buildActiveTrackGlowClass(isActiveTrack);
 
   return (
     <OrbitVisualCard
       track={createOrbitCardDisplayTrack(track)}
-      className={`${isHero ? HERO_TRANSITION_CLASS : ORBIT_TRANSITION_CLASS} ${buildActiveTrackGlowClass(isActiveTrack)} ${isExiting || isSearchingAway ? "pointer-events-none" : ""}`}
+      className={`${isHero ? HERO_TRANSITION_CLASS : ORBIT_TRANSITION_CLASS}${activeTrackClass ? ` ${activeTrackClass}` : ""}${
+        isExiting || isSearchingAway ? " aux-orbit-card-disabled" : ""
+      }`}
       style={{
         top: slot.top,
         left: slot.left,
@@ -141,7 +144,7 @@ export function SuggestionOrbitCard({
       }}
       keepSearchOpen
       actionSlot={
-        <div className="absolute right-3 top-3 z-20">
+        <div className="aux-suggestion-action">
           <AddTrackButton
             disabled={isAdding || !canManageTracks}
             onClick={() => {

@@ -1,9 +1,12 @@
 package com.compilingjava.auth.web;
 
+import com.compilingjava.auth.service.AuthCookieService;
+import com.compilingjava.auth.service.GoogleAuthenticationService;
 import com.compilingjava.auth.service.email.EmailSender;
 import com.compilingjava.auth.service.email.EmailVerificationService;
 import com.compilingjava.auth.service.exceptions.ExpiredOrUsedTokenException;
 import com.compilingjava.auth.service.exceptions.InvalidTokenException;
+import com.compilingjava.config.JwtProperties;
 import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,9 +29,11 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AuthControllerSecurityTests {
@@ -37,27 +42,37 @@ class AuthControllerSecurityTests {
         private static final String CONFIRM = BASE + "/confirm-email";
         private static final String VERIFY = BASE + "/verify";
         private static final String LOGIN = BASE + "/login";
+        private static final String GOOGLE_CONFIG = BASE + "/google/config";
 
         private MockMvc mvc;
 
         // Pure Mockito mocks (no Spring)
         private AuthenticationService authenticationService;
+        private GoogleAuthenticationService googleAuthenticationService;
         private UserService userService;
         private EmailVerificationService emailVerificationService;
         private EmailSender emailSender;
+        private AuthCookieService authCookieService;
+        private JwtProperties jwtProperties;
 
         @BeforeEach
         void setUp() {
                 // 1) Mocks
                 authenticationService = Mockito.mock(AuthenticationService.class);
+                googleAuthenticationService = Mockito.mock(GoogleAuthenticationService.class);
                 userService = Mockito.mock(UserService.class);
                 emailVerificationService = Mockito.mock(EmailVerificationService.class);
                 emailSender = Mockito.mock(EmailSender.class);
+                authCookieService = Mockito.mock(AuthCookieService.class);
+                jwtProperties = Mockito.mock(JwtProperties.class);
 
                 // 2) Real controller wired with mocks
-                AuthController controller = new AuthController(authenticationService, userService,
+                AuthController controller = new AuthController(authenticationService, googleAuthenticationService,
+                                userService,
                                 emailVerificationService,
-                                emailSender);
+                                emailSender,
+                                authCookieService,
+                                jwtProperties);
 
                 // 3) Inject @Value fields
                 ReflectionTestUtils.setField(controller, "webBaseUri", URI.create("https://compilingjava.com"));
@@ -154,5 +169,21 @@ class AuthControllerSecurityTests {
                                                 result -> org.assertj.core.api.Assertions
                                                                 .assertThat(result.getResponse().getContentAsString())
                                                                 .contains("POST username/password to /api/auth/login"));
+        }
+
+        @Test
+        @DisplayName("GET /auth/google/config is public")
+        void googleConfig_isPublic() throws Exception {
+                when(googleAuthenticationService.getPublicConfig())
+                                .thenReturn(new com.compilingjava.auth.dto.GoogleAuthConfigResponse(
+                                                true,
+                                                "google-client-id",
+                                                null,
+                                                false));
+
+                mvc.perform(get(GOOGLE_CONFIG))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.enabled").value(true))
+                                .andExpect(jsonPath("$.clientId").value("google-client-id"));
         }
 }

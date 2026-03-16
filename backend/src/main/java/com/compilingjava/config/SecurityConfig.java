@@ -21,6 +21,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.InvalidCsrfTokenException;
+import org.springframework.security.web.csrf.MissingCsrfTokenException;
 import org.springframework.web.cors.*;
 
 import java.util.List;
@@ -30,7 +33,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173}")
     private List<String> allowedOrigins;
 
     /* ---------- Core beans ---------- */
@@ -38,7 +41,7 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(UserRepository users) {
         // If you authenticate by email, switch to users.findByEmail(...)
-        return username -> users.findByUsername(username)
+        return username -> users.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
@@ -62,8 +65,21 @@ public class SecurityConfig {
         return (request, response, ex) -> {
             response.setStatus(403);
             response.setContentType("application/json");
+            if (ex instanceof MissingCsrfTokenException || ex instanceof InvalidCsrfTokenException) {
+                response.getWriter().write("{\"error\":\"csrf_token_invalid\",\"message\":\"CSRF token missing or invalid.\"}");
+                return;
+            }
             response.getWriter().write("{\"error\":\"forbidden\"}");
         };
+    }
+
+    @Bean
+    public CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
+        repository.setCookieName("XSRF-TOKEN");
+        repository.setHeaderName("X-XSRF-TOKEN");
+        return repository;
     }
 
     @Bean
@@ -73,12 +89,12 @@ public class SecurityConfig {
         // If credentials are used, browsers reject "*" — require explicit origins
         List<String> origins = (allowedOrigins == null || allowedOrigins.isEmpty()
                 || (allowedOrigins.size() == 1 && "*".equals(allowedOrigins.get(0))))
-                        ? List.of("http://localhost:3000")
+                        ? List.of("http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173")
                         : allowedOrigins;
 
         cfg.setAllowedOrigins(origins);
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "X-XSRF-TOKEN"));
         cfg.setExposedHeaders(List.of("Location"));
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
@@ -96,7 +112,7 @@ public class SecurityConfig {
         http
                 .cors(c -> {
                 })
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(authEntryPoint())
@@ -107,27 +123,51 @@ public class SecurityConfig {
                         // CORS preflight & basic infra
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error", "/actuator/health", "/actuator/info").permitAll()
-                        // .requestMatchers("/actuator/prometheus").permitAll() // uncomment only if you intentionally expose metrics
 
-                        // Public auth endpoints
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/confirm-email", "/auth/verify").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/verify/resend").permitAll()
-                        // Refresh: keep permitAll() only if cookie-based refresh; use authenticated() if using Authorization header
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                        // Public auth endpoints (legacy + /api aliases)
+                        .requestMatchers(HttpMethod.GET, "/auth/login", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/csrf", "/api/auth/csrf").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/google/config", "/api/auth/google/config").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/auth/login", "/auth/register",
+                                "/api/auth/login", "/api/auth/register",
+                                "/auth/google", "/api/auth/google",
+                                "/auth/logout", "/api/auth/logout",
+                                "/auth/verify/resend", "/api/auth/verify/resend",
+                                "/auth/refresh", "/api/auth/refresh",
+                                "/api/auth/password/reset-link",
+                                "/api/auth/password/reset")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/auth/confirm-email", "/auth/verify",
+                                "/api/auth/confirm-email", "/api/auth/verify",
+                                "/api/auth/password/validate")
+                        .permitAll()
 
                         // Public content reads
-                        .requestMatchers(HttpMethod.GET, "/contents/**", "/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/contents",
+                                "/api/contents/slug/**",
+                                "/api/contents/id/**",
+                                "/api/categories",
+                                "/api/comments",
+                                "/api/comments/tree",
+                                "/api/contents/*/likes/count",
+                                "/api/artist-suggest",
+                                "/api/testing/playlist",
+                                "/api/testing/currently-playing")
+                        .permitAll()
 
                         // Authenticated interactions
-                        .requestMatchers(HttpMethod.POST, "/likes/**", "/comments/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/likes/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/testing/track-search").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/testing/playlist/items").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**", "/api/contents/*/likes").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comments/**", "/api/contents/*/likes")
+                        .authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/contents/*/likes/me").authenticated()
 
                         // Admin content management
-                        .requestMatchers(HttpMethod.POST, "/projects/**", "/blog-posts/**", "/contents/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // Everything else
                         .anyRequest().authenticated())

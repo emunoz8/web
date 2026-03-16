@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AddToTheAuxLoadingScreen from "../features/addToTheAux/components/AddToTheAuxLoadingScreen";
 import OrbitalPlaylistStage from "../features/addToTheAux/components/OrbitalPlaylistStage";
 import { buildLoginRouteState } from "../lib/authRouting";
+import "../features/addToTheAux/styles.css";
 import { useAddTrack } from "../features/addToTheAux/hooks/useAddTrack";
 import { useCurrentlyPlaying } from "../features/addToTheAux/hooks/useCurrentlyPlaying";
+import { useGuestPreview } from "../features/addToTheAux/hooks/useGuestPreview";
 import { usePlaylist } from "../features/addToTheAux/hooks/usePlaylist";
 import { useTrackSearch } from "../features/addToTheAux/hooks/useTrackSearch";
 import { EXIT_ANIMATION_MS, createTrackKey, type OrbitMotionDirection } from "../features/addToTheAux/lib/orbitStage";
@@ -13,8 +16,6 @@ import type { TrackSearchResult } from "../features/addToTheAux/types/spotify";
 const MIN_QUERY_LENGTH = 2;
 const SEARCH_LIMIT = 8;
 const VISIBLE_PLAYLIST_ITEMS = 10;
-const GUEST_PREVIEW_MS = 5 * 60 * 1000;
-const GUEST_PREVIEW_KEY = "add-to-the-aux-guest-preview-started-at";
 
 function clampWindowStart(index: number, length: number, windowSize: number): number {
   if (length <= windowSize) {
@@ -24,38 +25,26 @@ function clampWindowStart(index: number, length: number, windowSize: number): nu
   return Math.max(0, Math.min(index, length - windowSize));
 }
 
-function getOrCreateGuestPreviewStart(): number {
-  const stored = sessionStorage.getItem(GUEST_PREVIEW_KEY);
-  const parsed = stored ? Number(stored) : Number.NaN;
-  if (Number.isFinite(parsed) && parsed > 0) {
-    return parsed;
-  }
-
-  const startedAt = Date.now();
-  sessionStorage.setItem(GUEST_PREVIEW_KEY, String(startedAt));
-  return startedAt;
-}
-
 function AddToTheAux() {
-  const { isAuthenticated, token } = useAuth();
+  const { authLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { playlist, playlistError, orderedPlaylistItems, loadPlaylist } = usePlaylist(VISIBLE_PLAYLIST_ITEMS);
-  const [guestPreviewExpired, setGuestPreviewExpired] = useState(false);
+  const { playlist, playlistLoading, playlistError, orderedPlaylistItems, loadPlaylist } = usePlaylist(VISIBLE_PLAYLIST_ITEMS);
+  const guestPreviewExpired = useGuestPreview(isAuthenticated, !authLoading);
   const [playlistWindowStart, setPlaylistWindowStart] = useState(0);
   const [orbitMotionDirection, setOrbitMotionDirection] = useState<OrbitMotionDirection>("idle");
 
   const { query, setQuery, trimmedQuery, searchResults, searchLoading, searchError } = useTrackSearch(
     MIN_QUERY_LENGTH,
     SEARCH_LIMIT,
-    token,
+    isAuthenticated,
   );
 
   const { currentlyPlaying, currentlyPlayingLoading, currentlyPlayingError } = useCurrentlyPlaying(
     isAuthenticated || !guestPreviewExpired,
   );
 
-  const { addingUri, actionError, addTrack } = useAddTrack(loadPlaylist, token);
+  const { addingUri, actionError, addTrack } = useAddTrack(loadPlaylist, isAuthenticated);
 
   useEffect(() => {
     setPlaylistWindowStart((currentIndex) =>
@@ -77,32 +66,7 @@ function AddToTheAux() {
     };
   }, [orbitMotionDirection]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      sessionStorage.removeItem(GUEST_PREVIEW_KEY);
-      setGuestPreviewExpired(false);
-      return;
-    }
-
-    const startedAt = getOrCreateGuestPreviewStart();
-    const expiresAt = startedAt + GUEST_PREVIEW_MS;
-    const remainingMs = expiresAt - Date.now();
-    if (remainingMs <= 0) {
-      setGuestPreviewExpired(true);
-      return;
-    }
-
-    setGuestPreviewExpired(false);
-    const timeoutId = window.setTimeout(() => {
-      setGuestPreviewExpired(true);
-    }, remainingMs);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [isAuthenticated]);
-
-  const canManageTracks = isAuthenticated && !!token;
+  const canManageTracks = isAuthenticated;
   const canCyclePlaylist = orderedPlaylistItems.length > VISIBLE_PLAYLIST_ITEMS;
   const maxWindowStart = Math.max(0, orderedPlaylistItems.length - VISIBLE_PLAYLIST_ITEMS);
   const canCycleBackward = playlistWindowStart > 0;
@@ -113,6 +77,7 @@ function AddToTheAux() {
   );
   const latestTrackKey = orderedPlaylistItems[0] ? createTrackKey(orderedPlaylistItems[0]) : null;
   const firstTrackKey = orderedPlaylistItems.at(-1) ? createTrackKey(orderedPlaylistItems.at(-1)!) : null;
+  const showInitialPlaylistLoading = playlistLoading && !playlist && !playlistError;
 
   function handleLoginClick() {
     navigate("/login", { state: buildLoginRouteState(location) });
@@ -138,39 +103,43 @@ function AddToTheAux() {
   }
 
   return (
-    <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2">
-      <main className="aux-page-font mx-auto flex h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full max-w-[1520px] flex-col overflow-hidden px-3 py-3 sm:px-6 sm:py-5 lg:flex-row lg:px-8 lg:py-4">
-        <div className="min-h-0 flex-1">
-          <OrbitalPlaylistStage
-            playlist={playlist}
-            playlistError={playlistError}
-            visiblePlaylistItems={visiblePlaylistItems}
-            query={query}
-            onQueryChange={setQuery}
-            trimmedQuery={trimmedQuery}
-            minQueryLength={MIN_QUERY_LENGTH}
-            searchResults={searchResults}
-            searchLoading={searchLoading}
-            searchError={searchError}
-            actionError={actionError}
-            addingUri={addingUri}
-            onAddTrack={handleAddTrack}
-            currentlyPlaying={currentlyPlaying}
-            currentlyPlayingLoading={currentlyPlayingLoading}
-            currentlyPlayingError={currentlyPlayingError}
-            canManageTracks={canManageTracks}
-            showGuestOverlay={!isAuthenticated && guestPreviewExpired}
-            onLoginClick={handleLoginClick}
-            canCyclePlaylist={canCyclePlaylist}
-            onCycleForward={() => cyclePlaylist(1)}
-            onCycleBackward={() => cyclePlaylist(-1)}
-            latestTrackKey={latestTrackKey}
-            firstTrackKey={firstTrackKey}
-            canCycleForward={canCycleForward}
-            canCycleBackward={canCycleBackward}
-            motionDirection={orbitMotionDirection}
-            orderedPlaylistItems={orderedPlaylistItems}
-          />
+    <div className="add-to-the-aux-page">
+      <main className="add-to-the-aux-main">
+        <div className="add-to-the-aux-stage">
+          {showInitialPlaylistLoading ? (
+            <AddToTheAuxLoadingScreen />
+          ) : (
+            <OrbitalPlaylistStage
+              playlist={playlist}
+              playlistError={playlistError}
+              visiblePlaylistItems={visiblePlaylistItems}
+              query={query}
+              onQueryChange={setQuery}
+              trimmedQuery={trimmedQuery}
+              minQueryLength={MIN_QUERY_LENGTH}
+              searchResults={searchResults}
+              searchLoading={searchLoading}
+              searchError={searchError}
+              actionError={actionError}
+              addingUri={addingUri}
+              onAddTrack={handleAddTrack}
+              currentlyPlaying={currentlyPlaying}
+              currentlyPlayingLoading={currentlyPlayingLoading}
+              currentlyPlayingError={currentlyPlayingError}
+              canManageTracks={canManageTracks}
+              showGuestOverlay={!authLoading && !isAuthenticated && guestPreviewExpired}
+              onLoginClick={handleLoginClick}
+              canCyclePlaylist={canCyclePlaylist}
+              onCycleForward={() => cyclePlaylist(1)}
+              onCycleBackward={() => cyclePlaylist(-1)}
+              latestTrackKey={latestTrackKey}
+              firstTrackKey={firstTrackKey}
+              canCycleForward={canCycleForward}
+              canCycleBackward={canCycleBackward}
+              motionDirection={orbitMotionDirection}
+              orderedPlaylistItems={orderedPlaylistItems}
+            />
+          )}
         </div>
       </main>
     </div>

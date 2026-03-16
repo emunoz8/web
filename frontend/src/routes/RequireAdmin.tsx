@@ -7,8 +7,12 @@ type RequireAdminProps = {
 };
 
 const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { authLoading, isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
+
+  if (authLoading) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;

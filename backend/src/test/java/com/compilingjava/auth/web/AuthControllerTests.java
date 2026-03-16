@@ -2,8 +2,12 @@ package com.compilingjava.auth.web;
 
 import com.compilingjava.auth.dto.AuthRequest;
 import com.compilingjava.auth.dto.AuthResponse;
+import com.compilingjava.auth.dto.GoogleAuthConfigResponse;
+import com.compilingjava.auth.service.AuthCookieService;
+import com.compilingjava.auth.service.GoogleAuthenticationService;
 import com.compilingjava.auth.service.email.EmailSender;
 import com.compilingjava.auth.service.email.EmailVerificationService;
+import com.compilingjava.config.JwtProperties;
 import com.compilingjava.security.jwt.AuthenticationService;
 import com.compilingjava.user.dto.UserRequestDto;
 import com.compilingjava.user.dto.UserResponseDto;
@@ -38,19 +42,25 @@ class AuthControllerTests {
         @Mock
         AuthenticationService authenticationService;
         @Mock
+        GoogleAuthenticationService googleAuthenticationService;
+        @Mock
         UserService userService;
         @Mock
         EmailVerificationService emailVerificationService;
         @Mock
         EmailSender emailSender;
+        @Mock
+        AuthCookieService authCookieService;
+        @Mock
+        JwtProperties jwtProperties;
 
         AuthController controller;
         MockMvc mvc;
 
         @BeforeEach
         void setup() {
-                controller = new AuthController(authenticationService, userService, emailVerificationService,
-                                emailSender);
+                controller = new AuthController(authenticationService, googleAuthenticationService, userService,
+                                emailVerificationService, emailSender, authCookieService, jwtProperties);
 
                 // Inject property-backed fields since we don't have Spring @Value here
                 ReflectionTestUtils.setField(controller,
@@ -66,16 +76,33 @@ class AuthControllerTests {
 
         /* ---------- /auth/login ---------- */
         @Test
-        void login_returnsToken() throws Exception {
+        void login_setsCookie_withoutReturningTokenBody() throws Exception {
+                when(jwtProperties.getExpiration()).thenReturn(2_700_000L);
                 when(authenticationService.authenticate(any(AuthRequest.class)))
                                 .thenReturn(new AuthResponse("ey.access"));
 
                 mvc.perform(post("/auth/login")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"username\":\"edwin\",\"password\":\"Passw0rd!\"}"))
+                                .andExpect(status().isNoContent())
+                                .andExpect(content().string(""));
+
+                verify(authCookieService).writeAccessToken(any(), eq("ey.access"), any());
+        }
+
+        @Test
+        void googleConfig_returnsBackendRules() throws Exception {
+                when(googleAuthenticationService.getPublicConfig())
+                                .thenReturn(new GoogleAuthConfigResponse(true, "google-client-id", "compilingjava.com",
+                                                false));
+
+                mvc.perform(get("/auth/google/config"))
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                                .andExpect(jsonPath("$.token").value("ey.access"));
+                                .andExpect(jsonPath("$.enabled").value(true))
+                                .andExpect(jsonPath("$.clientId").value("google-client-id"))
+                                .andExpect(jsonPath("$.allowedDomain").value("compilingjava.com"))
+                                .andExpect(jsonPath("$.requireGmail").value(false));
         }
 
         /* ---------- /auth/register ---------- */
@@ -107,6 +134,29 @@ class AuthControllerTests {
                 assertThat(body.getValue())
                                 .contains("http://test-host/auth/confirm-email?token=")
                                 .contains("tok123");
+        }
+
+        @Test
+        void register_skipsVerificationEmailWhenEmailVerificationIsDisabled() throws Exception {
+                var created = mock(UserResponseDto.class);
+                when(created.getEmail()).thenReturn("edwin@example.com");
+                when(created.getUsername()).thenReturn("edwin");
+                when(userService.createUser(any(UserRequestDto.class))).thenReturn(created);
+                ReflectionTestUtils.setField(controller, "requireEmailVerification", false);
+
+                mvc.perform(post("/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {
+                                                  "username":"edwin",
+                                                  "email":"edwin@example.com",
+                                                  "password":"Passw0rd!"
+                                                }
+                                                """))
+                                .andExpect(status().isCreated());
+
+                verify(emailVerificationService, never()).generateToken(anyString());
+                verify(emailSender, never()).send(anyString(), anyString(), anyString());
         }
 
         /* ---------- /auth/confirm-email ---------- */

@@ -11,7 +11,7 @@ export type UseTrackSearchResult = {
   searchError: string;
 };
 
-export function useTrackSearch(minQueryLength: number, limit: number, token: string | null): UseTrackSearchResult {
+export function useTrackSearch(minQueryLength: number, limit: number, enabled: boolean): UseTrackSearchResult {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<TrackSearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -20,7 +20,7 @@ export function useTrackSearch(minQueryLength: number, limit: number, token: str
   const trimmedQuery = useMemo(() => query.trim(), [query]);
 
   useEffect(() => {
-    if (!token) {
+    if (!enabled) {
       setSearchResults([]);
       setSearchError("");
       setSearchLoading(false);
@@ -47,9 +47,6 @@ export function useTrackSearch(minQueryLength: number, limit: number, token: str
           }),
           {
             signal: controller.signal,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           },
         );
         setSearchResults(Array.isArray(payload.tracks) ? payload.tracks : []);
@@ -70,7 +67,7 @@ export function useTrackSearch(minQueryLength: number, limit: number, token: str
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [limit, minQueryLength, token, trimmedQuery]);
+  }, [enabled, limit, minQueryLength, trimmedQuery]);
 
   return {
     query,

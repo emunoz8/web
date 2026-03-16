@@ -1,53 +1,62 @@
 import { FormEvent, useState } from "react";
 import { ContentItem } from "../../../../lib/api";
 import { contentPlatformService } from "../../../../lib/services/ContentPlatformService";
+import { CategorySelectionModel, ProjectDraftModel } from "../models/AdminEditorModels";
 
 type UseAdminProjectEditorParams = {
   isAdmin: boolean;
-  token: string | null;
   refreshAll: () => Promise<void>;
   onUpdatedContent?: (updated: ContentItem) => void;
 };
 
-type UseAdminProjectEditorResult = {
-  createTitle: string;
-  setCreateTitle: (value: string) => void;
-  createSlug: string;
-  setCreateSlug: (value: string) => void;
-  createDescription: string;
-  setCreateDescription: (value: string) => void;
-  createProjectUrl: string;
-  setCreateProjectUrl: (value: string) => void;
-  createCategoryId: string;
-  setCreateCategoryId: (value: string) => void;
+type ProjectCreateEditorState = {
+  title: string;
+  setTitle: (value: string) => void;
+  slug: string;
+  setSlug: (value: string) => void;
+  description: string;
+  setDescription: (value: string) => void;
+  projectUrl: string;
+  setProjectUrl: (value: string) => void;
+  categoryId: string;
+  setCategoryId: (value: string) => void;
   newCategoryLabel: string;
   setNewCategoryLabel: (value: string) => void;
   newCategorySlug: string;
   setNewCategorySlug: (value: string) => void;
-  createLoading: boolean;
-  createError: string | null;
-  createSuccess: string | null;
-  createProject: (event: FormEvent) => Promise<void>;
-  editId: number | null;
-  editTitle: string;
-  setEditTitle: (value: string) => void;
-  editSlug: string;
-  setEditSlug: (value: string) => void;
-  editDescription: string;
-  setEditDescription: (value: string) => void;
-  editProjectUrl: string;
-  setEditProjectUrl: (value: string) => void;
-  editLoading: boolean;
-  editError: string | null;
-  editSuccess: string | null;
-  beginEdit: (item: ContentItem) => Promise<void>;
-  cancelEdit: () => void;
-  submitEditProject: (event: FormEvent) => Promise<void>;
+  loading: boolean;
+  error: string | null;
+  success: string | null;
+  submit: (event: FormEvent) => Promise<void>;
+};
+
+type ProjectEditEditorState = {
+  id: number | null;
+  title: string;
+  setTitle: (value: string) => void;
+  slug: string;
+  setSlug: (value: string) => void;
+  description: string;
+  setDescription: (value: string) => void;
+  projectUrl: string;
+  setProjectUrl: (value: string) => void;
+  loading: boolean;
+  deleteLoading: boolean;
+  error: string | null;
+  success: string | null;
+  begin: (item: ContentItem) => Promise<void>;
+  cancel: () => void;
+  submit: (event: FormEvent) => Promise<void>;
+  delete: () => Promise<void>;
+};
+
+export type UseAdminProjectEditorResult = {
+  create: ProjectCreateEditorState;
+  edit: ProjectEditEditorState;
 };
 
 const useAdminProjectEditor = ({
   isAdmin,
-  token,
   refreshAll,
   onUpdatedContent,
 }: UseAdminProjectEditorParams): UseAdminProjectEditorResult => {
@@ -68,6 +77,7 @@ const useAdminProjectEditor = ({
   const [editDescription, setEditDescriptionState] = useState("");
   const [editProjectUrl, setEditProjectUrlState] = useState("");
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editSuccess, setEditSuccess] = useState<string | null>(null);
 
@@ -76,47 +86,29 @@ const useAdminProjectEditor = ({
     setCreateError(null);
     setCreateSuccess(null);
 
-    if (!isAdmin || !token) {
-      setCreateError("Admin login required.");
-      return;
-    }
-
-    if (!createTitle.trim() || !createDescription.trim()) {
-      setCreateError("Title and description are required.");
+    const draft = new ProjectDraftModel(createTitle, createSlug, createDescription, createProjectUrl);
+    const validationError = draft.validateForCreate(isAdmin);
+    if (validationError) {
+      setCreateError(validationError);
       return;
     }
 
     setCreateLoading(true);
 
     try {
-      const created = await contentPlatformService.createProject(token, {
-        title: createTitle.trim(),
-        slug: createSlug.trim(),
-        description: createDescription.trim(),
-        projectUrl: createProjectUrl.trim(),
-      });
+      const categorySelection = new CategorySelectionModel(createCategoryId, newCategoryLabel, newCategorySlug);
+      const created = await contentPlatformService.createProject(draft.toCreateInput());
 
-      let categoryId: number | null = null;
-
-      if (createCategoryId.trim()) {
-        const parsed = Number(createCategoryId.trim());
-        if (!Number.isFinite(parsed)) {
-          throw new Error("Selected category is invalid.");
-        }
-        categoryId = parsed;
-      } else if (newCategoryLabel.trim() || newCategorySlug.trim()) {
-        if (!newCategoryLabel.trim()) {
-          throw new Error("New category label is required.");
-        }
-        categoryId = await contentPlatformService.createCategory(token, {
-          domain: "PROJECT",
-          label: newCategoryLabel.trim(),
-          slug: newCategorySlug.trim(),
+      let categoryId = categorySelection.resolveExistingCategoryId();
+      const newCategoryInput = categorySelection.buildCreateCategoryInput("PROJECT");
+      if (categoryId === null && newCategoryInput) {
+        categoryId = await contentPlatformService.createCategory({
+          ...newCategoryInput,
         });
       }
 
       if (categoryId !== null) {
-        await contentPlatformService.attachCategory(token, created.id, categoryId);
+        await contentPlatformService.attachCategory(created.id, categoryId);
       }
 
       setCreateSuccess("Project created.");
@@ -140,17 +132,19 @@ const useAdminProjectEditor = ({
     setEditError(null);
     setEditSuccess(null);
     setEditId(item.id);
-    setEditTitleState(item.title);
-    setEditSlugState(item.slug);
-    setEditDescriptionState(item.description ?? "");
-    setEditProjectUrlState(item.projectUrl ?? "");
+    const initialDraft = ProjectDraftModel.fromContentItem(item);
+    setEditTitleState(initialDraft.title);
+    setEditSlugState(initialDraft.slug);
+    setEditDescriptionState(initialDraft.description);
+    setEditProjectUrlState(initialDraft.projectUrl);
 
     try {
       const body = await contentPlatformService.getContentById(item.id);
-      setEditTitleState(body.title ?? item.title);
-      setEditSlugState(body.slug ?? item.slug);
-      setEditDescriptionState(body.description ?? "");
-      setEditProjectUrlState(body.projectUrl ?? "");
+      const loadedDraft = ProjectDraftModel.fromContentItem(body);
+      setEditTitleState(loadedDraft.title);
+      setEditSlugState(loadedDraft.slug);
+      setEditDescriptionState(loadedDraft.description);
+      setEditProjectUrlState(loadedDraft.projectUrl);
     } catch (err) {
       setEditError((err as Error).message);
     }
@@ -171,25 +165,17 @@ const useAdminProjectEditor = ({
     setEditError(null);
     setEditSuccess(null);
 
-    if (!isAdmin || !token || editId == null) {
-      setEditError("Admin login required.");
-      return;
-    }
-
-    if (!editTitle.trim() || !editDescription.trim()) {
-      setEditError("Title and description are required.");
+    const draft = new ProjectDraftModel(editTitle, editSlug, editDescription, editProjectUrl);
+    const validationError = draft.validateForEdit(isAdmin, editId);
+    if (validationError) {
+      setEditError(validationError);
       return;
     }
 
     setEditLoading(true);
 
     try {
-      const updated = await contentPlatformService.updateProject(token, editId, {
-        title: editTitle.trim(),
-        slug: editSlug.trim(),
-        description: editDescription.trim(),
-        projectUrl: editProjectUrl.trim(),
-      });
+      const updated = await contentPlatformService.updateProject(editId!, draft.toUpdateInput());
 
       setEditSuccess("Project updated.");
       onUpdatedContent?.(updated);
@@ -201,40 +187,68 @@ const useAdminProjectEditor = ({
     }
   };
 
+  const deleteProject = async () => {
+    setEditError(null);
+    setEditSuccess(null);
+
+    if (!isAdmin || editId == null) {
+      setEditError("Admin login required.");
+      return;
+    }
+
+    setDeleteLoading(true);
+
+    try {
+      await contentPlatformService.deleteContent(editId);
+      await refreshAll();
+      cancelEdit();
+    } catch (err) {
+      setEditError((err as Error).message);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return {
-    createTitle,
-    setCreateTitle: setCreateTitleState,
-    createSlug,
-    setCreateSlug: setCreateSlugState,
-    createDescription,
-    setCreateDescription: setCreateDescriptionState,
-    createProjectUrl,
-    setCreateProjectUrl: setCreateProjectUrlState,
-    createCategoryId,
-    setCreateCategoryId: setCreateCategoryIdState,
-    newCategoryLabel,
-    setNewCategoryLabel: setNewCategoryLabelState,
-    newCategorySlug,
-    setNewCategorySlug: setNewCategorySlugState,
-    createLoading,
-    createError,
-    createSuccess,
-    createProject,
-    editId,
-    editTitle,
-    setEditTitle: setEditTitleState,
-    editSlug,
-    setEditSlug: setEditSlugState,
-    editDescription,
-    setEditDescription: setEditDescriptionState,
-    editProjectUrl,
-    setEditProjectUrl: setEditProjectUrlState,
-    editLoading,
-    editError,
-    editSuccess,
-    beginEdit,
-    cancelEdit,
-    submitEditProject,
+    create: {
+      title: createTitle,
+      setTitle: setCreateTitleState,
+      slug: createSlug,
+      setSlug: setCreateSlugState,
+      description: createDescription,
+      setDescription: setCreateDescriptionState,
+      projectUrl: createProjectUrl,
+      setProjectUrl: setCreateProjectUrlState,
+      categoryId: createCategoryId,
+      setCategoryId: setCreateCategoryIdState,
+      newCategoryLabel,
+      setNewCategoryLabel: setNewCategoryLabelState,
+      newCategorySlug,
+      setNewCategorySlug: setNewCategorySlugState,
+      loading: createLoading,
+      error: createError,
+      success: createSuccess,
+      submit: createProject,
+    },
+    edit: {
+      id: editId,
+      title: editTitle,
+      setTitle: setEditTitleState,
+      slug: editSlug,
+      setSlug: setEditSlugState,
+      description: editDescription,
+      setDescription: setEditDescriptionState,
+      projectUrl: editProjectUrl,
+      setProjectUrl: setEditProjectUrlState,
+      loading: editLoading,
+      deleteLoading,
+      error: editError,
+      success: editSuccess,
+      begin: beginEdit,
+      cancel: cancelEdit,
+      submit: submitEditProject,
+      delete: deleteProject,
+    },
   };
 };
 

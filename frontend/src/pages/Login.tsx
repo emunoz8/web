@@ -1,12 +1,14 @@
 // src/pages/Login.tsx
 import React, { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import LoginContent from "../components/auth/LoginContent";
+import LoginFrame from "../components/auth/LoginFrame";
 import { useAuth } from "../context/AuthContext";
 import { apiUrl } from "../lib/api";
 import { LoginRouteState } from "../lib/authRouting";
 
 const GOOGLE_GSI_SCRIPT_ID = "google-gsi-script";
-const DEFAULT_POST_LOGIN_PATH = "/blog";
+const DEFAULT_POST_LOGIN_PATH = "/projects";
 
 type GoogleAuthConfig = {
   enabled: boolean;
@@ -16,19 +18,19 @@ type GoogleAuthConfig = {
 };
 
 const Login: React.FC = () => {
-  const { isAuthenticated, login, loginWithGoogle } = useAuth();
+  const { authLoading, isAuthenticated, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const googleButtonContainerRef = useRef<HTMLDivElement | null>(null);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
   const envGoogleClientId = (process.env.REACT_APP_GOOGLE_CLIENT_ID ?? "").trim();
-  const forcePasswordLogin = (process.env.REACT_APP_ENABLE_PASSWORD_LOGIN ?? "false").trim().toLowerCase() === "true";
 
   const [googleConfig, setGoogleConfig] = useState<GoogleAuthConfig | null>(null);
   const [googleConfigLoading, setGoogleConfigLoading] = useState(true);
   const [googleReady, setGoogleReady] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState(320);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(0);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ const Login: React.FC = () => {
 
   const googleClientId = (googleConfig?.clientId ?? envGoogleClientId).trim();
   const googleSignInEnabled = googleConfig?.enabled ?? !!googleClientId;
-  const enablePasswordLogin = forcePasswordLogin || !googleSignInEnabled;
+  const enablePasswordLogin = true;
   const googleRestrictionText = googleConfig?.requireGmail
     ? "Only @gmail.com accounts can sign in."
     : googleConfig?.allowedDomain
@@ -105,9 +107,6 @@ const Login: React.FC = () => {
                 requireGmail: false,
               };
           setGoogleConfig(fallbackConfig);
-          if (!envGoogleClientId) {
-            setError((err as Error).message);
-          }
         }
       } finally {
         if (!cancelled) {
@@ -124,25 +123,42 @@ const Login: React.FC = () => {
   }, [envGoogleClientId]);
 
   useEffect(() => {
+    const container = googleButtonContainerRef.current;
+    if (!container) {
+      setGoogleButtonWidth(0);
+      return;
+    }
+
     const updateWidth = () => {
-      const viewportWidth = window.innerWidth;
-      const modalInset = viewportWidth < 640 ? 64 : 140;
-      const pageInset = viewportWidth < 640 ? 40 : 96;
-      const maxWidth = isModal ? 392 : 360;
-      const availableWidth = viewportWidth - (isModal ? modalInset : pageInset);
-      const nextWidth = Math.max(240, Math.min(maxWidth, availableWidth));
-      setGoogleButtonWidth(nextWidth);
+      const nextWidth = Math.floor(container.getBoundingClientRect().width);
+      if (nextWidth <= 0) {
+        return;
+      }
+
+      setGoogleButtonWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
     };
 
     updateWidth();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() => {
+        updateWidth();
+      });
+      observer.observe(container);
+
+      return () => {
+        observer.disconnect();
+      };
+    }
+
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
-  }, [isModal]);
+  }, [googleClientId, googleConfigLoading, googleSignInEnabled, isModal]);
 
   useEffect(() => {
     setGoogleReady(false);
 
-    if (googleConfigLoading || !googleSignInEnabled || !googleClientId) {
+    if (googleConfigLoading || !googleSignInEnabled || !googleClientId || googleButtonWidth <= 0) {
       return;
     }
 
@@ -236,119 +252,40 @@ const Login: React.FC = () => {
     }
   };
 
+  if (authLoading) {
+    return (
+      <LoginFrame isModal={isModal} onClose={closeModal}>
+        <div className="p-6 text-sm opacity-80">Loading session...</div>
+      </LoginFrame>
+    );
+  }
+
   if (isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
   }
 
-  const cardTone = isModal
-    ? "w-full max-w-xl rounded-xl border border-indigo-300 bg-white text-gray-900 shadow-2xl dark:border-emerald-400 dark:bg-gray-900 dark:text-green-300"
-    : "mx-auto w-full max-w-xl";
-  const panelTone = "rounded-lg border border-gray-200 p-4 space-y-3 dark:border-gray-700";
-
-  const loginBody = (
-    <section className={isModal ? `${cardTone}` : `${cardTone} px-3 py-6 sm:px-4 sm:py-8 md:px-8`}>
-      <div className={isModal ? "space-y-5 p-5 sm:p-6" : "space-y-5"}>
-        <div className="space-y-2 pr-14">
-          <h1 className="text-xl font-bold sm:text-2xl">Login</h1>
-          <p className="text-sm leading-6 opacity-80">
-            {googleSignInEnabled && !enablePasswordLogin
-              ? "Use Google to sign in and unlock publishing tools."
-              : "Sign in to continue."}
-          </p>
-          {googleRestrictionText && <p className="text-sm opacity-80">{googleRestrictionText}</p>}
-        </div>
-
-        {googleConfigLoading && !enablePasswordLogin && (
-          <div className={panelTone}>
-            <p className="text-sm opacity-80">Loading Google sign-in configuration...</p>
-          </div>
-        )}
-
-        {!googleConfigLoading && googleSignInEnabled && (
-          <div className={panelTone}>
-            <h2 className="font-semibold">Sign In With Google</h2>
-            {googleClientId && (
-              <div ref={googleButtonRef} className="flex min-h-[44px] justify-start" />
-            )}
-            {!googleClientId && (
-              <p className="text-sm text-red-500">Google sign-in is enabled, but no web client ID is configured.</p>
-            )}
-            {!googleReady && googleClientId && <p className="text-sm opacity-80">Loading Google sign-in...</p>}
-            {googleLoading && <p className="text-sm opacity-80">Signing in with Google...</p>}
-          </div>
-        )}
-
-        {enablePasswordLogin && (
-          <form className={panelTone} onSubmit={submit}>
-            <h2 className="font-semibold">Password Login</h2>
-            <div className="space-y-1">
-              <label htmlFor="username" className="block text-sm">
-                Username
-              </label>
-              <input
-                id="username"
-                className="form-input"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                autoComplete="username"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="password" className="block text-sm">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                className="form-input"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete="current-password"
-              />
-            </div>
-
-            <button className="btn" type="submit" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
-        )}
-
-        {error && (
-          <div className="rounded-lg border border-red-300 p-3 dark:border-red-700">
-            <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-
-  if (!isModal) {
-    return loginBody;
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/65 p-4"
-      onClick={closeModal}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        className="relative w-full max-w-xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          className="absolute right-4 top-4 z-10 min-h-10 rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
-          type="button"
-          onClick={closeModal}
-          aria-label="Close login"
-        >
-          Close
-        </button>
-        {loginBody}
-      </div>
-    </div>
+    <LoginFrame isModal={isModal} onClose={closeModal}>
+      <LoginContent
+        isModal={isModal}
+        googleSignInEnabled={googleSignInEnabled}
+        enablePasswordLogin={enablePasswordLogin}
+        googleRestrictionText={googleRestrictionText}
+        googleConfigLoading={googleConfigLoading}
+        googleClientId={googleClientId}
+        googleReady={googleReady}
+        googleLoading={googleLoading}
+        googleButtonContainerRef={googleButtonContainerRef}
+        googleButtonRef={googleButtonRef}
+        username={username}
+        password={password}
+        loading={loading}
+        error={error}
+        onSubmit={submit}
+        onUsernameChange={setUsername}
+        onPasswordChange={setPassword}
+      />
+    </LoginFrame>
   );
 };
 

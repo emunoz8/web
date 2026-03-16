@@ -15,6 +15,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import com.compilingjava.auth.web.AuthController;
 import com.compilingjava.auth.web.PasswordResetController;
+import com.compilingjava.auth.service.AuthCookieService;
+import com.compilingjava.auth.service.GoogleAuthenticationService;
+import com.compilingjava.config.JwtProperties;
 import com.compilingjava.content.web.AdminContentController;
 import com.compilingjava.content.web.ContentController;
 import com.compilingjava.comment.web.CommentController;
@@ -62,6 +65,12 @@ class ApiSecurityTests {
 
     @MockitoBean
     AuthenticationService authenticationService;
+    @MockitoBean
+    GoogleAuthenticationService googleAuthenticationService;
+    @MockitoBean
+    AuthCookieService authCookieService;
+    @MockitoBean
+    JwtProperties jwtProperties;
     @MockitoBean
     EmailVerificationService emailVerificationService;
     @MockitoBean

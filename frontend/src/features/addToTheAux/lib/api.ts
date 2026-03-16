@@ -1,4 +1,5 @@
 import type { ApiError } from "../types/spotify";
+import { fetchWithCsrf } from "../../../lib/csrf";
 
 type ApiSearchParams = Record<string, string | number | boolean | null | undefined>;
 
@@ -72,7 +73,7 @@ export async function readError(response: Response): Promise<string> {
 }
 
 export async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init);
+  const response = await fetchWithCsrf(input, init);
   if (!response.ok) {
     throw new Error(await readError(response));
   }

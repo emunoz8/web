@@ -6,13 +6,51 @@ import { useAuth } from "../../context/AuthContext";
 import { CommentTreeNode, contentPlatformService } from "../../lib/services/ContentPlatformService";
 import { buildLoginRouteState } from "../../lib/authRouting";
 
-interface ContentModalProps {
+export interface ContentModalProps {
   open: boolean;
   item: ContentItem | null;
   loading: boolean;
   error: string | null;
   onClose: () => void;
   onEngagementChanged?: () => void;
+}
+
+function resolveProjectPresentation(projectUrl: string): {
+  internalRoute: string | null;
+  linkHref: string | null;
+  iframeSrc: string | null;
+} {
+  const trimmed = projectUrl.trim();
+  if (!trimmed) {
+    return { internalRoute: null, linkHref: null, iframeSrc: null };
+  }
+
+  if (trimmed.startsWith("/")) {
+    return { internalRoute: trimmed, linkHref: null, iframeSrc: null };
+  }
+
+  if (typeof window === "undefined") {
+    return { internalRoute: null, linkHref: trimmed, iframeSrc: trimmed };
+  }
+
+  try {
+    const resolved = new URL(trimmed, window.location.origin);
+    const isHttp = resolved.protocol === "http:" || resolved.protocol === "https:";
+    if (!isHttp) {
+      return { internalRoute: null, linkHref: trimmed, iframeSrc: null };
+    }
+
+    const href = resolved.toString();
+    const isSameOrigin = resolved.origin === window.location.origin;
+    const internalRoute = isSameOrigin ? `${resolved.pathname}${resolved.search}${resolved.hash}` : null;
+    return {
+      internalRoute,
+      linkHref: isSameOrigin ? null : href,
+      iframeSrc: isSameOrigin ? null : href,
+    };
+  } catch {
+    return { internalRoute: null, linkHref: trimmed, iframeSrc: null };
+  }
 }
 
 const ContentModal: React.FC<ContentModalProps> = ({
@@ -23,13 +61,13 @@ const ContentModal: React.FC<ContentModalProps> = ({
   onClose,
   onEngagementChanged,
 }) => {
-  const { token, username, isAuthenticated, isAdmin } = useAuth();
+  const { username, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const contentId = item?.id ?? null;
   const projectUrl = item?.type === "PROJECT" ? item?.projectUrl?.trim() ?? "" : "";
-  const hasProjectWindow = projectUrl.length > 0;
-  const iframeSrc = hasProjectWindow ? projectUrl : null;
+  const { internalRoute: projectInternalRoute, linkHref: projectLinkHref, iframeSrc } =
+    resolveProjectPresentation(projectUrl);
 
   const [likeCount, setLikeCount] = useState(0);
   const [likedByMe, setLikedByMe] = useState(false);
@@ -73,11 +111,7 @@ const ContentModal: React.FC<ContentModalProps> = ({
         setLikesLoading(true);
         setLikesError(null);
         const nextCount = await contentPlatformService.getLikeCount(contentId, signal);
-        const nextLiked =
-          isAuthenticated && token ? await contentPlatformService.isLikedByMe(token, contentId, signal) : false;
-
         setLikeCount(nextCount);
-        setLikedByMe(nextLiked);
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           setLikesError((err as Error).message);
@@ -85,8 +119,22 @@ const ContentModal: React.FC<ContentModalProps> = ({
       } finally {
         setLikesLoading(false);
       }
+
+      if (!isAuthenticated) {
+        setLikedByMe(false);
+        return;
+      }
+
+      try {
+        const nextLiked = await contentPlatformService.isLikedByMe(contentId, signal);
+        setLikedByMe(nextLiked);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          setLikedByMe(false);
+        }
+      }
     },
-    [contentId, isAuthenticated, token]
+    [contentId, isAuthenticated]
   );
 
   const loadComments = useCallback(
@@ -142,7 +190,7 @@ const ContentModal: React.FC<ContentModalProps> = ({
     if (contentId == null) {
       return;
     }
-    if (!isAuthenticated || !token) {
+    if (!isAuthenticated) {
       setLikesError(null);
       openLoginModal();
       return;
@@ -152,9 +200,9 @@ const ContentModal: React.FC<ContentModalProps> = ({
       setLikeActionLoading(true);
       setLikesError(null);
       if (likedByMe) {
-        await contentPlatformService.unlike(token, contentId);
+        await contentPlatformService.unlike(contentId);
       } else {
-        await contentPlatformService.like(token, contentId);
+        await contentPlatformService.like(contentId);
       }
 
       await loadLikes();
@@ -170,7 +218,7 @@ const ContentModal: React.FC<ContentModalProps> = ({
     if (contentId == null) {
       return;
     }
-    if (!isAuthenticated || !token) {
+    if (!isAuthenticated) {
       setCommentSubmitError(null);
       openLoginModal();
       return;
@@ -185,7 +233,7 @@ const ContentModal: React.FC<ContentModalProps> = ({
     try {
       setCommentSubmitLoading(true);
       setCommentSubmitError(null);
-      await contentPlatformService.createComment(token, {
+      await contentPlatformService.createComment({
         contentId,
         body,
         parentId,
@@ -214,7 +262,7 @@ const ContentModal: React.FC<ContentModalProps> = ({
   };
 
   const deleteComment = async (commentId: number) => {
-    if (!isAuthenticated || !token) {
+    if (!isAuthenticated) {
       setCommentDeleteError(null);
       openLoginModal();
       return;
@@ -223,7 +271,7 @@ const ContentModal: React.FC<ContentModalProps> = ({
     try {
       setCommentDeleteError(null);
       setCommentDeleteLoadingId(commentId);
-      await contentPlatformService.deleteComment(token, commentId);
+      await contentPlatformService.deleteComment(commentId);
 
       await loadComments();
       onEngagementChanged?.();
@@ -355,10 +403,22 @@ const ContentModal: React.FC<ContentModalProps> = ({
                 </p>
               )}
             </div>
-            {iframeSrc && (
+            {projectInternalRoute && (
+              <button
+                className="border rounded-md min-h-10 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate(projectInternalRoute);
+                }}
+              >
+                Open Project
+              </button>
+            )}
+            {!projectInternalRoute && projectLinkHref && (
               <a
                 className="border rounded-md min-h-10 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-                href={iframeSrc}
+                href={projectLinkHref}
                 target="_blank"
                 rel="noreferrer"
               >

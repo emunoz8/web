@@ -1,4 +1,5 @@
 import { apiUrl, CategoryDomain, CategoryItem, ContentItem, PagedResponse } from "../api";
+import { fetchWithCsrf } from "../csrf";
 
 export type EngagementSummary = {
   likes: number;
@@ -32,6 +33,7 @@ type ContentListParams = {
 
 export type ContentPage = {
   content: ContentItem[];
+  engagementById: Record<number, EngagementSummary>;
   number: number;
   size: number;
   totalPages: number;
@@ -85,6 +87,7 @@ type JsonRequestOptions = {
   token?: string | null;
   body?: unknown;
   signal?: AbortSignal;
+  cache?: RequestCache;
 };
 
 type LikeCountResponse = {
@@ -93,6 +96,12 @@ type LikeCountResponse = {
 
 type LikeMeResponse = {
   liked?: boolean;
+};
+
+type RawEngagement = {
+  likes?: number;
+  comments?: number;
+  likedByMe?: boolean;
 };
 
 const parseJsonSafe = (raw: string): unknown | undefined => {
@@ -127,7 +136,7 @@ const asNumericId = (payload: unknown): number | null => {
 
 class ApiClient {
   async request(path: string, options: JsonRequestOptions = {}): Promise<Response> {
-    const { method = "GET", token, body, signal } = options;
+    const { method = "GET", token, body, signal, cache } = options;
     const headers: HeadersInit = {};
 
     if (body !== undefined) {
@@ -137,11 +146,12 @@ class ApiClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    return fetch(apiUrl(path), {
+    return fetchWithCsrf(apiUrl(path), {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
       signal,
+      cache,
     });
   }
 
@@ -185,7 +195,7 @@ export class ContentPlatformService {
   async listCategories(domain: CategoryDomain, signal?: AbortSignal): Promise<CategoryItem[]> {
     return this.client.jsonOrThrow<CategoryItem[]>(
       `/api/categories?domain=${domain}`,
-      { signal },
+      { signal, cache: "no-store" },
       "Could not load categories."
     );
   }
@@ -206,10 +216,26 @@ export class ContentPlatformService {
 
     const body = await this.client.jsonOrThrow<PagedResponse<ContentItem>>(
       `/api/contents?${query.toString()}`,
-      { signal: params.signal },
+      { signal: params.signal, cache: "no-store" },
       "Could not load content list."
     );
     const content = body.content ?? [];
+    const engagementById: Record<number, EngagementSummary> = {};
+    content.forEach((item) => {
+      const raw = item.engagement as RawEngagement | undefined;
+      if (!raw) {
+        return;
+      }
+      if (typeof raw.likes !== "number" || typeof raw.comments !== "number") {
+        return;
+      }
+      engagementById[item.id] = {
+        likes: raw.likes,
+        comments: raw.comments,
+        likedByMe: raw.likedByMe === true,
+      };
+    });
+
     const number = typeof body.number === "number" ? body.number : params.page ?? 0;
     const size = typeof body.size === "number" ? body.size : params.size ?? 20;
     const totalPages = typeof body.totalPages === "number" ? body.totalPages : number + 1;
@@ -221,6 +247,7 @@ export class ContentPlatformService {
 
     return {
       content,
+      engagementById,
       number,
       size,
       totalPages,
@@ -245,12 +272,19 @@ export class ContentPlatformService {
     );
   }
 
-  async createProject(token: string, input: ProjectCreateInput): Promise<ContentItem> {
+  async getContentBySlug(slug: string, signal?: AbortSignal): Promise<ContentItem> {
+    return this.client.jsonOrThrow<ContentItem>(
+      `/api/contents/slug/${encodeURIComponent(slug)}`,
+      { signal },
+      "Could not load content."
+    );
+  }
+
+  async createProject(input: ProjectCreateInput): Promise<ContentItem> {
     const payload = await this.client.bodyOrThrow(
       "/api/admin/projects",
       {
         method: "POST",
-        token,
         body: input,
       },
       "Project create failed."
@@ -262,12 +296,11 @@ export class ContentPlatformService {
     return payload as ContentItem;
   }
 
-  async updateProject(token: string, id: number, input: ProjectUpdateInput): Promise<ContentItem> {
+  async updateProject(id: number, input: ProjectUpdateInput): Promise<ContentItem> {
     const payload = await this.client.bodyOrThrow(
       `/api/admin/projects/${id}`,
       {
         method: "PUT",
-        token,
         body: input,
       },
       "Project update failed."
@@ -279,12 +312,20 @@ export class ContentPlatformService {
     return payload as ContentItem;
   }
 
-  async createBlog(token: string, input: BlogCreateInput): Promise<ContentItem> {
+  async deleteContent(id: number): Promise<void> {
+    const response = await this.client.request(`/api/admin/contents/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      await this.client.throwWithResponse(response, "Content delete failed.");
+    }
+  }
+
+  async createBlog(input: BlogCreateInput): Promise<ContentItem> {
     const payload = await this.client.bodyOrThrow(
       "/api/admin/blogs",
       {
         method: "POST",
-        token,
         body: input,
       },
       "Blog create failed."
@@ -296,12 +337,11 @@ export class ContentPlatformService {
     return payload as ContentItem;
   }
 
-  async updateBlog(token: string, id: number, input: BlogUpdateInput): Promise<ContentItem> {
+  async updateBlog(id: number, input: BlogUpdateInput): Promise<ContentItem> {
     const payload = await this.client.bodyOrThrow(
       `/api/admin/blogs/${id}`,
       {
         method: "PUT",
-        token,
         body: input,
       },
       "Blog update failed."
@@ -313,12 +353,11 @@ export class ContentPlatformService {
     return payload as ContentItem;
   }
 
-  async createCategory(token: string, input: CategoryCreateInput): Promise<number> {
+  async createCategory(input: CategoryCreateInput): Promise<number> {
     const payload = await this.client.bodyOrThrow(
       "/api/admin/categories",
       {
         method: "POST",
-        token,
         body: input,
       },
       "Category create failed."
@@ -331,10 +370,9 @@ export class ContentPlatformService {
     return id;
   }
 
-  async attachCategory(token: string, contentId: number, categoryId: number): Promise<void> {
+  async attachCategory(contentId: number, categoryId: number): Promise<void> {
     const response = await this.client.request(`/api/admin/contents/${contentId}/categories/${categoryId}`, {
       method: "POST",
-      token,
     });
     if (!response.ok) {
       await this.client.throwWithResponse(response, "Category attach failed.");
@@ -358,22 +396,20 @@ export class ContentPlatformService {
     return Array.isArray(body) ? body : [];
   }
 
-  async createComment(token: string, input: CommentCreateInput): Promise<void> {
+  async createComment(input: CommentCreateInput): Promise<void> {
     await this.client.bodyOrThrow(
       "/api/comments",
       {
         method: "POST",
-        token,
         body: input,
       },
       "Comment create failed."
     );
   }
 
-  async deleteComment(token: string, commentId: number): Promise<void> {
+  async deleteComment(commentId: number): Promise<void> {
     const response = await this.client.request(`/api/comments/${commentId}`, {
       method: "DELETE",
-      token,
     });
     if (!response.ok) {
       await this.client.throwWithResponse(response, "Comment delete failed.");
@@ -389,9 +425,8 @@ export class ContentPlatformService {
     return typeof body.count === "number" ? body.count : 0;
   }
 
-  async isLikedByMe(token: string, contentId: number, signal?: AbortSignal): Promise<boolean> {
+  async isLikedByMe(contentId: number, signal?: AbortSignal): Promise<boolean> {
     const response = await this.client.request(`/api/contents/${contentId}/likes/me`, {
-      token,
       signal,
     });
 
@@ -406,31 +441,29 @@ export class ContentPlatformService {
     return body.liked === true;
   }
 
-  async like(token: string, contentId: number): Promise<void> {
+  async like(contentId: number): Promise<void> {
     const response = await this.client.request(`/api/contents/${contentId}/likes`, {
       method: "POST",
-      token,
     });
     if (!response.ok) {
       await this.client.throwWithResponse(response, `Like request failed (${response.status}).`);
     }
   }
 
-  async unlike(token: string, contentId: number): Promise<void> {
+  async unlike(contentId: number): Promise<void> {
     const response = await this.client.request(`/api/contents/${contentId}/likes`, {
       method: "DELETE",
-      token,
     });
     if (!response.ok && response.status !== 404) {
       await this.client.throwWithResponse(response, `Unlike request failed (${response.status}).`);
     }
   }
 
-  async getEngagementSummary(contentId: number, token?: string | null, signal?: AbortSignal): Promise<EngagementSummary> {
+  async getEngagementSummary(contentId: number, isAuthenticated = false, signal?: AbortSignal): Promise<EngagementSummary> {
     const [likes, comments, likedByMe] = await Promise.all([
       this.getLikeCount(contentId, signal),
       this.listComments(contentId, signal).then((items) => items.length),
-      token ? this.isLikedByMe(token, contentId, signal) : Promise.resolve(false),
+      isAuthenticated ? this.isLikedByMe(contentId, signal) : Promise.resolve(false),
     ]);
 
     return {

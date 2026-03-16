@@ -1,159 +1,203 @@
-import { useEffect, useMemo, useState } from "react";
-import { HiBars3, HiXMark } from "react-icons/hi2";
-import NavItem from "../../data/NavItem";
-import { publicRoutes } from "../../routes/publicRoutes";
-import ThemeToggle from "../common/ThemeToggle";
-import { Link, useLocation } from "react-router-dom";
+import { FormEvent, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { buildLoginRouteState } from "../../lib/authRouting";
+import { portfolioProfile } from "../../features/portfolio/data/profile";
+import {
+  getTerminalPrompt,
+  resolveTerminalCommand,
+  terminalFeaturedCommands,
+  terminalRouteCommands,
+  terminalShellLabel,
+  type TerminalTone,
+} from "../../features/portfolio/data/terminalShell";
 
-function Navbar() {
-  const { isAuthenticated, isAdmin, username, canChangeUsername, updateUsername, logout } = useAuth();
-  const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [editingUsername, setEditingUsername] = useState(false);
-  const [usernameDraft, setUsernameDraft] = useState("");
-  const [usernameSaving, setUsernameSaving] = useState(false);
-  const [usernameError, setUsernameError] = useState<string | null>(null);
+type TerminalFeedback = {
+  tone: TerminalTone;
+  lines: string[];
+};
 
-  const navRoutes = useMemo(
-    () =>
-      publicRoutes
-        .filter((route) => route.showInNav !== false)
-        .filter((route) => !route.requiresAdmin || isAdmin),
-    [isAdmin]
+function getActiveCommand(pathname: string): string {
+  const activeRoute = terminalRouteCommands.find((command) =>
+    command.to === "/"
+      ? pathname === "/"
+      : pathname === command.to || pathname.startsWith(`${command.to}/`)
   );
 
+  return activeRoute?.command ?? pathname;
+}
+
+function Navbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { authLoading, isAuthenticated, isAdmin, logout } = useAuth();
+  const [commandInput, setCommandInput] = useState("");
+  const [feedback, setFeedback] = useState<TerminalFeedback | null>(null);
+  const prompt = getTerminalPrompt(location.pathname);
+
   useEffect(() => {
-    setMobileMenuOpen(false);
+    setFeedback(null);
   }, [location.pathname]);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setEditingUsername(false);
-      setUsernameDraft("");
-      setUsernameError(null);
+  const executeCommand = (rawCommand: string) => {
+    const resolution = resolveTerminalCommand(rawCommand, location.pathname);
+
+    if (resolution.kind === "clear") {
+      setFeedback(null);
       return;
     }
-    setUsernameDraft(username ?? "");
-  }, [isAuthenticated, username]);
 
-  const submitUsernameUpdate = async () => {
-    try {
-      setUsernameSaving(true);
-      setUsernameError(null);
-      await updateUsername(usernameDraft.trim());
-      setEditingUsername(false);
-    } catch (err) {
-      setUsernameError((err as Error).message);
-    } finally {
-      setUsernameSaving(false);
+    setFeedback({
+      tone: resolution.tone,
+      lines: resolution.lines.slice(0, 3),
+    });
+
+    if (resolution.kind === "route") {
+      navigate(resolution.to);
+      return;
+    }
+
+    if (resolution.kind === "external") {
+      if (resolution.openInNewTab) {
+        window.open(resolution.href, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      window.location.assign(resolution.href);
     }
   };
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedCommand = commandInput.trim();
+
+    if (!trimmedCommand) {
+      return;
+    }
+
+    setCommandInput("");
+    executeCommand(trimmedCommand);
+  };
+
+  const feedbackClassName =
+    feedback?.tone === "error"
+      ? "border-brand-accent/40 text-brand-accent"
+      : feedback?.tone === "success"
+        ? "border-brand-frame/35 text-brand-contrast"
+        : "border-brand-line/20 text-brand-muted";
+
   return (
-    <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
-      <div className="flex items-center justify-between lg:hidden">
-        <span className="text-sm font-semibold tracking-wide opacity-90">Compiling Java</span>
-        <button
-          className="border rounded-md min-h-11 min-w-11 px-3 py-2"
-          onClick={() => setMobileMenuOpen((value) => !value)}
-          aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="mobile-nav-panel"
-        >
-          {mobileMenuOpen ? <HiXMark className="h-5 w-5" /> : <HiBars3 className="h-5 w-5" />}
-        </button>
-      </div>
-
-      <nav className="navbar hidden lg:flex">
-        {navRoutes.map(({ to, label }) => (
-          <NavItem key={to} to={to} label={label} />
-        ))}
-      </nav>
-
-      {mobileMenuOpen && (
-        <nav
-          id="mobile-nav-panel"
-          className="mobile-nav-panel lg:hidden border rounded-lg p-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur"
-        >
-          <ul className="flex flex-col gap-3">
-            {navRoutes.map(({ to, label }) => (
-              <li key={to}>
-                <NavItem to={to} label={label} onClick={() => setMobileMenuOpen(false)} />
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <ThemeToggle />
-        <div className="flex flex-wrap items-center gap-2">
-          {isAuthenticated ? (
-            <>
-              <span className="text-sm opacity-80">
-                {username ?? "user"} {isAdmin ? "(ADMIN)" : ""}
-              </span>
-              {!editingUsername && canChangeUsername ? (
-                <button
-                  className="border rounded-md min-h-11 px-3 py-2 text-sm"
-                  onClick={() => {
-                    setEditingUsername(true);
-                    setUsernameDraft(username ?? "");
-                    setUsernameError(null);
-                  }}
-                  type="button"
-                >
-                  Edit Username
-                </button>
-              ) : editingUsername ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <input
-                    className="form-input w-56"
-                    value={usernameDraft}
-                    onChange={(event) => setUsernameDraft(event.target.value)}
-                    placeholder="New username"
-                  />
-                  <button
-                    className="btn"
-                    type="button"
-                    onClick={() => void submitUsernameUpdate()}
-                    disabled={usernameSaving}
-                  >
-                    {usernameSaving ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    className="border rounded-md min-h-11 px-3 py-2 text-sm"
-                    type="button"
-                    onClick={() => {
-                      setEditingUsername(false);
-                      setUsernameDraft(username ?? "");
-                      setUsernameError(null);
-                    }}
-                    disabled={usernameSaving}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : null}
-              <button className="btn" onClick={logout}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              state={buildLoginRouteState(location)}
-              className="btn"
-            >
-              Login
-            </Link>
-          )}
+    <header className="sticky top-0 z-40 py-4">
+      <div className="brand-terminal-panel">
+        <div className="brand-window-header">
+          <span className="brand-window-dot brand-window-dot-active" />
+          <span className="brand-window-dot" />
+          <span className="brand-window-dot" />
+          <span className="brand-window-label">{terminalShellLabel}</span>
+          <span className="ml-auto hidden font-mono text-[11px] uppercase tracking-[0.22em] text-brand-muted lg:inline">
+            route :: {location.pathname}
+          </span>
         </div>
-        {usernameError && <p className="text-sm text-red-500">{usernameError}</p>}
+
+        <div className="grid gap-5 px-4 py-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.95fr)]">
+          <div className="space-y-4">
+            <Link
+              to="/"
+              className="brand-terminal-subpanel block transition hover:border-brand-frame/35"
+            >
+              <p className="brand-eyebrow">root session</p>
+              <p className="mt-3 text-lg font-semibold text-brand-contrast">
+                {portfolioProfile.name}
+              </p>
+              <p className="mt-2 text-sm text-brand-muted">{portfolioProfile.title}</p>
+              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-brand-frame">
+                current target :: {getActiveCommand(location.pathname)}
+              </p>
+            </Link>
+
+            <form onSubmit={handleSubmit} className="brand-terminal-subpanel">
+              <label htmlFor="site-command-prompt" className="sr-only">
+                Global site command prompt
+              </label>
+              <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-brand-muted">
+                global command prompt
+              </p>
+              <div className="mt-3 flex items-start gap-3 font-mono text-sm">
+                <span className="shrink-0 text-brand-accent">{prompt}</span>
+                <input
+                  id="site-command-prompt"
+                  type="text"
+                  value={commandInput}
+                  onChange={(event) => setCommandInput(event.target.value)}
+                  className="brand-terminal-input"
+                  placeholder="help"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </div>
+            </form>
+
+            {feedback ? (
+              <div
+                className={`rounded-[1.15rem] border px-4 py-3 font-mono text-xs whitespace-pre-wrap ${feedbackClassName}`}
+              >
+                {feedback.lines.join("\n")}
+              </div>
+            ) : (
+              <p className="px-1 font-mono text-xs text-brand-muted">
+                Try `cd projects`, `less resume`, `./jit-cafe`, or `open github`.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <section className="brand-terminal-subpanel">
+              <p className="brand-eyebrow">preset commands</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {terminalFeaturedCommands.map((command) => (
+                  <button
+                    key={command}
+                    type="button"
+                    onClick={() => executeCommand(command)}
+                    className="brand-terminal-chip"
+                  >
+                    {command}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="brand-terminal-subpanel">
+              <p className="brand-eyebrow">session controls</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {!authLoading && isAdmin ? (
+                  <Link to="/admin/projects" className="brand-terminal-chip">
+                    sudo admin
+                  </Link>
+                ) : null}
+                {!authLoading && !isAuthenticated ? (
+                  <Link to="/login" className="brand-terminal-chip">
+                    ssh login
+                  </Link>
+                ) : null}
+                {!authLoading && isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={() => void logout()}
+                    className="brand-terminal-chip"
+                  >
+                    logout
+                  </button>
+                ) : null}
+                <span className="inline-flex items-center rounded-full border border-brand-line/20 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-brand-muted">
+                  node :: {portfolioProfile.location}
+                </span>
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
   );
 }
 

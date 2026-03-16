@@ -2,47 +2,87 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CategoryDomain, CategoryItem, ContentItem } from "../../../lib/api";
 import { contentPlatformService, EngagementSummary } from "../../../lib/services/ContentPlatformService";
 import { useAuth } from "../../../context/AuthContext";
+import { publishTerminalTelemetry } from "../../../features/terminalUI/lib/terminalTelemetry";
+import {
+  ContentCategorySelectionModel,
+  ContentFeedCollectionModel,
+  ContentModalItemModel,
+} from "../models/ContentBrowserModels";
 
 type UseContentBrowserDataParams = {
   type: CategoryDomain;
   allCategoriesLabel: string;
 };
 
-type UseContentBrowserDataResult = {
+type ContentBrowserViewerState = {
   isAdmin: boolean;
+};
+
+type ContentBrowserCategoryState = {
   categories: CategoryItem[];
+  selected: string;
+  selectedLabel: string;
+  loading: boolean;
+  error: string | null;
+  setSelected: (value: string) => void;
+};
+
+type ContentBrowserFeedState = {
   items: ContentItem[];
   engagementById: Record<number, EngagementSummary>;
-  selectedCategory: string;
-  selectedCategoryLabel: string;
-  categoryLoading: boolean;
-  contentLoading: boolean;
+  loading: boolean;
   loadingMore: boolean;
   hasNextPage: boolean;
-  categoryError: string | null;
-  contentError: string | null;
-  isModalOpen: boolean;
-  modalItem: ContentItem | null;
-  modalLoading: boolean;
-  modalError: string | null;
-  setSelectedCategory: (value: string) => void;
-  openModal: (item: ContentItem) => Promise<void>;
-  closeModal: () => void;
-  updateModalItem: (updated: ContentItem) => void;
-  refreshCategories: () => Promise<void>;
-  refreshItems: () => Promise<void>;
-  refreshAll: () => Promise<void>;
-  refreshEngagement: () => Promise<void>;
+  error: string | null;
   loadMore: () => Promise<void>;
 };
 
+type ContentBrowserModalState = {
+  open: boolean;
+  item: ContentItem | null;
+  loading: boolean;
+  error: string | null;
+  openItem: (item: ContentItem) => Promise<void>;
+  close: () => void;
+  updateItem: (updated: ContentItem) => void;
+};
+
+type ContentBrowserRefreshActions = {
+  categories: () => Promise<void>;
+  items: () => Promise<void>;
+  all: () => Promise<void>;
+  engagement: () => Promise<void>;
+};
+
+export type UseContentBrowserDataResult = {
+  viewer: ContentBrowserViewerState;
+  category: ContentBrowserCategoryState;
+  feed: ContentBrowserFeedState;
+  modal: ContentBrowserModalState;
+  refresh: ContentBrowserRefreshActions;
+};
+
 const PAGE_SIZE = 20;
+
+function buildContentListEndpoint(type: CategoryDomain, page: number, size: number, category?: string) {
+  const query = new URLSearchParams({
+    type,
+    page: String(page),
+    size: String(size),
+  });
+
+  if (category && category.trim() !== "") {
+    query.set("category", category.trim());
+  }
+
+  return `/api/contents?${query.toString()}`;
+}
 
 const useContentBrowserData = ({
   type,
   allCategoriesLabel,
 }: UseContentBrowserDataParams): UseContentBrowserDataResult => {
-  const { isAuthenticated, isAdmin, token } = useAuth();
+  const { authLoading, isAuthenticated, isAdmin } = useAuth();
 
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [items, setItems] = useState<ContentItem[]>([]);
@@ -62,7 +102,6 @@ const useContentBrowserData = ({
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const loadMoreLockRef = useRef(false);
-  const itemsRef = useRef<ContentItem[]>([]);
 
   const loadCategories = useCallback(async (signal?: AbortSignal): Promise<void> => {
     try {
@@ -95,7 +134,7 @@ const useContentBrowserData = ({
             try {
               next[item.id] = await contentPlatformService.getEngagementSummary(
                 item.id,
-                isAuthenticated ? token : null,
+                isAuthenticated,
                 signal
               );
             } catch (err) {
@@ -122,7 +161,7 @@ const useContentBrowserData = ({
         }
       }
     },
-    [isAuthenticated, token]
+    [isAuthenticated]
   );
 
   const loadFirstPage = useCallback(
@@ -132,6 +171,12 @@ const useContentBrowserData = ({
         setContentError(null);
         setLoadingMore(false);
         loadMoreLockRef.current = false;
+
+        const endpoint = buildContentListEndpoint(type, 0, PAGE_SIZE, selectedCategory || undefined);
+        publishTerminalTelemetry({
+          tone: "info",
+          lines: [`backend :: GET ${endpoint}`],
+        });
 
         const page = await contentPlatformService.listContentsPage({
           type,
@@ -144,10 +189,25 @@ const useContentBrowserData = ({
         setItems(page.content);
         setCurrentPage(page.number);
         setHasNextPage(!page.last);
-        await hydrateEngagement(page.content, true, signal);
+        setEngagementById(page.engagementById);
+        publishTerminalTelemetry({
+          tone: "success",
+          lines: [
+            `backend :: loaded ${page.numberOfElements} ${type.toLowerCase()} entr${page.numberOfElements === 1 ? "y" : "ies"} on page 1`,
+            `backend :: total published ${type.toLowerCase()} entr${page.totalElements === 1 ? "y" : "ies"} :: ${page.totalElements}`,
+          ],
+        });
+        const missingEngagementItems = new ContentFeedCollectionModel(page.content, page.engagementById).findItemsMissingEngagement();
+        if (missingEngagementItems.length > 0) {
+          await hydrateEngagement(missingEngagementItems, false, signal);
+        }
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           setContentError((err as Error).message);
+          publishTerminalTelemetry({
+            tone: "error",
+            lines: [`backend :: content load failed :: ${(err as Error).message}`],
+          });
           setItems([]);
           setEngagementById({});
           setCurrentPage(0);
@@ -180,19 +240,14 @@ const useContentBrowserData = ({
         size: PAGE_SIZE,
       });
 
-      setItems((current) => {
-        if (page.content.length === 0) {
-          return current;
-        }
-
-        const byId = new Map<number, ContentItem>();
-        current.forEach((item) => byId.set(item.id, item));
-        page.content.forEach((item) => byId.set(item.id, item));
-        return Array.from(byId.values());
-      });
+      setItems((current) => ContentFeedCollectionModel.mergeUniqueById(current, page.content));
       setCurrentPage(page.number);
       setHasNextPage(!page.last);
-      await hydrateEngagement(page.content, false);
+      setEngagementById((current) => ({ ...current, ...page.engagementById }));
+      const missingEngagementItems = new ContentFeedCollectionModel(page.content, page.engagementById).findItemsMissingEngagement();
+      if (missingEngagementItems.length > 0) {
+        await hydrateEngagement(missingEngagementItems, false);
+      }
     } catch (err) {
       setContentError((err as Error).message);
     } finally {
@@ -202,37 +257,22 @@ const useContentBrowserData = ({
   }, [contentLoading, loadingMore, hasNextPage, currentPage, type, selectedCategory, hydrateEngagement]);
 
   useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
-
-  useEffect(() => {
     const controller = new AbortController();
     loadCategories(controller.signal);
     return () => controller.abort();
   }, [loadCategories]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    loadFirstPage(controller.signal);
-    return () => controller.abort();
-  }, [loadFirstPage]);
-
-  useEffect(() => {
-    const currentItems = itemsRef.current;
-    if (currentItems.length === 0) {
+    if (authLoading) {
       return;
     }
     const controller = new AbortController();
-    hydrateEngagement(currentItems, true, controller.signal);
+    loadFirstPage(controller.signal);
     return () => controller.abort();
-  }, [isAuthenticated, token, hydrateEngagement]); // refresh like state when auth state changes
+  }, [authLoading, loadFirstPage]);
 
   const selectedCategoryLabel = useMemo(() => {
-    if (!selectedCategory) {
-      return allCategoriesLabel;
-    }
-    const category = categories.find((item) => item.slug === selectedCategory);
-    return category ? category.label : selectedCategory;
+    return new ContentCategorySelectionModel(allCategoriesLabel, categories, selectedCategory).selectedCategoryLabel;
   }, [allCategoriesLabel, categories, selectedCategory]);
 
   const openModal = async (item: ContentItem) => {
@@ -258,48 +298,53 @@ const useContentBrowserData = ({
   };
 
   const updateModalItem = (updated: ContentItem) => {
-    setModalItem((current) => {
-      if (!current || current.id !== updated.id) {
-        return current;
-      }
-      return updated;
-    });
+    setModalItem((current) => new ContentModalItemModel(current).withUpdatedContent(updated));
   };
 
   return {
-    isAdmin,
-    categories,
-    items,
-    engagementById,
-    selectedCategory,
-    selectedCategoryLabel,
-    categoryLoading,
-    contentLoading,
-    loadingMore,
-    hasNextPage,
-    categoryError,
-    contentError,
-    isModalOpen,
-    modalItem,
-    modalLoading,
-    modalError,
-    setSelectedCategory,
-    openModal,
-    closeModal,
-    updateModalItem,
-    refreshCategories: async () => {
-      await loadCategories();
+    viewer: {
+      isAdmin,
     },
-    refreshItems: async () => {
-      await loadFirstPage();
+    category: {
+      categories,
+      selected: selectedCategory,
+      selectedLabel: selectedCategoryLabel,
+      loading: categoryLoading,
+      error: categoryError,
+      setSelected: setSelectedCategory,
     },
-    refreshAll: async () => {
-      await Promise.all([loadCategories(), loadFirstPage()]);
+    feed: {
+      items,
+      engagementById,
+      loading: contentLoading,
+      loadingMore,
+      hasNextPage,
+      error: contentError,
+      loadMore,
     },
-    refreshEngagement: async () => {
-      await hydrateEngagement(items, true);
+    modal: {
+      open: isModalOpen,
+      item: modalItem,
+      loading: modalLoading,
+      error: modalError,
+      openItem: openModal,
+      close: closeModal,
+      updateItem: updateModalItem,
     },
-    loadMore,
+    refresh: {
+      categories: async () => {
+        await loadCategories();
+      },
+      items: async () => {
+        await loadFirstPage();
+      },
+      all: async () => {
+        await Promise.all([loadCategories(), loadFirstPage()]);
+      },
+      engagement: async () => {
+        await hydrateEngagement(items, true);
+      },
+    },
   };
 };
 

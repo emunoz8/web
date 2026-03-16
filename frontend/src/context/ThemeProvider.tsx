@@ -1,39 +1,26 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect } from "react";
+
+type ResolvedTheme = "light";
 
 type ThemeContextType = {
   isDark: boolean;
-  toggleTheme: () => void;
+  theme: ResolvedTheme;
 };
 
-const ThemeContext = createContext<ThemeContextType>({
-  isDark: false,
-  toggleTheme: () => {},
-});
+const ThemeContext = createContext<ThemeContextType>({ isDark: false, theme: "light" });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem('theme') === 'dark';
-  });
+  const theme: ResolvedTheme = "light";
+  const isDark = false;
 
   useEffect(() => {
     const root = document.documentElement;
-    if (isDark) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
+    root.dataset.theme = "light";
+    root.classList.remove("dark");
+    root.classList.add("light");
+  }, []);
 
-  const toggleTheme = () => setIsDark(prev => !prev);
-
-  return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ isDark, theme }}>{children}</ThemeContext.Provider>;
 };
 
-// Custom hook for consuming the theme context easily
 export const useTheme = () => useContext(ThemeContext);

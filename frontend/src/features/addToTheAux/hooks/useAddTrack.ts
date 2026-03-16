@@ -8,13 +8,13 @@ export type UseAddTrackResult = {
   addTrack: (track: TrackSearchResult) => Promise<boolean>;
 };
 
-export function useAddTrack(onAdded: () => Promise<void>, token: string | null): UseAddTrackResult {
+export function useAddTrack(onAdded: () => Promise<void>, enabled: boolean): UseAddTrackResult {
   const [addingUri, setAddingUri] = useState("");
   const [actionError, setActionError] = useState("");
 
   const addTrack = useCallback(
     async (track: TrackSearchResult): Promise<boolean> => {
-      if (!token) {
+      if (!enabled) {
         setActionError("Login required to add songs.");
         return false;
       }
@@ -27,7 +27,6 @@ export function useAddTrack(onAdded: () => Promise<void>, token: string | null):
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ uri: track.uri }),
         });
@@ -50,7 +49,7 @@ export function useAddTrack(onAdded: () => Promise<void>, token: string | null):
         setAddingUri("");
       }
     },
-    [onAdded, token],
+    [enabled, onAdded],
   );
 
   return {

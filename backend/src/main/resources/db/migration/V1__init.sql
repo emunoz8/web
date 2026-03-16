@@ -60,12 +60,12 @@ CREATE TABLE IF NOT EXISTS comments (
 -- Ensure parent replies stay on the SAME content
 -- 1) Provide a unique key in the SAME column order the FK will reference
 ALTER TABLE comments
-  ADD CONSTRAINT IF NOT EXISTS uq_comments_content_id_id
+  ADD CONSTRAINT uq_comments_content_id_id
   UNIQUE (content_id, id);
 
 -- 2) Composite FK: (content_id, parent_id) must match an existing (content_id, id)
 ALTER TABLE comments
-  ADD CONSTRAINT IF NOT EXISTS fk_comments_parent_same_content
+  ADD CONSTRAINT fk_comments_parent_same_content
   FOREIGN KEY (content_id, parent_id)
   REFERENCES comments (content_id, id)
   ON DELETE CASCADE;
