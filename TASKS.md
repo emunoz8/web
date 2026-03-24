@@ -9,8 +9,9 @@
 
 ## Cleanup
 
-- [ ] Delete or relocate `JIT_cafe/` from repo root (the actual JIT Cafe lives in `frontend/src/features/jitCafe/`)
-- [ ] Delete `live_home.html` and `critique_share.html` from repo root if no longer needed
+- [x] Delete `live_home.html` from repo root (stale CRA build artifact)
+- [ ] Decide what to do with `critique_share.html` (284KB, likely has embedded images — unclear if still needed)
+- [ ] `JIT_cafe/` at repo root is a standalone client restaurant app with its own handoff doc (`REPO-HANDOFF.md`) — move it to its own git repo when ready
 - [x] Remove dead `REACT_APP_` env var prefix support in `frontend/src/lib/env.ts` (project is fully on Vite)
 - [ ] Remove unused `bucket4j-redis` dependency from backend `pom.xml`
 - [x] Fix dead conditional in `AppShellContent` — both branches of the terminal mode check apply the same CSS class
