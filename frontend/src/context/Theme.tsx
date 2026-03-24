@@ -18,9 +18,7 @@ function AppShellContent() {
           ? "min-h-screen overflow-hidden bg-zinc-950 text-zinc-100"
           : chromeless
             ? "min-h-screen bg-zinc-950 text-zinc-100"
-            : mode === "terminal"
-              ? "min-h-screen bg-brand-canvas text-brand-contrast"
-              : "min-h-screen bg-brand-canvas text-brand-contrast"
+            : "min-h-screen bg-brand-canvas text-brand-contrast"
       }
     >
       <div

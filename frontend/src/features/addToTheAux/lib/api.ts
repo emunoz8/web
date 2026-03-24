@@ -1,12 +1,12 @@
 import type { ApiError } from "../types/spotify";
 import { fetchWithCsrf } from "../../../lib/csrf";
+import { auxApiBaseEnv, auxApiPrefixEnv } from "../../../lib/env";
 
 type ApiSearchParams = Record<string, string | number | boolean | null | undefined>;
 
 const DEFAULT_API_PREFIX = "/api/testing";
-const rawApiBaseUrl = process.env.REACT_APP_AUX_API_BASE_URL ?? process.env.REACT_APP_API_BASE_URL ?? "";
-const apiBaseUrl = rawApiBaseUrl.trim().replace(/\/+$/, "");
-const apiPrefix = normalizeApiPrefix(process.env.REACT_APP_AUX_API_PREFIX ?? DEFAULT_API_PREFIX);
+const apiBaseUrl = auxApiBaseEnv.replace(/\/+$/, "");
+const apiPrefix = normalizeApiPrefix(auxApiPrefixEnv || DEFAULT_API_PREFIX);
 
 function normalizeApiPrefix(value: string): string {
   const trimmed = value.trim();

@@ -12,6 +12,11 @@ Thumbs.db
 *.iws
 
 # ---------------------------
+# Backend (tracked separately)
+# ---------------------------
+backend/
+
+# ---------------------------
 # Java / Spring Boot
 # ---------------------------
 target/

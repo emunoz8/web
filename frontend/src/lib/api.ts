@@ -1,5 +1,6 @@
-const rawApiBase = process.env.REACT_APP_API_BASE_URL ?? "";
-const normalizedApiBase = rawApiBase.trim().replace(/\/+$/, "");
+import { apiBaseEnv } from "./env";
+
+const normalizedApiBase = apiBaseEnv.replace(/\/+$/, "");
 
 export const apiBaseUrl = normalizedApiBase;
 

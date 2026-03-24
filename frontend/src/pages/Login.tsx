@@ -6,6 +6,7 @@ import LoginFrame from "../components/auth/LoginFrame";
 import { useAuth } from "../context/AuthContext";
 import { apiUrl } from "../lib/api";
 import { LoginRouteState } from "../lib/authRouting";
+import { googleClientIdEnv } from "../lib/env";
 
 const GOOGLE_GSI_SCRIPT_ID = "google-gsi-script";
 const DEFAULT_POST_LOGIN_PATH = "/projects";
@@ -24,7 +25,7 @@ const Login: React.FC = () => {
   const googleButtonContainerRef = useRef<HTMLDivElement | null>(null);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
-  const envGoogleClientId = (process.env.REACT_APP_GOOGLE_CLIENT_ID ?? "").trim();
+  const envGoogleClientId = googleClientIdEnv;
 
   const [googleConfig, setGoogleConfig] = useState<GoogleAuthConfig | null>(null);
   const [googleConfigLoading, setGoogleConfigLoading] = useState(true);

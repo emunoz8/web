@@ -42,7 +42,7 @@ function createBrowserStub(): UseContentBrowserDataResult {
       selectedLabel: "Java",
       loading: false,
       error: null,
-      setSelected: jest.fn(),
+      setSelected: vi.fn(),
     },
     feed: {
       items: contentItems,
@@ -51,22 +51,22 @@ function createBrowserStub(): UseContentBrowserDataResult {
       loadingMore: false,
       hasNextPage: true,
       error: null,
-      loadMore: jest.fn(async () => undefined),
+      loadMore: vi.fn(async () => undefined),
     },
     modal: {
       open: true,
       item: contentItems[0],
       loading: false,
       error: null,
-      openItem: jest.fn(async () => undefined),
-      close: jest.fn(),
-      updateItem: jest.fn(),
+      openItem: vi.fn(async () => undefined),
+      close: vi.fn(),
+      updateItem: vi.fn(),
     },
     refresh: {
-      categories: jest.fn(async () => undefined),
-      items: jest.fn(async () => undefined),
-      all: jest.fn(async () => undefined),
-      engagement: jest.fn(async () => undefined),
+      categories: vi.fn(async () => undefined),
+      items: vi.fn(async () => undefined),
+      all: vi.fn(async () => undefined),
+      engagement: vi.fn(async () => undefined),
     },
   };
 }
@@ -74,7 +74,7 @@ function createBrowserStub(): UseContentBrowserDataResult {
 describe("buildAdminContentPageProps", () => {
   it("maps shared admin page props from the browser state", () => {
     const browser = createBrowserStub();
-    const onEditItem = jest.fn();
+    const onEditItem = vi.fn();
     const pageProps = buildAdminContentPageProps({
       title: "Blog Admin",
       subtitle: "Create and edit blog content.",
@@ -123,7 +123,7 @@ describe("buildAdminContentPageProps", () => {
       filterTitle: "Projects",
       emptyMessage: "No projects found for this category yet.",
       browser,
-      onEditItem: jest.fn(),
+      onEditItem: vi.fn(),
     });
 
     pageProps.modalProps.onEngagementChanged?.();

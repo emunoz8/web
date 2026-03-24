@@ -1,10 +1,8 @@
 import './styles/index.css';
-import Theme from "./context/Theme";
+import AppShell from "./context/Theme";
 
 function App() {
-  return (
-    <Theme />
-  );
+  return <AppShell />;
 }
 
 export default App;
