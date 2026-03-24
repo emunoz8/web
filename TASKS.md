@@ -2,8 +2,8 @@
 
 ## In Progress / Immediate
 
-- [ ] Commit all frontend changes (17 modified files + new untracked files)
-- [ ] Push to origin (currently 1 commit ahead)
+- [x] Commit all frontend changes (17 modified files + new untracked files)
+- [x] Push to origin
 
 ---
 
@@ -11,9 +11,9 @@
 
 - [ ] Delete or relocate `JIT_cafe/` from repo root (the actual JIT Cafe lives in `frontend/src/features/jitCafe/`)
 - [ ] Delete `live_home.html` and `critique_share.html` from repo root if no longer needed
-- [ ] Remove dead `REACT_APP_` env var prefix support in `frontend/src/lib/env.ts` (project is fully on Vite)
+- [x] Remove dead `REACT_APP_` env var prefix support in `frontend/src/lib/env.ts` (project is fully on Vite)
 - [ ] Remove unused `bucket4j-redis` dependency from backend `pom.xml`
-- [ ] Fix dead conditional in `AppShellContent` — both branches of the terminal mode check apply the same CSS class
+- [x] Fix dead conditional in `AppShellContent` — both branches of the terminal mode check apply the same CSS class
 
 ---
 
