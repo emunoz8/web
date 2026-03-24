@@ -29,9 +29,7 @@
 
 ## Infrastructure
 
-- [ ] Address per-instance rate limiting — `RateLimiterService` uses in-memory `ConcurrentHashMap`; Cloud Run multi-instance deployments have independent buckets
-- [ ] Address per-instance Caffeine cache — cache invalidation on writes only affects the writing instance
-- [ ] Decide whether to wire up Redis for shared rate limiting / caching, or document the current limitation
+- [x] Set `--min-instances 1 --max-instances 1` in `deploy-cloudrun-production.ps1` — single instance keeps rate-limit buckets and Caffeine caches consistent; comment in script documents the Redis upgrade path if scaling is ever needed
 
 ---
 
