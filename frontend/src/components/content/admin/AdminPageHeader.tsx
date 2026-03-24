@@ -9,12 +9,12 @@ export type AdminPageHeaderProps = {
 
 const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({ title, subtitle, userViewPath }) => {
   return (
-    <div className="flex flex-wrap items-start sm:items-center justify-between gap-3">
-      <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-bold">{title}</h1>
-        <p className="text-sm opacity-80 max-w-2xl">{subtitle}</p>
+    <div className="flex flex-wrap items-start sm:items-center justify-between gap-4 border-b border-brand-line pb-5">
+      <div className="space-y-2">
+        <h1 className="portfolio-display-subtitle">{title}</h1>
+        <p className="portfolio-copy max-w-2xl">{subtitle}</p>
       </div>
-      <Link className="btn" to={userViewPath}>
+      <Link className="portfolio-button-secondary" to={userViewPath}>
         Open User View
       </Link>
     </div>

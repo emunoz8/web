@@ -12,8 +12,8 @@ const AdminAccessNotice: React.FC<AdminAccessNoticeProps> = ({ isAuthenticated, 
 
   if (!isAuthenticated) {
     return (
-      <p className="text-sm opacity-80">
-        <Link className="underline" to="/login" state={buildLoginRouteState(location)}>
+      <p className="portfolio-copy">
+        <Link className="portfolio-inline-link" to="/login" state={buildLoginRouteState(location)}>
           Login
         </Link>{" "}
         to access admin publishing tools.
@@ -22,7 +22,7 @@ const AdminAccessNotice: React.FC<AdminAccessNoticeProps> = ({ isAuthenticated, 
   }
 
   if (!isAdmin) {
-    return <p className="text-sm opacity-80">You are logged in, but your account does not have admin publish access.</p>;
+    return <p className="portfolio-copy">You are logged in, but your account does not have admin publish access.</p>;
   }
 
   return null;

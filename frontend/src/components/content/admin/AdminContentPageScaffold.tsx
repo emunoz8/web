@@ -19,7 +19,7 @@ function AdminContentPageScaffold({
   editSection = null,
 }: AdminContentPageScaffoldProps) {
   return (
-    <section className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-5">
+    <section className="p-4 sm:p-6 md:p-10 space-y-6">
       <AdminPageHeader {...headerProps} />
       {createSection}
       {editSection}

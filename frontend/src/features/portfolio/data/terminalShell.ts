@@ -77,7 +77,7 @@ const terminalRootDirectory = "/srv/portfolio";
 const terminalNamedPaths: Record<string, string> = {
   home: "/",
   about: "/about",
-  projects: "/projects",
+  projects: "/",
   resume: "/resume",
   contact: "/contact",
   blog: "/blog",
@@ -85,7 +85,6 @@ const terminalNamedPaths: Record<string, string> = {
 const terminalDirectoryPaths = new Set([
   "/",
   "/about",
-  "/projects",
   "/resume",
   "/contact",
   "/blog",
@@ -146,10 +145,10 @@ export const terminalRouteCommands: TerminalRouteCommand[] = [
   {
     id: "projects",
     label: "Projects",
-    command: "cd /projects",
+    command: "cd ~",
     aliases: ["projects", "open projects"],
-    description: "Inspect featured work and platform builds.",
-    to: "/projects",
+    description: "View featured work and platform builds.",
+    to: "/",
   },
   {
     id: "resume",
@@ -251,7 +250,6 @@ export const terminalProjectCommands: TerminalProjectCommand[] = portfolioProjec
 export const terminalFeaturedCommands = [
   "cd ~",
   "cd /about",
-  "cd /projects",
   "open jit-cafe",
   "open github",
 ] as const;
@@ -672,7 +670,7 @@ function buildHelpLines(): string[] {
   const navigationEntries = [
     { command: "cd /", description: "Jump to the terminal root." },
     { command: "tree /", description: "Print the full portfolio route map." },
-    { command: "cd /projects", description: "Open the projects directory from anywhere." },
+    { command: "cd /about", description: "Open the about directory from anywhere." },
     { command: "cd ./contact", description: "Resolve from the current directory." },
     { command: "cd ../../about", description: "Chain parent-directory traversal." },
     ...terminalRouteCommands.map((command) => ({

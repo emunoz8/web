@@ -10,7 +10,7 @@ function Footer() {
   const shortcutLinks: Record<string, string> = {
     "cd ~": "/",
     "cd about": "/about",
-    "cd projects": "/projects",
+    "cd projects": "/",
     "less resume": "/resume",
     "cd contact": "/contact",
   };

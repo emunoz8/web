@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { HiArrowUpRight } from "react-icons/hi2";
 import { type ContentItem } from "../lib/api";
 import { contentPlatformService } from "../lib/services/ContentPlatformService";
-import ProjectsStorySection from "../features/portfolio/components/ProjectsStorySection";
 import { portfolioProjects } from "../features/portfolio/data/projects";
 import { publishTerminalTelemetry } from "../features/terminalUI/lib/terminalTelemetry";
 
@@ -168,24 +167,15 @@ function Projects() {
   );
 
   return (
-    <div className="space-y-16 py-8 sm:py-10">
-      <section className="border-b border-brand-line/16 pb-14">
-        <div className="max-w-4xl">
+    <div className="space-y-12 py-8 sm:py-10">
+      <section className="border-b border-brand-line pb-10">
+        <div className="max-w-3xl">
           <p className="portfolio-kicker">Projects</p>
-          <h1 className="portfolio-display-title mt-4">Selected work</h1>
-          <p className="mt-6 max-w-3xl portfolio-copy-strong">
-            Featured projects first. Published projects below.
-          </p>
+          <h1 className="portfolio-display-title mt-3">Published work</h1>
         </div>
       </section>
 
-      <ProjectsStorySection />
-
       <section>
-        <div className="max-w-3xl">
-          <p className="portfolio-kicker">Published</p>
-          <h2 className="portfolio-display-title mt-4">More projects</h2>
-        </div>
 
         {managedProjectsLoading ? (
           <div className="mt-6 border-t border-brand-line/16 pt-6">

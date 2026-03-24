@@ -45,8 +45,8 @@ const ProjectCreateForm: React.FC<ProjectCreateFormProps> = ({
   onSubmit,
 }) => {
   return (
-    <div className="border rounded-lg p-3 sm:p-4 space-y-3">
-      <h2 className="font-semibold">Create Project (Admin)</h2>
+    <div className="brand-panel p-4 sm:p-5 space-y-3">
+      <p className="portfolio-kicker">Create Project</p>
       <form className="space-y-2" onSubmit={onSubmit}>
         <div className="grid md:grid-cols-2 gap-2">
           <input
@@ -69,7 +69,7 @@ const ProjectCreateForm: React.FC<ProjectCreateFormProps> = ({
           value={createDescription}
           onChange={(event) => setCreateDescription(event.target.value)}
         />
-        <p className="text-xs opacity-80">
+        <p className="portfolio-copy text-xs">
           Markdown renders in the project modal. Example: <code>[Open AddToTheAUX](/add-to-the-aux)</code>
         </p>
 
@@ -107,10 +107,10 @@ const ProjectCreateForm: React.FC<ProjectCreateFormProps> = ({
           />
         </div>
 
-        {createError && <p className="text-sm text-red-500">{createError}</p>}
-        {createSuccess && <p className="text-sm text-green-500">{createSuccess}</p>}
+        {createError && <p className="text-sm text-brand-danger-ink">{createError}</p>}
+        {createSuccess && <p className="text-sm text-brand-accent">{createSuccess}</p>}
 
-        <button className="btn" type="submit" disabled={createLoading}>
+        <button className="portfolio-button-primary" type="submit" disabled={createLoading}>
           {createLoading ? "Creating..." : "Create Project"}
         </button>
       </form>

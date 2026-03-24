@@ -25,7 +25,7 @@ const AdminProjects: React.FC = () => {
   const pageProps = buildAdminContentPageProps({
     title: "Projects Admin",
     subtitle: "Create and edit project content.",
-    userViewPath: "/projects",
+    userViewPath: "/",
     filterTitle: "Projects",
     emptyMessage: "No projects found for this category yet.",
     browser,

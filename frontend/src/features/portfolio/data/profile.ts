@@ -26,7 +26,6 @@ export type PortfolioTechHighlight = {
 
 export const portfolioNavItems: PortfolioNavItem[] = [
   { label: "Home", to: "/" },
-  { label: "Projects", to: "/projects" },
   { label: "About", to: "/about" },
   { label: "Resume", to: "/resume" },
   { label: "Contact", to: "/contact" },
@@ -34,7 +33,7 @@ export const portfolioNavItems: PortfolioNavItem[] = [
 
 export const portfolioProfile = {
   name: "Edwin Munoz",
-  title: "Software Engineer | Backend Systems and Product Engineering",
+  title: "Full-Stack Developer | Java, Spring Boot & React",
   techStackLine: "Java | Spring Boot | React | PostgreSQL | Cloud",
   techHighlights: [
     { label: "Primary backend", value: "Java and Spring Boot" },
@@ -44,7 +43,7 @@ export const portfolioProfile = {
   ] satisfies PortfolioTechHighlight[],
   location: "Chicago, Illinois",
   summary:
-    "I build backend-first web products that turn real operational workflows into maintainable software, from Spring Boot APIs and relational models to React interfaces and production deployment.",
+    "I build full-stack applications from the backend outward — designing APIs and data models in Java and Spring Boot, then connecting them to clean, practical React frontends built for real users.",
   heroFacts: [
     { label: "Focus", value: "Backend-first product systems" },
     { label: "Backend", value: "Java, Spring Boot, PostgreSQL" },
@@ -52,8 +51,8 @@ export const portfolioProfile = {
     { label: "Location", value: "Chicago, Illinois" },
   ] satisfies PortfolioFact[],
   shortAbout: [
-    "My background is in building software that helps organizations run more effectively, especially tools that reduce administrative overhead and turn manual workflows into maintainable systems.",
-    "Before working in tech, I served in the U.S. Marine Corps as a diesel mechanic and later became a Corporal. That experience still shapes how I approach engineering: stay calm, stay structured, and build for real-world reliability.",
+    "Hi, I'm Edwin Muñoz — a software developer based in Chicago with a background in Computer Science and backend development. I build applications from the ground up, most often in Java, Spring Boot, and PostgreSQL, with a focus on clean architecture and software that's reliable and easy to maintain.",
+    "Before moving into software, I served in the U.S. Marine Corps as a diesel mechanic — that's where I learned to troubleshoot methodically and work under pressure. Today I build internal tools, data systems, and web apps used in real programs that serve students and communities in Chicago.",
   ],
   aboutParagraphs: [
     "I enjoy building software that is grounded in actual use cases rather than demo-only ideas. A lot of my work starts with a real operational need, then grows into a more durable system with proper backend structure, better UI, and cleaner deployment practices.",

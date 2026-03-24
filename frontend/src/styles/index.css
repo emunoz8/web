@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -15,7 +15,7 @@
     color-scheme: inherit;
     background-color: rgb(var(--brand-canvas));
     color: rgb(var(--brand-ink));
-    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-family: Inter, system-ui, sans-serif;
     line-height: 1.65;
     overflow-x: clip;
   }
@@ -46,44 +46,45 @@
 .light,
 [data-theme="light"] {
   color-scheme: light;
-  --palette-night: 38 31 27;
-  --palette-shadow: 246 241 233;
-  --palette-gloam: 236 229 218;
-  --palette-violet: 116 135 122;
-  --palette-mauve: 176 165 148;
-  --palette-lilac: 214 206 192;
-  --palette-rose: 191 118 73;
-  --palette-moon: 252 249 244;
+  --palette-canvas: 248 249 252;
+  --palette-surface: 255 255 255;
+  --palette-panel: 240 242 247;
+  --palette-ink: 17 24 39;
+  --palette-muted: 107 114 128;
+  --palette-accent: 37 99 235;
+  --palette-accent-strong: 29 78 216;
+  --palette-line: 229 231 235;
+  --palette-frame: 148 163 184;
 
-  --brand-canvas: var(--palette-shadow);
-  --brand-haze: var(--palette-lilac);
-  --brand-surface: var(--palette-moon);
-  --brand-contrast: var(--palette-night);
-  --brand-panel: var(--palette-gloam);
-  --brand-line: var(--palette-mauve);
-  --brand-frame: var(--palette-violet);
-  --brand-ink: var(--palette-night);
-  --brand-muted: 108 98 89;
-  --brand-accent: var(--palette-rose);
-  --brand-accent-strong: var(--palette-moon);
-  --brand-accent-fill: 62 52 46;
-  --brand-accent-fill-strong: var(--palette-night);
-  --brand-hero: var(--palette-moon);
-  --brand-warning-soft: 242 226 207;
-  --brand-warning-ink: var(--palette-night);
-  --brand-info-soft: 229 235 230;
-  --brand-info-ink: var(--palette-night);
-  --brand-success-soft: 231 238 233;
-  --brand-success-ink: var(--palette-night);
-  --brand-neutral-soft: 239 234 226;
-  --brand-neutral-ink: var(--palette-night);
-  --brand-danger-soft: 244 225 217;
-  --brand-danger-ink: 123 58 39;
-  --brand-shadow-ink: 79 67 58;
-  --brand-shadow-frame: 229 222 212;
-  --brand-shadow-modal: 56 46 40;
-  --brand-overlay: 45 38 34;
-  --brand-body-overlay-opacity: 1;
+  --brand-canvas: var(--palette-canvas);
+  --brand-haze: var(--palette-line);
+  --brand-surface: var(--palette-surface);
+  --brand-contrast: var(--palette-ink);
+  --brand-panel: var(--palette-panel);
+  --brand-line: var(--palette-line);
+  --brand-frame: var(--palette-frame);
+  --brand-ink: var(--palette-ink);
+  --brand-muted: var(--palette-muted);
+  --brand-accent: var(--palette-accent);
+  --brand-accent-strong: var(--palette-surface);
+  --brand-accent-fill: var(--palette-accent);
+  --brand-accent-fill-strong: var(--palette-accent-strong);
+  --brand-hero: var(--palette-surface);
+  --brand-warning-soft: 254 243 199;
+  --brand-warning-ink: 146 64 14;
+  --brand-info-soft: 219 234 254;
+  --brand-info-ink: 30 64 175;
+  --brand-success-soft: 209 250 229;
+  --brand-success-ink: 6 95 70;
+  --brand-neutral-soft: 243 244 246;
+  --brand-neutral-ink: var(--palette-ink);
+  --brand-danger-soft: 254 226 226;
+  --brand-danger-ink: 185 28 28;
+  --brand-shadow-ink: var(--palette-ink);
+  --brand-shadow-frame: var(--palette-line);
+  --brand-shadow-modal: var(--palette-ink);
+  --brand-overlay: 17 24 39;
+  --brand-body-overlay-opacity: 0;
   --terminal-font-stack:
     "SFMono-Regular",
     Menlo,
@@ -93,15 +94,8 @@
     "DejaVu Sans Mono",
     "Courier New",
     monospace;
-  --brand-body-background:
-    radial-gradient(circle at 12% 2%, rgb(var(--brand-frame) / 0.16), transparent 32%),
-    radial-gradient(circle at 86% 8%, rgb(var(--brand-accent) / 0.12), transparent 24%),
-    radial-gradient(circle at 52% 100%, rgb(var(--brand-line) / 0.1), transparent 26%),
-    linear-gradient(180deg, rgb(255 255 255) 0%, rgb(var(--brand-canvas)) 58%, rgb(236 229 219) 100%);
-  --brand-body-overlay:
-    linear-gradient(180deg, rgb(255 255 255 / 0.5) 0%, transparent 24%),
-    radial-gradient(circle at 12% 14%, rgb(var(--brand-frame) / 0.05), transparent 18%),
-    radial-gradient(circle at 88% 8%, rgb(var(--brand-accent) / 0.05), transparent 18%);
+  --brand-body-background: rgb(var(--palette-canvas));
+  --brand-body-overlay: none;
   --brand-stripes:
     linear-gradient(
       90deg,
@@ -122,95 +116,74 @@
       rgb(var(--brand-frame)) 64%,
       rgb(var(--brand-frame)) 100%
     );
-  --brand-card-background:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.28) 100%);
-  --brand-surface-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.24) 100%);
-  --brand-hero-gradient:
-    radial-gradient(circle at top right, rgb(var(--brand-accent) / 0.12), transparent 30%),
-    linear-gradient(160deg, rgb(var(--brand-hero)) 0%, rgb(var(--palette-gloam) / 0.92) 100%);
-  --brand-panel-gradient:
-    linear-gradient(160deg, rgb(var(--brand-panel)) 0%, rgb(var(--brand-line) / 0.66) 100%);
-  --brand-panel-soft-gradient:
-    linear-gradient(180deg, rgb(var(--brand-panel) / 0.28) 0%, rgb(var(--brand-surface) / 0.98) 100%);
-  --brand-item-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface)) 0%, rgb(var(--brand-hero) / 0.3) 100%);
-  --brand-contrast-glass-gradient:
-    linear-gradient(180deg, rgb(var(--brand-contrast) / 0.12) 0%, rgb(var(--brand-contrast) / 0.04) 100%);
-  --brand-surface-glass-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.95) 0%, rgb(var(--brand-hero) / 0.24) 100%);
+  --brand-card-background: rgb(var(--palette-surface));
+  --brand-surface-gradient: none;
+  --brand-hero-gradient: rgb(var(--palette-surface));
+  --brand-panel-gradient: rgb(var(--palette-panel));
+  --brand-panel-soft-gradient: none;
+  --brand-item-gradient: rgb(var(--palette-surface));
+  --brand-contrast-glass-gradient: none;
+  --brand-surface-glass-gradient: none;
   --brand-accent-gradient:
-    linear-gradient(180deg, rgb(var(--brand-accent-fill)) 0%, rgb(var(--brand-accent-fill-strong)) 100%);
-  --brand-ambient-panel:
-    radial-gradient(circle, rgb(var(--brand-panel) / 0.18) 0%, transparent 72%);
-  --brand-ambient-frame:
-    radial-gradient(circle, rgb(var(--brand-frame) / 0.14) 0%, transparent 72%);
+    linear-gradient(180deg, rgb(var(--palette-accent)) 0%, rgb(var(--palette-accent-strong)) 100%);
+  --brand-ambient-panel: none;
+  --brand-ambient-frame: none;
   --brand-image-overlay:
-    linear-gradient(180deg, rgb(var(--brand-shadow-ink) / 0.04) 0%, rgb(var(--brand-shadow-ink) / 0.22) 100%);
+    linear-gradient(180deg, rgb(var(--palette-ink) / 0.04) 0%, rgb(var(--palette-ink) / 0.18) 100%);
   --brand-image-warm-1:
-    radial-gradient(circle at 22% 18%, rgb(var(--palette-moon) / 0.2) 0%, transparent 18%),
-    linear-gradient(145deg, rgb(var(--palette-shadow)) 0%, rgb(var(--palette-violet)) 42%, rgb(var(--palette-rose)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-panel)) 0%, rgb(var(--palette-frame)) 100%);
   --brand-image-warm-2:
-    radial-gradient(circle at 24% 18%, rgb(var(--palette-moon) / 0.22) 0%, transparent 18%),
-    linear-gradient(145deg, rgb(var(--palette-night)) 0%, rgb(var(--palette-gloam)) 40%, rgb(var(--palette-rose)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-line)) 0%, rgb(var(--palette-panel)) 100%);
   --brand-image-neutral-1:
-    radial-gradient(circle at 20% 18%, rgb(var(--palette-moon) / 0.18) 0%, transparent 16%),
-    linear-gradient(145deg, rgb(var(--palette-gloam)) 0%, rgb(var(--palette-mauve)) 48%, rgb(var(--palette-lilac)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-panel)) 0%, rgb(var(--palette-line)) 100%);
   --brand-image-earth-1:
-    radial-gradient(circle at 20% 18%, rgb(var(--palette-moon) / 0.18) 0%, transparent 18%),
-    linear-gradient(145deg, rgb(var(--palette-shadow)) 0%, rgb(var(--palette-violet)) 44%, rgb(var(--palette-lilac)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-canvas)) 0%, rgb(var(--palette-panel)) 100%);
 }
 
 .dark,
 [data-theme="dark"] {
   color-scheme: dark;
-  --palette-night: 244 239 232;
-  --palette-shadow: 17 14 12;
-  --palette-gloam: 29 24 21;
-  --palette-violet: 126 147 133;
-  --palette-mauve: 92 81 73;
-  --palette-lilac: 49 43 39;
-  --palette-rose: 201 138 96;
-  --palette-moon: 36 31 28;
+  --palette-canvas: 9 9 11;
+  --palette-surface: 24 24 27;
+  --palette-panel: 39 39 42;
+  --palette-ink: 244 244 245;
+  --palette-muted: 161 161 170;
+  --palette-accent: 96 165 250;
+  --palette-accent-strong: 147 197 253;
+  --palette-line: 63 63 70;
+  --palette-frame: 113 113 122;
 
-  --brand-canvas: var(--palette-shadow);
-  --brand-haze: var(--palette-lilac);
-  --brand-surface: var(--palette-moon);
-  --brand-contrast: var(--palette-night);
-  --brand-panel: var(--palette-gloam);
-  --brand-line: var(--palette-mauve);
-  --brand-frame: var(--palette-violet);
-  --brand-ink: var(--palette-night);
-  --brand-muted: 189 177 168;
-  --brand-accent: var(--palette-rose);
-  --brand-accent-strong: 252 247 241;
-  --brand-accent-fill: 168 109 71;
-  --brand-accent-fill-strong: 129 82 53;
-  --brand-hero: 30 26 24;
-  --brand-warning-soft: 67 50 39;
-  --brand-warning-ink: 246 233 214;
-  --brand-info-soft: 44 52 47;
-  --brand-info-ink: 228 236 231;
-  --brand-success-soft: 45 56 49;
-  --brand-success-ink: 232 241 235;
-  --brand-neutral-soft: 48 41 37;
-  --brand-neutral-ink: 239 233 226;
-  --brand-danger-soft: 77 47 40;
-  --brand-danger-ink: 248 219 209;
-  --brand-shadow-ink: 7 6 5;
-  --brand-shadow-frame: 56 48 43;
-  --brand-shadow-modal: 5 4 4;
-  --brand-overlay: 7 6 5;
-  --brand-body-overlay-opacity: 0.62;
-  --brand-body-background:
-    radial-gradient(circle at 12% 2%, rgb(var(--brand-frame) / 0.16), transparent 32%),
-    radial-gradient(circle at 86% 8%, rgb(var(--brand-accent) / 0.16), transparent 24%),
-    radial-gradient(circle at 52% 100%, rgb(var(--brand-line) / 0.14), transparent 26%),
-    linear-gradient(180deg, rgb(24 20 18) 0%, rgb(var(--brand-canvas)) 58%, rgb(11 9 8) 100%);
-  --brand-body-overlay:
-    linear-gradient(180deg, rgb(255 255 255 / 0.02) 0%, transparent 24%),
-    radial-gradient(circle at 12% 14%, rgb(var(--brand-frame) / 0.08), transparent 18%),
-    radial-gradient(circle at 88% 8%, rgb(var(--brand-accent) / 0.06), transparent 18%);
+  --brand-canvas: var(--palette-canvas);
+  --brand-haze: var(--palette-line);
+  --brand-surface: var(--palette-surface);
+  --brand-contrast: var(--palette-ink);
+  --brand-panel: var(--palette-panel);
+  --brand-line: var(--palette-line);
+  --brand-frame: var(--palette-frame);
+  --brand-ink: var(--palette-ink);
+  --brand-muted: var(--palette-muted);
+  --brand-accent: var(--palette-accent);
+  --brand-accent-strong: var(--palette-ink);
+  --brand-accent-fill: var(--palette-accent);
+  --brand-accent-fill-strong: 59 130 246;
+  --brand-hero: var(--palette-surface);
+  --brand-warning-soft: 78 59 19;
+  --brand-warning-ink: 253 230 138;
+  --brand-info-soft: 30 58 138;
+  --brand-info-ink: 147 197 253;
+  --brand-success-soft: 6 78 59;
+  --brand-success-ink: 110 231 183;
+  --brand-neutral-soft: var(--palette-panel);
+  --brand-neutral-ink: var(--palette-ink);
+  --brand-danger-soft: 127 29 29;
+  --brand-danger-ink: 252 165 165;
+  --brand-shadow-ink: 0 0 0;
+  --brand-shadow-frame: var(--palette-line);
+  --brand-shadow-modal: 0 0 0;
+  --brand-overlay: 0 0 0;
+  --brand-body-overlay-opacity: 0;
+  --brand-body-background: rgb(var(--palette-canvas));
+  --brand-body-overlay: none;
   --brand-stripes:
     linear-gradient(
       90deg,
@@ -231,43 +204,28 @@
       rgb(var(--brand-frame)) 64%,
       rgb(var(--brand-frame)) 100%
     );
-  --brand-card-background:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.84) 100%);
-  --brand-surface-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.9) 100%);
-  --brand-hero-gradient:
-    radial-gradient(circle at top right, rgb(var(--brand-accent) / 0.14), transparent 30%),
-    linear-gradient(160deg, rgb(var(--brand-hero)) 0%, rgb(var(--palette-gloam) / 0.96) 100%);
-  --brand-panel-gradient:
-    linear-gradient(160deg, rgb(var(--brand-panel)) 0%, rgb(var(--brand-line) / 0.4) 100%);
-  --brand-panel-soft-gradient:
-    linear-gradient(180deg, rgb(var(--brand-panel) / 0.58) 0%, rgb(var(--brand-surface) / 0.95) 100%);
-  --brand-item-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface)) 0%, rgb(var(--brand-hero) / 0.92) 100%);
-  --brand-contrast-glass-gradient:
-    linear-gradient(180deg, rgb(var(--brand-contrast) / 0.06) 0%, rgb(var(--brand-contrast) / 0.02) 100%);
-  --brand-surface-glass-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.95) 0%, rgb(var(--brand-hero) / 0.72) 100%);
+  --brand-card-background: rgb(var(--palette-surface));
+  --brand-surface-gradient: none;
+  --brand-hero-gradient: rgb(var(--palette-surface));
+  --brand-panel-gradient: rgb(var(--palette-panel));
+  --brand-panel-soft-gradient: none;
+  --brand-item-gradient: rgb(var(--palette-surface));
+  --brand-contrast-glass-gradient: none;
+  --brand-surface-glass-gradient: none;
   --brand-accent-gradient:
-    linear-gradient(180deg, rgb(var(--brand-accent-fill)) 0%, rgb(var(--brand-accent-fill-strong)) 100%);
-  --brand-ambient-panel:
-    radial-gradient(circle, rgb(var(--brand-panel) / 0.22) 0%, transparent 72%);
-  --brand-ambient-frame:
-    radial-gradient(circle, rgb(var(--brand-frame) / 0.16) 0%, transparent 72%);
+    linear-gradient(180deg, rgb(var(--palette-accent)) 0%, rgb(59 130 246) 100%);
+  --brand-ambient-panel: none;
+  --brand-ambient-frame: none;
   --brand-image-overlay:
-    linear-gradient(180deg, rgb(var(--brand-shadow-ink) / 0.18) 0%, rgb(var(--brand-shadow-ink) / 0.42) 100%);
+    linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.42) 100%);
   --brand-image-warm-1:
-    radial-gradient(circle at 22% 18%, rgb(var(--palette-moon) / 0.1) 0%, transparent 18%),
-    linear-gradient(145deg, rgb(var(--palette-shadow)) 0%, rgb(var(--palette-violet)) 42%, rgb(var(--palette-rose)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-panel)) 0%, rgb(var(--palette-frame)) 100%);
   --brand-image-warm-2:
-    radial-gradient(circle at 24% 18%, rgb(var(--palette-moon) / 0.08) 0%, transparent 18%),
-    linear-gradient(145deg, rgb(26 22 20) 0%, rgb(var(--palette-gloam)) 40%, rgb(var(--palette-rose)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-canvas)) 0%, rgb(var(--palette-panel)) 100%);
   --brand-image-neutral-1:
-    radial-gradient(circle at 20% 18%, rgb(var(--palette-moon) / 0.08) 0%, transparent 16%),
-    linear-gradient(145deg, rgb(var(--palette-gloam)) 0%, rgb(var(--palette-mauve)) 48%, rgb(var(--palette-lilac)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-panel)) 0%, rgb(var(--palette-line)) 100%);
   --brand-image-earth-1:
-    radial-gradient(circle at 20% 18%, rgb(var(--palette-moon) / 0.08) 0%, transparent 18%),
-    linear-gradient(145deg, rgb(var(--palette-shadow)) 0%, rgb(var(--palette-violet)) 44%, rgb(var(--palette-lilac)) 100%);
+    linear-gradient(145deg, rgb(var(--palette-canvas)) 0%, rgb(var(--palette-panel)) 100%);
 }
 
 body.brand-body-scroll-locked,
@@ -280,36 +238,20 @@ body.portfolio-body-scroll-locked {
   position: relative;
   isolation: isolate;
   background-color: rgb(var(--brand-canvas));
-  background-image: var(--brand-body-background);
+  background-image: radial-gradient(circle, rgb(var(--brand-frame) / 0.15) 1px, transparent 1px);
+  background-size: 32px 32px;
   scrollbar-gutter: stable both-edges;
   overflow-x: clip;
 }
 
 .portfolio-site-shell::before,
 .brand-site-shell::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: var(--brand-body-overlay-opacity);
-  background: var(--brand-body-overlay);
+  display: none;
 }
 
 .portfolio-site-shell::after,
 .brand-site-shell::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.12;
-  background-image:
-    linear-gradient(rgb(var(--brand-line) / 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--brand-line) / 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, transparent 0%, rgb(var(--brand-contrast) / 0.02) 48%, transparent 100%);
-  background-size: 84px 84px, 84px 84px, 100% 4px;
-  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.8) 0%, rgb(0 0 0 / 0.22) 34%, transparent 100%);
+  display: none;
 }
 
 .portfolio-content-shell,
@@ -365,17 +307,15 @@ body.portfolio-body-scroll-locked {
 .login-form {
   position: relative;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 8px;
 }
 
 .portfolio-panel,
 .brand-panel {
-  border: 1px solid rgb(var(--brand-line) / 0.18);
-  background-color: rgb(var(--brand-surface) / 0.98);
-  background-image: var(--brand-surface-gradient);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-line) / 0.08),
-    0 18px 48px rgb(var(--brand-shadow-ink) / 0.24);
+  border: 1px solid rgb(var(--brand-line));
+  background-color: rgb(var(--brand-surface));
+  background-image: none;
+  box-shadow: 0 1px 3px rgb(var(--brand-contrast) / 0.04);
 }
 
 .portfolio-panel-muted,
@@ -383,60 +323,40 @@ body.portfolio-body-scroll-locked {
 .brand-soft-panel,
 .login-section-panel,
 .login-form {
-  border: 1px solid rgb(var(--brand-line) / 0.16);
-  background-color: rgb(var(--brand-panel) / 0.22);
-  background-image: var(--brand-panel-soft-gradient);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-line) / 0.06),
-    0 14px 38px rgb(var(--brand-shadow-ink) / 0.18);
+  border: 1px solid rgb(var(--brand-line));
+  background-color: rgb(var(--brand-panel));
+  background-image: none;
+  box-shadow: none;
 }
 
 .portfolio-panel-hero,
 .brand-panel-hero,
 .brand-hero-card {
-  border: 1px solid rgb(var(--brand-frame) / 0.2);
-  background:
-    radial-gradient(circle at top right, rgb(var(--brand-accent) / 0.16), transparent 30%),
-    var(--brand-hero-gradient);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-contrast) / 0.04),
-    0 24px 64px rgb(var(--brand-shadow-ink) / 0.3);
+  border: 1px solid rgb(var(--brand-accent) / 0.2);
+  background-color: rgb(var(--brand-surface));
+  background-image: none;
+  box-shadow: 0 1px 3px rgb(var(--brand-contrast) / 0.04);
 }
 
 .portfolio-panel-hero::after,
 .brand-panel-hero::after,
 .brand-hero-card::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(var(--brand-accent) / 0.65) 14%,
-    rgb(var(--brand-frame) / 0.34) 52%,
-    transparent 100%
-  );
+  display: none;
 }
 
 .portfolio-card-interactive,
 .brand-card-interactive,
 .brand-interactive-panel {
   transition:
-    transform 180ms ease,
     border-color 180ms ease,
-    box-shadow 180ms ease,
-    background-color 180ms ease;
+    box-shadow 180ms ease;
 }
 
 .portfolio-card-interactive:hover,
 .brand-card-interactive:hover,
 .brand-interactive-panel:hover {
-  transform: translateY(-2px);
-  border-color: rgb(var(--brand-frame) / 0.34);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-line) / 0.12),
-    0 20px 52px rgb(var(--brand-shadow-ink) / 0.28);
+  border-color: rgb(var(--brand-frame));
+  box-shadow: 0 4px 12px rgb(var(--brand-contrast) / 0.06);
 }
 
 .portfolio-kicker,
@@ -464,78 +384,69 @@ body.portfolio-body-scroll-locked {
 .btn,
 .login-submit-button {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  border: 1px solid rgb(var(--brand-accent-fill) / 0.7);
-  padding: 0.7rem 1.15rem;
+  border-radius: 6px;
+  border: 1px solid rgb(var(--brand-accent));
+  padding: 0.55rem 1.1rem;
   font-size: 0.92rem;
   font-weight: 600;
-  color: rgb(var(--brand-accent-strong));
+  color: rgb(255 255 255);
   background: var(--brand-accent-gradient);
-  box-shadow:
-    inset 0 1px 0 rgb(var(--brand-contrast) / 0.08),
-    0 12px 28px rgb(var(--brand-shadow-ink) / 0.22);
+  box-shadow: 0 1px 2px rgb(var(--brand-contrast) / 0.06);
   transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    filter 140ms ease;
+    filter 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .portfolio-button-primary:hover,
 .btn:hover,
 .login-submit-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow:
-    inset 0 1px 0 rgb(var(--brand-contrast) / 0.08),
-    0 16px 30px rgb(var(--brand-shadow-ink) / 0.24);
+  filter: brightness(1.08);
+  box-shadow: 0 2px 6px rgb(var(--brand-accent) / 0.3);
 }
 
 .portfolio-button-secondary {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  border: 1px solid rgb(var(--brand-line) / 0.28);
-  padding: 0.7rem 1.15rem;
+  border-radius: 6px;
+  border: 1px solid rgb(var(--brand-line));
+  padding: 0.55rem 1.1rem;
   font-size: 0.92rem;
   font-weight: 600;
   color: rgb(var(--brand-contrast));
-  background-color: rgb(var(--brand-surface) / 0.92);
-  background-image: var(--brand-surface-glass-gradient);
+  background-color: rgb(var(--brand-surface));
+  background-image: none;
   transition:
-    transform 140ms ease,
     border-color 140ms ease,
     background-color 140ms ease;
 }
 
 .brand-button-secondary {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  border: 1px solid rgb(var(--brand-line) / 0.24);
-  padding: 0.7rem 1.15rem;
+  border-radius: 6px;
+  border: 1px solid rgb(var(--brand-line));
+  padding: 0.55rem 1.1rem;
   font-size: 0.92rem;
   font-weight: 600;
   color: rgb(var(--brand-contrast));
-  background-color: rgb(var(--brand-surface) / 0.92);
-  background-image: var(--brand-surface-glass-gradient);
+  background-color: rgb(var(--brand-surface));
+  background-image: none;
   transition:
-    transform 140ms ease,
     border-color 140ms ease,
     background-color 140ms ease;
 }
 
 .portfolio-button-secondary:hover,
 .brand-button-secondary:hover {
-  transform: translateY(-1px);
-  border-color: rgb(var(--brand-frame) / 0.36);
-  background-color: rgb(var(--brand-panel) / 0.24);
+  border-color: rgb(var(--brand-frame));
+  background-color: rgb(var(--brand-panel));
 }
 
 .portfolio-chip,
@@ -544,10 +455,10 @@ body.portfolio-body-scroll-locked {
 .brand-status-chip {
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--brand-line) / 0.28);
-  background-color: rgb(var(--brand-surface) / 0.72);
-  padding: 0.4rem 0.78rem;
+  border-radius: 4px;
+  border: 1px solid rgb(var(--brand-line));
+  background-color: rgb(var(--brand-panel));
+  padding: 0.3rem 0.65rem;
   font-family: "IBM Plex Mono", "Courier New", monospace;
   font-size: 0.625rem;
   font-weight: 600;
@@ -563,50 +474,27 @@ body.portfolio-body-scroll-locked {
   align-items: flex-start;
   gap: 0.22rem;
   min-width: 9.5rem;
-  border-radius: 20px;
-  border: 1px solid rgb(var(--brand-frame) / 0.22);
-  padding: 0.7rem 1rem 0.72rem 1.1rem;
-  background:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-panel) / 0.88) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-contrast) / 0.04),
-    0 14px 30px rgb(var(--brand-shadow-ink) / 0.16);
+  border-radius: 6px;
+  border: 1px solid rgb(var(--brand-line));
+  padding: 0.55rem 1rem 0.6rem 1rem;
+  background: rgb(var(--brand-surface));
+  box-shadow: 0 1px 2px rgb(var(--brand-contrast) / 0.04);
   transition:
-    transform 140ms ease,
     border-color 140ms ease,
-    box-shadow 140ms ease,
-    background-color 140ms ease;
+    box-shadow 140ms ease;
 }
 
 .portfolio-header-resume::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: var(--brand-stripes);
-  opacity: 0.9;
+  display: none;
 }
 
 .portfolio-header-resume::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(var(--brand-accent) / 0.55) 16%,
-    rgb(var(--brand-frame) / 0.28) 54%,
-    transparent 100%
-  );
+  display: none;
 }
 
 .portfolio-header-resume:hover {
-  transform: translateY(-1px);
-  border-color: rgb(var(--brand-frame) / 0.36);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-contrast) / 0.06),
-    0 18px 34px rgb(var(--brand-shadow-ink) / 0.2);
+  border-color: rgb(var(--brand-frame));
+  box-shadow: 0 2px 6px rgb(var(--brand-contrast) / 0.06);
 }
 
 .portfolio-header-resume-kicker {
@@ -633,10 +521,11 @@ body.portfolio-body-scroll-locked {
 
 .portfolio-display-hero,
 .brand-display-hero {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
-  font-size: clamp(3rem, 7vw, 5.75rem);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  font-weight: 700;
   text-transform: none;
   color: rgb(var(--brand-contrast));
   overflow-wrap: anywhere;
@@ -646,10 +535,11 @@ body.portfolio-body-scroll-locked {
 
 .portfolio-display-title,
 .brand-display-title {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
-  font-size: clamp(2rem, 4.5vw, 3.4rem);
-  line-height: 0.95;
-  letter-spacing: -0.03em;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-weight: 700;
   text-transform: none;
   color: rgb(var(--brand-contrast));
   overflow-wrap: anywhere;
@@ -659,10 +549,11 @@ body.portfolio-body-scroll-locked {
 
 .portfolio-display-subtitle,
 .brand-display-subtitle {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
-  font-size: clamp(1.2rem, 2.8vw, 1.7rem);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 600;
   text-transform: none;
   color: rgb(var(--brand-contrast));
   overflow-wrap: anywhere;
@@ -706,15 +597,15 @@ body.portfolio-body-scroll-locked {
 
 .portfolio-inline-link:hover,
 .brand-inline-link:hover {
-  color: rgb(var(--brand-accent-strong));
+  color: rgb(var(--brand-accent));
 }
 
 .portfolio-fact-card,
 .brand-fact-card {
-  border: 1px solid rgb(var(--brand-line) / 0.2);
-  border-radius: 22px;
-  background-color: rgb(var(--brand-surface) / 0.58);
-  box-shadow: inset 0 0 0 1px rgb(var(--brand-line) / 0.18);
+  border: 1px solid rgb(var(--brand-line));
+  border-radius: 8px;
+  background-color: rgb(var(--brand-surface));
+  box-shadow: none;
   padding: 1.15rem 1.2rem;
 }
 
@@ -744,9 +635,8 @@ body.portfolio-body-scroll-locked {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  border-bottom: 1px solid rgb(var(--brand-line) / 0.2);
-  background:
-    linear-gradient(180deg, rgb(var(--brand-hero) / 0.92) 0%, rgb(var(--brand-surface) / 0.82) 100%);
+  border-bottom: 1px solid rgb(var(--brand-line));
+  background: rgb(var(--brand-panel));
   padding: 0.8rem 1rem;
 }
 
@@ -781,12 +671,10 @@ body.portfolio-body-scroll-locked {
 }
 
 .text-area {
-  border: 1px solid rgb(var(--brand-line) / 0.18);
-  background-color: rgb(var(--brand-surface) / 0.98);
-  background-image: var(--brand-surface-gradient);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--brand-line) / 0.08),
-    0 18px 48px rgb(var(--brand-shadow-ink) / 0.24);
+  border: 1px solid rgb(var(--brand-line));
+  background-color: rgb(var(--brand-surface));
+  background-image: none;
+  box-shadow: none;
   padding: 1.5rem;
   font-size: 0.96rem;
   line-height: 1.9;
@@ -797,18 +685,16 @@ body.portfolio-body-scroll-locked {
 .form-textarea,
 .login-form-input {
   width: 100%;
-  border-radius: 16px;
-  border: 1px solid rgb(var(--brand-line) / 0.24);
-  background:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.94) 0%, rgb(var(--brand-hero) / 0.98) 100%);
+  border-radius: 6px;
+  border: 1px solid rgb(var(--brand-line));
+  background: rgb(var(--brand-surface));
   padding: 0.8rem 0.95rem;
   font-size: 0.94rem;
   color: rgb(var(--brand-ink));
   outline: none;
   transition:
     border-color 140ms ease,
-    box-shadow 140ms ease,
-    background-color 140ms ease;
+    box-shadow 140ms ease;
 }
 
 .form-textarea {
@@ -852,8 +738,8 @@ body.portfolio-body-scroll-locked {
   right: 1rem;
   top: 1rem;
   z-index: 10;
-  border-radius: 14px;
-  border: 1px solid rgb(var(--brand-line) / 0.24);
+  border-radius: 6px;
+  border: 1px solid rgb(var(--brand-line));
   background-color: rgb(var(--brand-surface) / 0.82);
   padding: 0.55rem 0.75rem;
   font-size: 0.9rem;
@@ -866,8 +752,8 @@ body.portfolio-body-scroll-locked {
 
 .login-modal-close-button:hover {
   color: rgb(var(--brand-contrast));
-  border-color: rgb(var(--brand-frame) / 0.34);
-  background-color: rgb(var(--brand-panel) / 0.75);
+  border-color: rgb(var(--brand-frame));
+  background-color: rgb(var(--brand-panel));
 }
 
 .login-content-card {
@@ -876,14 +762,10 @@ body.portfolio-body-scroll-locked {
 }
 
 .login-content-card-modal {
-  border: 1px solid rgb(var(--brand-line) / 0.18);
-  background:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.94) 100%);
-  box-shadow:
-    inset 0 1px 0 rgb(var(--brand-contrast) / 0.03),
-    0 28px 84px rgb(var(--brand-shadow-modal) / 0.42);
+  border: 1px solid rgb(var(--brand-line));
+  background-color: rgb(var(--brand-surface));
+  box-shadow: 0 4px 24px rgb(var(--brand-contrast) / 0.08);
   color: rgb(var(--brand-ink));
-  backdrop-filter: blur(10px);
 }
 
 .login-content-card-page {
@@ -930,12 +812,9 @@ body.portfolio-body-scroll-locked {
 
 .login-section-panel,
 .login-form {
-  border: 1px solid rgb(var(--brand-line) / 0.18);
-  background:
-    linear-gradient(180deg, rgb(var(--brand-panel) / 0.68) 0%, rgb(var(--brand-surface) / 0.94) 100%);
-  box-shadow:
-    inset 0 1px 0 rgb(var(--brand-contrast) / 0.025),
-    0 18px 46px rgb(var(--brand-shadow-ink) / 0.22);
+  border: 1px solid rgb(var(--brand-line));
+  background-color: rgb(var(--brand-panel));
+  box-shadow: none;
   padding: 1.25rem;
 }
 
@@ -976,10 +855,142 @@ body.portfolio-body-scroll-locked {
 
 .login-error-panel {
   border: 1px solid rgb(var(--brand-danger-soft) / 0.55);
-  border-radius: 18px;
-  background-color: rgb(var(--brand-danger-soft) / 0.22);
+  border-radius: 6px;
+  background-color: rgb(var(--brand-danger-soft) / 0.15);
   padding: 0.85rem 0.95rem;
 }
+
+/* ── Home page ─────────────────────────────────────────────── */
+
+.home-shell {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  display: grid;
+  gap: 4rem;
+}
+
+@media (min-width: 640px) {
+  .home-shell {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+.home-hero {
+  display: grid;
+  gap: 2.5rem;
+  border-bottom: 1px solid rgb(var(--brand-line));
+  padding-bottom: 3.5rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1.12fr) minmax(18rem, 0.88fr);
+  }
+}
+
+.home-hero-content {
+  max-width: 48rem;
+}
+
+.home-hero-cta {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.home-hero-aside {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .home-hero-aside {
+    justify-self: end;
+    max-width: 24rem;
+  }
+}
+
+.home-hero-photo {
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgb(var(--brand-line));
+}
+
+.home-hero-photo-img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.home-hero-stats {
+  display: grid;
+  gap: 1rem;
+}
+
+.home-stat {
+  border-top: 1px solid rgb(var(--brand-line));
+  padding-top: 1rem;
+}
+
+.home-projects-grid {
+  margin-top: 1.5rem;
+  display: grid;
+  column-gap: 1.5rem;
+  row-gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .home-projects-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .home-projects-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.home-api-card {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-top: 1px solid rgb(var(--brand-line));
+  padding-top: 1rem;
+}
+
+.home-api-card-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.home-api-card-demo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(var(--brand-muted));
+  transition: color 140ms ease;
+}
+
+.home-api-card-demo-link:hover {
+  color: rgb(var(--brand-contrast));
+}
+
+.home-projects-error {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: rgb(var(--brand-danger-ink));
+}
+
+/* ── End Home page ──────────────────────────────────────────── */
 
 @layer components {
   .brand-page-shell {

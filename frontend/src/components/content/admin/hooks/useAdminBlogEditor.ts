@@ -37,11 +37,13 @@ type BlogEditEditorState = {
   bodyMd: string;
   setBodyMd: (value: string) => void;
   loading: boolean;
+  deleteLoading: boolean;
   error: string | null;
   success: string | null;
   begin: (post: ContentItem) => Promise<void>;
   cancel: () => void;
   submit: (event: FormEvent) => Promise<void>;
+  delete: () => Promise<void>;
 };
 
 export type UseAdminBlogEditorResult = {
@@ -69,6 +71,7 @@ const useAdminBlogEditor = ({
   const [editSlug, setEditSlugState] = useState("");
   const [editBodyMd, setEditBodyMdState] = useState("");
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editSuccess, setEditSuccess] = useState<string | null>(null);
 
@@ -147,6 +150,28 @@ const useAdminBlogEditor = ({
     setEditSuccess(null);
   };
 
+  const deleteBlogPost = async () => {
+    setEditError(null);
+    setEditSuccess(null);
+
+    if (!isAdmin || editId == null) {
+      setEditError("Admin login required.");
+      return;
+    }
+
+    setDeleteLoading(true);
+
+    try {
+      await contentPlatformService.deleteContent(editId);
+      await refreshAll();
+      cancelEdit();
+    } catch (err) {
+      setEditError((err as Error).message);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const submitEditBlogPost = async (event: FormEvent) => {
     event.preventDefault();
     setEditError(null);
@@ -202,11 +227,13 @@ const useAdminBlogEditor = ({
       bodyMd: editBodyMd,
       setBodyMd: setEditBodyMdState,
       loading: editLoading,
+      deleteLoading,
       error: editError,
       success: editSuccess,
       begin: beginEdit,
       cancel: cancelEdit,
       submit: submitEditBlogPost,
+      delete: deleteBlogPost,
     },
   };
 };

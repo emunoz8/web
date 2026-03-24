@@ -51,10 +51,12 @@ export function buildBlogAdminFormProps(
           editBodyMd: editor.edit.bodyMd,
           setEditBodyMd: editor.edit.setBodyMd,
           editLoading: editor.edit.loading,
+          deleteLoading: editor.edit.deleteLoading,
           editError: editor.edit.error,
           editSuccess: editor.edit.success,
           onSubmit: editor.edit.submit,
           onCancel: editor.edit.cancel,
+          onDelete: editor.edit.delete,
         },
   };
 }

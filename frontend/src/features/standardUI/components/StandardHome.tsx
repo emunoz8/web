@@ -1,97 +1,196 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ProjectCard } from "../../portfolio/components/ProjectCard";
-import { featuredPortfolioProjects } from "../../portfolio/data/projects";
+import { HiArrowUpRight } from "react-icons/hi2";
 import { portfolioProfile } from "../../portfolio/data/profile";
-import StandardHomeStory from "./StandardHomeStory";
+import { portfolioProjects } from "../../portfolio/data/projects";
+import { ProjectCard } from "../../portfolio/components/ProjectCard";
+import { publishTerminalTelemetry } from "../../terminalUI/lib/terminalTelemetry";
+import { type ContentItem } from "../../../lib/api";
+import { contentPlatformService } from "../../../lib/services/ContentPlatformService";
+
+const STATIC_PROJECT_SLUGS = new Set(portfolioProjects.map((p) => p.slug));
+
+function getProjectExcerpt(project: ContentItem) {
+  const description = project.description?.trim() ?? "";
+  if (!description) return "No summary published for this project yet.";
+  return description.length > 220 ? `${description.slice(0, 217)}...` : description;
+}
+
+function isInternalProjectUrl(url: string) {
+  if (url.startsWith("/")) return true;
+  if (typeof window === "undefined") return false;
+  try {
+    return new URL(url, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+function normalizeInternalProjectUrl(url: string) {
+  if (url.startsWith("/")) return url;
+  if (typeof window === "undefined") return url;
+  try {
+    const resolved = new URL(url, window.location.origin);
+    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+  } catch {
+    return url;
+  }
+}
+
+function ApiProjectCard({ project }: { project: ContentItem }) {
+  const projectUrl = project.projectUrl?.trim() ?? "";
+  const year = new Date(project.createdAt).getFullYear();
+
+  return (
+    <article className="home-api-card">
+      <p className="portfolio-kicker">{Number.isFinite(year) ? String(year) : "Published"}</p>
+      <h3 className="portfolio-display-subtitle mt-3">{project.title}</h3>
+      <p className="mt-4 flex-1 portfolio-copy">{getProjectExcerpt(project)}</p>
+      <div className="home-api-card-actions">
+        <Link to={`/projects/${project.slug}`} className="portfolio-inline-link">
+          View project
+          <HiArrowUpRight className="h-4 w-4" />
+        </Link>
+        {projectUrl ? (
+          isInternalProjectUrl(projectUrl) ? (
+            <Link to={normalizeInternalProjectUrl(projectUrl)} className="home-api-card-demo-link">
+              Live demo
+              <HiArrowUpRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <a
+              href={projectUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="home-api-card-demo-link"
+            >
+              Live demo
+              <HiArrowUpRight className="h-4 w-4" />
+            </a>
+          )
+        ) : null}
+      </div>
+    </article>
+  );
+}
 
 function StandardHome() {
+  const [managedProjects, setManagedProjects] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        publishTerminalTelemetry({
+          tone: "info",
+          lines: ["backend :: GET /api/contents?type=PROJECT&page=0&size=100"],
+        });
+        const page = await contentPlatformService.listContentsPage({
+          type: "PROJECT",
+          page: 0,
+          size: 100,
+          signal: controller.signal,
+        });
+        if (!cancelled) {
+          setManagedProjects(page.content);
+          publishTerminalTelemetry({
+            tone: "success",
+            lines: [`backend :: loaded ${page.totalElements} project entries`],
+          });
+        }
+      } catch (err) {
+        if (!cancelled && (err as Error).name !== "AbortError") {
+          setError((err as Error).message);
+          setManagedProjects([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, []);
+
+  const projects = useMemo(
+    () => managedProjects.filter((p) => !STATIC_PROJECT_SLUGS.has(p.slug)),
+    [managedProjects],
+  );
+
   return (
-    <div className="space-y-16 py-6 sm:py-8">
-      <section className="grid gap-10 border-b border-brand-line/16 pb-14 lg:grid-cols-[minmax(0,1.12fr)_minmax(20rem,0.88fr)] lg:items-start">
-        <div className="max-w-4xl">
+    <div className="home-shell">
+      <section className="home-hero">
+        <div className="home-hero-content">
           <p className="portfolio-kicker">{portfolioProfile.name}</p>
-          <p className="mt-5 font-mono text-xs uppercase tracking-[0.24em] text-brand-frame">
-            {portfolioProfile.title}
-          </p>
-          <h1 className="portfolio-display-hero mt-5 max-w-5xl">
-            Backend-first web products built for real operational problems
+          <h1 className="portfolio-display-hero mt-6">
+            Full-stack developer building real applications from backend to frontend.
           </h1>
-          <p className="mt-8 max-w-3xl portfolio-copy-strong">{portfolioProfile.summary}</p>
-          <p className="mt-4 max-w-3xl portfolio-copy">
-            Current work spans content platforms, workflow tools, interactive demos, and public-facing
-            products that need to stay readable, fast, and maintainable in production.
+          <p className="mt-6 portfolio-copy-strong">
+            My work starts with Java and Spring Boot APIs, structured data models, and clean architecture, then moves to React frontends built to be simple, fast, and usable.
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link to="/projects" className="portfolio-button-primary">
-              View projects
-            </Link>
-            <Link to="/about" className="portfolio-button-secondary">
+          <div className="home-hero-cta">
+            <Link to="/about" className="portfolio-button-primary">
               About me
+            </Link>
+            <Link to="/contact" className="portfolio-button-secondary">
+              Contact
             </Link>
           </div>
         </div>
 
-        <aside className="grid gap-8 lg:justify-self-end lg:max-w-md">
-          <div className="overflow-hidden rounded-[1.75rem] border border-brand-line/14 bg-white/35">
+        <aside className="home-hero-aside">
+          <div className="home-hero-photo">
             <img
               src="/assets/images/me_web.png"
               alt="Edwin Munoz working on a laptop"
-              className="h-full w-full object-cover"
-              style={{ transform: "scaleX(-1)" }}
+              className="home-hero-photo-img"
             />
           </div>
 
-          <div className="grid gap-6">
-            <div className="border-t border-brand-line/20 pt-4">
+          <div className="home-hero-stats">
+            <div className="home-stat">
               <p className="portfolio-kicker">Location</p>
-              <p className="portfolio-display-subtitle mt-4">{portfolioProfile.location}</p>
-              <p className="mt-3 portfolio-copy">
-                Backend-first product engineering with React, TypeScript, Java, and Spring Boot.
-              </p>
+              <p className="mt-2 portfolio-copy">{portfolioProfile.location}</p>
             </div>
-
-            <div className="border-t border-brand-line/20 pt-4">
-              <p className="portfolio-kicker">Current Focus</p>
-              <p className="mt-4 portfolio-copy">
-                Shipping production-ready APIs and portfolio case studies that show the engineering
-                decisions behind the interface, not just the interface itself.
-              </p>
+            <div className="home-stat">
+              <p className="portfolio-kicker">Stack</p>
+              <p className="mt-2 portfolio-copy">{portfolioProfile.techStackLine}</p>
             </div>
           </div>
         </aside>
       </section>
 
-      <section className="grid gap-6 border-b border-brand-line/16 pb-12 sm:grid-cols-2 xl:grid-cols-4">
-        {portfolioProfile.heroFacts.map((fact) => (
-          <article key={fact.label} className="border-t border-brand-line/18 pt-4">
-            <p className="portfolio-fact-label">{fact.label}</p>
-            <p className="portfolio-fact-value">{fact.value}</p>
-          </article>
-        ))}
-      </section>
+      <section>
+        <p className="portfolio-kicker">Work</p>
+        <h2 className="portfolio-display-title mt-3">Projects</h2>
 
-      <StandardHomeStory />
-
-      <section className="pt-1">
-        <div className="flex items-start justify-between gap-6">
-          <div className="max-w-3xl">
-            <p className="portfolio-kicker">Featured Work</p>
-            <h2 className="portfolio-display-title mt-4">Selected projects</h2>
-            <p className="mt-4 portfolio-copy">
-              Flagship case studies and product builds presented with a lighter, more editorial surface.
-            </p>
-          </div>
-          <Link to="/projects" className="portfolio-inline-link">
-            See all projects
-          </Link>
-        </div>
-
-        <div className="mt-6 grid gap-x-6 gap-y-10 lg:grid-cols-2 xl:grid-cols-3">
-          {featuredPortfolioProjects.slice(0, 3).map((project) => (
+        <div className="home-projects-grid">
+          {portfolioProjects.map((project) => (
             <ProjectCard key={project.slug} project={project} showPreview={false} showTypeTag={false} />
           ))}
+
+          {!loading && !error && projects.map((project) => (
+            <ApiProjectCard key={project.id} project={project} />
+          ))}
         </div>
+
+        {loading ? (
+          <p className="mt-6 portfolio-copy">Loading...</p>
+        ) : null}
+
+        {!loading && error ? (
+          <p className="home-projects-error">Could not load projects: {error}</p>
+        ) : null}
       </section>
     </div>
   );

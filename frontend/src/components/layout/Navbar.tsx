@@ -146,7 +146,7 @@ function Navbar() {
               </div>
             ) : (
               <p className="px-1 font-mono text-xs text-brand-muted">
-                Try `cd projects`, `less resume`, `./jit-cafe`, or `open github`.
+                Try `less resume`, `./jit-cafe`, or `open github`.
               </p>
             )}
           </div>

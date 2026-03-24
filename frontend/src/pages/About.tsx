@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import ContentModal from "../components/common/ContentModal";
 import { portfolioProfile } from "../features/portfolio/data/profile";
 import { publishTerminalTelemetry } from "../features/terminalUI/lib/terminalTelemetry";
@@ -128,46 +127,36 @@ function About() {
   return (
     <>
       <div className="space-y-16 py-8 sm:py-10">
-        <section className="grid gap-10 border-b border-brand-line/16 pb-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
-          <div className="max-w-4xl">
+        <section className="grid gap-10 border-b border-brand-line pb-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+          <div className="max-w-3xl">
             <p className="portfolio-kicker">About</p>
-            <h1 className="portfolio-display-title mt-4">Software engineering shaped by real-world responsibility</h1>
-            <p className="mt-6 max-w-3xl portfolio-copy-strong">
-              {portfolioProfile.summary}
+            <h1 className="portfolio-display-title mt-4">A bit about me</h1>
+            <p className="mt-6 portfolio-copy-strong">
+              {portfolioProfile.shortAbout[0]}
             </p>
-
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-brand-muted">
-              <span>{portfolioProfile.title}</span>
-              <span>{portfolioProfile.techStackLine}</span>
-            </div>
+            <p className="mt-4 portfolio-copy">
+              {portfolioProfile.shortAbout[1]}
+            </p>
           </div>
 
-          <aside className="grid gap-6 lg:justify-self-end lg:max-w-sm">
-            <div className="border-t border-brand-line/20 pt-4">
+          <aside className="grid gap-4 lg:justify-self-end lg:max-w-sm">
+            <div className="border-t border-brand-line pt-4">
               <p className="portfolio-kicker">Location</p>
-              <p className="mt-4 portfolio-copy">{portfolioProfile.location}</p>
+              <p className="mt-2 portfolio-copy">{portfolioProfile.location}</p>
             </div>
-
-            <div className="border-t border-brand-line/20 pt-4">
-              <p className="portfolio-kicker">Perspective</p>
-              <p className="mt-4 portfolio-copy">{portfolioProfile.shortAbout[1]}</p>
+            <div className="border-t border-brand-line pt-4">
+              <p className="portfolio-kicker">Stack</p>
+              <p className="mt-2 portfolio-copy">{portfolioProfile.techStackLine}</p>
             </div>
           </aside>
         </section>
 
         <section>
           <div className="flex flex-wrap items-start justify-between gap-6">
-            <div className="max-w-3xl">
+            <div>
               <p className="portfolio-kicker">Writing</p>
-              <h2 className="portfolio-display-title mt-4">Latest blog posts</h2>
-              <p className="mt-4 portfolio-copy">
-                Recent writing loaded from the backend content service. This section stays tied to the live blog data
-                instead of static page copy.
-              </p>
+              <h2 className="portfolio-display-title mt-3">Latest posts</h2>
             </div>
-            <Link to="/blog" className="portfolio-inline-link">
-              Browse blog
-            </Link>
           </div>
 
           {blogLoading ? (
@@ -215,61 +204,6 @@ function About() {
             </div>
           ) : null}
         </section>
-
-      <div className="portfolio-section-divider" />
-
-      <section className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
-        <article className="max-w-3xl">
-          <p className="portfolio-kicker">Background</p>
-          <h2 className="portfolio-display-title mt-4">How I approach the work</h2>
-          <div className="mt-6 space-y-5 border-t border-brand-line/16 pt-5">
-            {portfolioProfile.aboutParagraphs.map((paragraph) => (
-              <p key={paragraph} className="portfolio-copy">{paragraph}</p>
-            ))}
-          </div>
-        </article>
-
-        <aside>
-          <p className="portfolio-kicker">What I bring</p>
-          <h2 className="portfolio-display-title mt-4">Core strengths</h2>
-          <ul className="mt-6 space-y-4 border-t border-brand-line/16 pt-5">
-            {portfolioProfile.strengths.map((strength) => (
-              <li key={strength} className="portfolio-copy">
-                {strength}
-              </li>
-            ))}
-          </ul>
-        </aside>
-      </section>
-
-      <div className="portfolio-section-divider" />
-
-      <section className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
-        <article className="max-w-3xl">
-          <p className="portfolio-kicker">Working Style</p>
-          <h2 className="portfolio-display-title mt-4">What I optimize for</h2>
-          <div className="mt-6 space-y-5 border-t border-brand-line/16 pt-5">
-            {portfolioProfile.shortAbout.map((paragraph) => (
-              <p key={paragraph} className="portfolio-copy">{paragraph}</p>
-            ))}
-          </div>
-        </article>
-
-        <aside>
-          <p className="portfolio-kicker">Stack</p>
-          <h2 className="portfolio-display-title mt-4">Primary tools</h2>
-          <div className="mt-6 border-t border-brand-line/16 pt-5">
-            <div className="space-y-5">
-              {portfolioProfile.stackGroups.map((group) => (
-                <div key={group.label} className="border-t border-brand-line/14 pt-4 first:border-t-0 first:pt-0">
-                  <p className="portfolio-kicker">{group.label}</p>
-                  <p className="mt-3 portfolio-copy">{group.items.join(" | ")}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </aside>
-      </section>
 
       </div>
 

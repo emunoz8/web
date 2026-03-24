@@ -9,7 +9,7 @@ import { LoginRouteState } from "../lib/authRouting";
 import { googleClientIdEnv } from "../lib/env";
 
 const GOOGLE_GSI_SCRIPT_ID = "google-gsi-script";
-const DEFAULT_POST_LOGIN_PATH = "/projects";
+const DEFAULT_POST_LOGIN_PATH = "/";
 
 type GoogleAuthConfig = {
   enabled: boolean;

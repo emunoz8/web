@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { FaEnvelope, FaFileAlt, FaGithub, FaLinkedin } from "react-icons/fa";
-import { SiCodecademy } from "react-icons/si";
+import { SiCodecademy, SiOracle } from "react-icons/si";
 import { portfolioProfile } from "../features/portfolio/data/profile";
 
 const professionalSummary = [
-  "Data and Program Impact Specialist with a background in software engineering and community-based youth programming.",
-  "Experienced in building data systems that improve program tracking, reporting, and operational workflows.",
-  "Skilled in developing automated data pipelines, dashboards, and tools that help nonprofit staff make informed decisions, improve accountability, and demonstrate program impact to funders and stakeholders.",
+  "Full-stack developer with a strong backend foundation in Java and Spring Boot.",
+  "Experienced building complete applications from API design and data modeling to React frontends and cloud deployment.",
+  "Brings a systems-thinking mindset shaped by years of operational work — focused on reliability, clean design, and software that holds up in production.",
 ];
 
 const education = {
@@ -15,35 +15,6 @@ const education = {
   date: "May 2024",
   codecademyProfile: "https://www.codecademy.com/profiles/emunoz8",
 };
-
-const technicalSkills = [
-  {
-    label: "Programming & Development",
-    items: ["Java", "C++", "Python", "JavaScript", "SQL", "Google Apps Script", "Arduino"],
-  },
-  {
-    label: "Web & Backend Development",
-    items: ["Spring Boot", "REST APIs", "Full-stack web applications", "Authentication systems"],
-  },
-  {
-    label: "Cloud & Infrastructure",
-    items: ["Google Cloud Platform", "Cloud Run", "Cloud SQL", "Git", "GitHub", "API integration", "Deployment pipelines"],
-  },
-  {
-    label: "Data & Technical Tools",
-    items: [
-      "Google Sheets",
-      "Dashboards",
-      "QUERY",
-      "ARRAYFORMULA",
-      "Microsoft Excel",
-      "Google Forms",
-      "Google Apps Script automation",
-      "Microsoft 365",
-      "Google Workspace",
-    ],
-  },
-];
 
 const workExperience = [
   {
@@ -97,26 +68,6 @@ const workExperience = [
   },
 ];
 
-const technicalProjects = [
-  {
-    title: "Mentoring Program Data Management System",
-    bullets: [
-      "Designed and developed internal tools to manage student participation, mentoring sessions, and program data.",
-      "Built automation workflows using Google Apps Script and Google Sheets to replace manual processes.",
-      "Implemented reporting features supporting program evaluation and grant reporting.",
-    ],
-  },
-  {
-    title: "Personal Website & Full-Stack Portfolio Platform",
-    bullets: [
-      "Developed a full-stack portfolio website using Java and Spring Boot for backend services.",
-      "Built REST APIs for project content and site data.",
-      "Deployed backend infrastructure using Google Cloud Run with Google Cloud SQL.",
-      "Designed the system architecture for scalability and maintainability.",
-    ],
-  },
-];
-
 function getResourceIcon(label: string) {
   if (label === "Email") {
     return <FaEnvelope className="h-4 w-4" aria-hidden="true" />;
@@ -144,7 +95,7 @@ function Resume() {
         <div className="max-w-4xl">
           <p className="portfolio-kicker">Resume</p>
           <h1 className="portfolio-display-title mt-4">Edwin Munoz</h1>
-          <p className="portfolio-display-subtitle mt-4">Software Engineer | Data & Program Systems</p>
+          <p className="portfolio-display-subtitle mt-4">Full-Stack Developer | Java, Spring Boot &amp; React</p>
           <p className="mt-6 max-w-3xl portfolio-copy-strong">
             {professionalSummary[0]}
           </p>
@@ -212,59 +163,80 @@ function Resume() {
         </aside>
       </section>
 
-      <section className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
-        <article className="max-w-3xl">
-          <p className="portfolio-kicker">Professional Summary</p>
-          <h2 className="portfolio-display-title mt-4">Professional summary</h2>
-          <div className="mt-6 space-y-5 border-t border-brand-line/16 pt-5">
-            {professionalSummary.map((item) => (
-              <p key={item} className="portfolio-copy">
-                {item}
-              </p>
-            ))}
-          </div>
-        </article>
-
-        <aside>
-          <p className="portfolio-kicker">Education</p>
-          <h2 className="portfolio-display-title mt-4">Academic background</h2>
-          <div className="mt-6 border-t border-brand-line/16 pt-5">
-            <p className="portfolio-copy-strong">{education.degree}</p>
-            <p className="mt-3 portfolio-copy">{education.school}</p>
-            <p className="mt-3 portfolio-copy">{education.date}</p>
-            <a
-              href={education.codecademyProfile}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="portfolio-inline-link mt-4 inline-flex items-center gap-2"
-            >
-              <SiCodecademy className="h-4 w-4" aria-hidden="true" />
-              Codecademy
-            </a>
-          </div>
-        </aside>
+      <section className="max-w-3xl">
+        <p className="portfolio-kicker">Professional Summary</p>
+        <h2 className="portfolio-display-title mt-4">Professional summary</h2>
+        <div className="mt-6 space-y-5 border-t border-brand-line/16 pt-5">
+          {professionalSummary.map((item) => (
+            <p key={item} className="portfolio-copy">
+              {item}
+            </p>
+          ))}
+        </div>
       </section>
 
       <div className="portfolio-section-divider" />
 
       <section>
         <div className="max-w-3xl">
-          <p className="portfolio-kicker">Technical Skills</p>
-          <h2 className="portfolio-display-title mt-4">Tools and systems</h2>
+          <p className="portfolio-kicker">Certifications</p>
+          <h2 className="portfolio-display-title mt-4">Certifications</h2>
         </div>
-        <div className="mt-6 grid gap-x-8 gap-y-10 xl:grid-cols-2">
-          {technicalSkills.map((group) => (
-            <article key={group.label} className="border-t border-brand-line/18 pt-4">
-              <p className="portfolio-kicker">{group.label}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {group.items.map((item) => (
-                  <span key={item} className="portfolio-chip">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </article>
-          ))}
+        <div className="mt-6 grid gap-x-8 gap-y-6 border-t border-brand-line/16 pt-5 sm:grid-cols-2 xl:grid-cols-3">
+          <a
+            href="https://catalog-education.oracle.com/ords/certview/sharebadge?id=772453377D98898B70D0C2D37B0134024E3E975C73FCBBE7DDB36DEE52EE01E1"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="portfolio-inline-link inline-flex items-center gap-2"
+          >
+            <SiOracle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Oracle Certified — Java
+          </a>
+          <a
+            href="https://www.codecademy.com/profiles/emunoz8"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="portfolio-inline-link inline-flex items-center gap-2"
+          >
+            <SiCodecademy className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Create REST APIs with Spring and Java
+          </a>
+          <a
+            href="https://www.codecademy.com/profiles/emunoz8"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="portfolio-inline-link inline-flex items-center gap-2"
+          >
+            <SiCodecademy className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Build APIs with Spring
+          </a>
+          <a
+            href="https://www.codecademy.com/profiles/emunoz8"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="portfolio-inline-link inline-flex items-center gap-2"
+          >
+            <SiCodecademy className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Java for Programmers
+          </a>
+          <a
+            href="https://www.codecademy.com/profiles/emunoz8"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="portfolio-inline-link inline-flex items-center gap-2"
+          >
+            <SiCodecademy className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Learn Java: Object-Oriented Programming
+          </a>
+          <a
+            href="https://www.codecademy.com/profiles/emunoz8"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="portfolio-inline-link inline-flex items-center gap-2"
+          >
+            <SiCodecademy className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Coding Interview: DSA in C++
+          </a>
         </div>
       </section>
 
@@ -289,28 +261,6 @@ function Resume() {
         </div>
       </section>
 
-      <div className="portfolio-section-divider" />
-
-      <section>
-        <div className="max-w-3xl">
-          <p className="portfolio-kicker">Technical Projects</p>
-          <h2 className="portfolio-display-title mt-4">Technical projects</h2>
-        </div>
-        <div className="mt-6 grid gap-x-8 gap-y-10 xl:grid-cols-2">
-          {technicalProjects.map((project) => (
-            <article key={project.title} className="border-t border-brand-line/18 pt-4">
-              <h3 className="portfolio-display-subtitle">{project.title}</h3>
-              <ul className="mt-4 space-y-4">
-                {project.bullets.map((bullet) => (
-                  <li key={bullet} className="portfolio-copy">
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

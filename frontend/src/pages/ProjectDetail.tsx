@@ -98,8 +98,8 @@ function NotFoundState({ message }: { message: string }) {
       <div className="max-w-3xl border-t border-brand-line/18 pt-4">
         <p className="portfolio-kicker">Project not found</p>
         <h1 className="portfolio-display-title mt-4">{message}</h1>
-        <Link to="/projects" className="portfolio-button-secondary mt-6">
-          Back to projects
+        <Link to="/" className="portfolio-button-secondary mt-6">
+          Back to home
         </Link>
       </div>
     </div>
@@ -137,8 +137,8 @@ function PortfolioProjectDetail({ project }: { project: PortfolioProject }) {
                 {project.liveDemo.label}
               </a>
             ) : null}
-            <Link to="/projects" className="portfolio-button-secondary">
-              Back to projects
+            <Link to="/" className="portfolio-button-secondary">
+              Back to home
             </Link>
           </div>
         </div>
@@ -275,8 +275,8 @@ function ManagedProjectDetail({ project }: { project: ContentItem }) {
                 Open live demo
               </a>
             ) : null}
-            <Link to="/projects" className="portfolio-button-secondary">
-              Back to projects
+            <Link to="/" className="portfolio-button-secondary">
+              Back to home
             </Link>
           </div>
         </div>

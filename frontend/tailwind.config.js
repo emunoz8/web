@@ -11,8 +11,8 @@ module.exports = {
     extend: {
       fontFamily:{
         mono: ['"IBM Plex Mono"', '"Courier New"','Courier', 'monospace'],
-        display: ['"IBM Plex Mono"', '"Courier New"','Courier', 'monospace'],
-        sans: ['"IBM Plex Mono"', '"Courier New"','Courier', 'monospace'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         brand: {
@@ -41,8 +41,8 @@ module.exports = {
         },
       },
       boxShadow: {
-        card: "0 12px 30px rgb(var(--brand-shadow-ink) / 0.08), 0 2px 8px rgb(var(--brand-shadow-ink) / 0.05)",
-        sign: "0 18px 40px rgb(var(--brand-shadow-ink) / 0.14), 0 3px 12px rgb(var(--brand-shadow-frame) / 0.08)",
+        card: "0 1px 3px rgb(var(--brand-contrast) / 0.04), 0 1px 2px rgb(var(--brand-contrast) / 0.04)",
+        sign: "0 4px 12px rgb(var(--brand-contrast) / 0.06), 0 1px 4px rgb(var(--brand-contrast) / 0.04)",
       },
     }, 
   },

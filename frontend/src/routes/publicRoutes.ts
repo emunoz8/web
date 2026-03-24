@@ -2,7 +2,6 @@ import { lazy } from "react";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import ProjectDetail from "../pages/ProjectDetail";
-import Projects from "../pages/Projects";
 import { PublicRoute } from "./types";
 
 const About = lazy(() => import("../pages/About"));
@@ -19,7 +18,6 @@ const JitCafe = lazy(() => import("../pages/JitCafe"));
 export const publicRoutes: PublicRoute[] = [
   { to: "/", label: "Home", Component: Home },
   { to: "/about", label: "About", Component: About },
-  { to: "/projects", label: "Projects", Component: Projects },
   { to: "/projects/:id", label: "Project Detail", Component: ProjectDetail, showInNav: false },
   { to: "/resume", label: "Resume", Component: Resume },
   { to: "/contact", label: "Contact", Component: Contact },
