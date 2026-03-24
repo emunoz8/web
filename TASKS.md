@@ -35,5 +35,5 @@
 
 ## Backend (separate repo)
 
-- [ ] Set up a dedicated git repo for the backend
-- [ ] Commit the large untracked feature wave: Google auth, Spotify/AddToTheAux, Category system, Admin bootstrap, new tests
+- [x] Set up dedicated git repo: https://github.com/emunoz8/web_backend.git
+- [x] Initial commit: all source, Google auth, Spotify/AddToTheAux, Category system, Admin bootstrap, full test suite (156 files)
