@@ -75,7 +75,9 @@ export async function readError(response: Response): Promise<string> {
 export async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetchWithCsrf(input, init);
   if (!response.ok) {
-    throw new Error(await readError(response));
+    const err = new Error(await readError(response)) as Error & { status: number };
+    err.status = response.status;
+    throw err;
   }
 
   if (response.status === 204) {

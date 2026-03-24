@@ -7,7 +7,11 @@ const PrivateRoute: React.FC = () => {
   const location = useLocation();
 
   if (authLoading) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-accent border-t-transparent" />
+      </div>
+    );
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace state={{ from: location }} />;

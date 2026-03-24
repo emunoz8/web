@@ -8,8 +8,6 @@ The main purpose of the website is to show how a restaurant menu can carry the i
 
 On this site, the project is presented as a frontend feature route focused on the public restaurant surface. The menu is driven by static snapshot data, the layout is responsive, and the interface is meant to feel more like a finished restaurant website than a generic app shell.
 
-[Live Demo](/jit-cafe)
-
 ## What the website is
 
 At its core, this is a restaurant website prototype centered on the customer-facing experience. Instead of focusing on dashboards or admin tools, it focuses on what a visitor would actually see first: the restaurant identity, the menu, and the contact information.

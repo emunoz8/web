@@ -31,7 +31,7 @@ export function useCurrentlyPlaying(enabled = true) {
       }
 
       try {
-        if (!cancelled && currentlyPlayingRef.current !== null) {
+        if (!cancelled) {
           setLoading(true);
         }
 

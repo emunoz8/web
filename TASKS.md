@@ -43,20 +43,20 @@
 ## Round 2 — Code Review Findings
 
 ### Critical (runtime crashes)
-- [ ] **`LikeService`** — `getReferenceById()` used without existence check; replace with `findById()` + proper 404
-- [ ] **`CommentController.userId()`** — unchecked cast of `auth.getCredentials()` to `Long`; add null check
-- [ ] **`ContentController.resolveCurrentUserId()`** — same unchecked cast; already partially fixed but needs null-safety guard
+- [x] **`LikeService`** — `getReferenceById()` used without existence check; replace with `findById()` + proper 404
+- [x] **`CommentController.userId()`** — unchecked cast of `auth.getCredentials()` to `Long`; add null check
+- [x] **`ContentController.resolveCurrentUserId()`** — already null-safe via `instanceof` pattern; no change needed
 
 ### High (UX / stability)
-- [ ] **`PrivateRoute.tsx`** — returns `null` while auth is loading, causing blank screen; show a spinner instead
-- [ ] **`useAddTrack.ts`** — error detection uses fragile string matching (`.includes()`); switch to HTTP status codes (401/403)
-- [ ] **`useCurrentlyPlaying.ts`** — `setLoading(true)` skipped on first load because ref is null; initial load has no loading state
+- [x] **`PrivateRoute.tsx`** — returns `null` while auth is loading, causing blank screen; show a spinner instead
+- [x] **`useAddTrack.ts`** — error detection uses fragile string matching (`.includes()`); switch to HTTP status codes (401/403)
+- [x] **`useCurrentlyPlaying.ts`** — `setLoading(true)` skipped on first load because ref is null; initial load has no loading state
 
 ### Medium (performance / validation)
-- [ ] **`CommentService`** — N+1 query: `toDto()` accesses lazy `comment.getUser()` per row; use JOIN FETCH in repository
-- [ ] **`AdminContentController`** — `@Valid` missing on `@RequestBody` params; bad input reaches service layer
-- [ ] **`GlobalExceptionHandler`** — catch-all `log.error()` doesn't include exception; hard to debug prod errors
+- [x] **`CommentService`** — N+1 query: `toDto()` accesses lazy `comment.getUser()` per row; use JOIN FETCH in repository
+- [x] **`AdminContentController`** — `@Valid` missing on `@RequestBody` params; bad input reaches service layer
+- [x] **`GlobalExceptionHandler`** — catch-all already logs exception correctly; no change needed
 
 ### Low (code quality)
-- [ ] **`JwtService.java`** — duplicate imports (`java.util.Date`, `java.util.UUID` imported twice)
-- [ ] **`SpotifyPlaylistTestingService`** — potential NPE if Spotify returns null `items()` list
+- [x] **`JwtService.java`** — duplicate imports (`java.util.Date`, `java.util.UUID` imported twice)
+- [x] **`SpotifyPlaylistTestingService`** — `items()` null guards already present throughout; no change needed

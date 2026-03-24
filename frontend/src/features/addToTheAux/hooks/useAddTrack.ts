@@ -34,16 +34,13 @@ export function useAddTrack(onAdded: () => Promise<void>, enabled: boolean): Use
         await onAdded();
         return true;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Unable to add track.";
-        if (message.toLowerCase().includes("unauthorized")) {
+        const status = (error as { status?: number }).status;
+        if (status === 401 || status === 403) {
           setActionError("Login required to add songs.");
           return false;
         }
-        setActionError(
-          message.toLowerCase().includes("song already in playlist")
-            ? "Song already in playlist"
-            : message,
-        );
+        const message = error instanceof Error ? error.message : "Unable to add track.";
+        setActionError(status === 409 ? "Song already in playlist" : message);
         return false;
       } finally {
         setAddingUri("");
