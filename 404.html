@@ -1,0 +1,8 @@
+<script type="text/javascript">
+  // Preserve the requested path so the SPA can restore it after a static-host 404.
+  var pathname = window.location.pathname || "/";
+  var search = window.location.search || "";
+  var hash = window.location.hash || "";
+  var encodedPath = encodeURIComponent(pathname + search + hash);
+  window.location.replace("/?spa-path=" + encodedPath);
+</script>

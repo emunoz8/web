@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/icons/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-title" content="CompilingJava" />
+    <meta
+      name="description"
+      content="Full-stack developer portfolio featuring projects, technical blog posts, and interactive demos built with React, Spring Boot, and PostgreSQL."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CompilingJava" />
+    <meta
+      property="og:description"
+      content="Full-stack developer portfolio featuring projects, technical blog posts, and interactive demos built with React, Spring Boot, and PostgreSQL."
+    />
+    <meta property="og:url" content="https://compilingjava.com/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="CompilingJava" />
+    <meta
+      name="twitter:description"
+      content="Full-stack developer portfolio featuring projects, technical blog posts, and interactive demos built with React, Spring Boot, and PostgreSQL."
+    />
+    <link rel="canonical" href="https://compilingjava.com/" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/meta/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>CompilingJava</title>
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var encodedPath = params.get("spa-path");
+        if (!encodedPath) {
+          return;
+        }
+        var restoredPath = decodeURIComponent(encodedPath);
+        params.delete("spa-path");
+        var remainingQuery = params.toString();
+        var queryPrefix = restoredPath.indexOf("?") >= 0 ? "&" : "?";
+        var target = remainingQuery ? restoredPath + queryPrefix + remainingQuery : restoredPath;
+        window.history.replaceState(null, "", target);
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DNmJGYNh.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BDHsgJA_.css">
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
