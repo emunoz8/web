@@ -20,9 +20,10 @@
 
 ## Code Quality
 
-- [ ] Convert `ContentController.getBySlug` and `getById` to return DTOs instead of raw JPA entities
-- [ ] Add user ID to JWT claims to eliminate per-request DB lookup in `CommentController.currentUserId()` and `ContentController.resolveCurrentUserId()`
-- [ ] Unify `AdminContentController.deleteContent()` to use a single `ContentService.delete(id)` instead of calling both project and blog post services
+- [x] Convert `ContentController.getBySlug` and `getById` to return `ContentDetailDto` instead of raw JPA entities (new `ContentDetailDto` includes categories)
+- [x] Add `userId` to JWT claims; store as credentials in `JwtAuthFilter`; eliminate per-request DB lookup in `CommentController`, `ContentController`, `LikeController`
+- [x] Unify `AdminContentController.deleteContent()` — now uses `ContentService.delete(id)` with proper cache eviction
+- [x] Add `@Transactional(readOnly=true)` to `ContentService.getBySlug` and `getById`; initialize lazy `categories` collection before caching
 
 ---
 
