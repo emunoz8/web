@@ -5,7 +5,7 @@ import { portfolioNavItems, portfolioProfile } from "../../portfolio/data/profil
 
 function StandardHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-line bg-brand-canvas/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-brand-line bg-brand-canvas/95 backdrop-blur will-change-transform">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
         <div className="min-w-0">
           <NavLink to="/" className="text-sm font-semibold uppercase tracking-[0.26em] text-brand-contrast">

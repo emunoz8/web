@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import MarkdownRenderer from "../components/helpers/MarkdownRenderer";
 import { type ContentItem } from "../lib/api";
@@ -70,14 +70,6 @@ function resolveProjectPresentation(projectUrl: string) {
   }
 }
 
-function extractMarkdownListItems(markdown: string) {
-  return markdown
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => /^([-*+]|\d+\.)\s+/.test(line))
-    .map((line) => line.replace(/^([-*+]|\d+\.)\s+/, ""))
-    .filter(Boolean);
-}
 
 function getMarkdownLead(markdown: string) {
   const firstContentLine = markdown
@@ -236,7 +228,6 @@ function PortfolioProjectDetail({ project }: { project: PortfolioProject }) {
 function ManagedProjectDetail({ project }: { project: ContentItem }) {
   const projectUrl = project.projectUrl?.trim() ?? "";
   const preview = resolveProjectPresentation(projectUrl);
-  const featureList = useMemo(() => extractMarkdownListItems(project.description ?? ""), [project.description]);
   const lead = getMarkdownLead(project.description ?? "");
   const createdAtLabel = new Date(project.createdAt).toLocaleDateString();
   const createdYear = new Date(project.createdAt).getFullYear();
@@ -363,26 +354,6 @@ function ManagedProjectDetail({ project }: { project: ContentItem }) {
           </div>
         </article>
 
-        <article>
-          <p className="portfolio-kicker">Highlights</p>
-          <h2 className="portfolio-display-title mt-4">Published details</h2>
-          <div className="mt-6 border-t border-brand-line/16 pt-5">
-            {featureList.length > 0 ? (
-              <ul className="space-y-4">
-                {featureList.map((feature) => (
-                  <li key={feature} className="portfolio-copy">
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="portfolio-copy">
-                This project entry does not currently include a structured feature list. The admin form stores title,
-                slug, description, project URL, and category data.
-              </p>
-            )}
-          </div>
-        </article>
       </section>
 
       <div className="portfolio-section-divider" />
