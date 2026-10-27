@@ -9,20 +9,20 @@
     <meta name="apple-mobile-web-app-title" content="CompilingJava" />
     <meta
       name="description"
-      content="Full-stack developer portfolio featuring projects, technical blog posts, and interactive demos built with React, Spring Boot, and PostgreSQL."
+      content="Software engineering portfolio by Edwin Muñoz featuring interactive frontend demos, architecture case studies, and technical articles built with React and TypeScript."
     />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="CompilingJava" />
     <meta
       property="og:description"
-      content="Full-stack developer portfolio featuring projects, technical blog posts, and interactive demos built with React, Spring Boot, and PostgreSQL."
+      content="Software engineering portfolio by Edwin Muñoz featuring interactive frontend demos, architecture case studies, and technical articles built with React and TypeScript."
     />
     <meta property="og:url" content="https://compilingjava.com/" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="CompilingJava" />
     <meta
       name="twitter:description"
-      content="Full-stack developer portfolio featuring projects, technical blog posts, and interactive demos built with React, Spring Boot, and PostgreSQL."
+      content="Software engineering portfolio by Edwin Muñoz featuring interactive frontend demos, architecture case studies, and technical articles built with React and TypeScript."
     />
     <link rel="canonical" href="https://compilingjava.com/" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
@@ -34,23 +34,30 @@
     <script>
       (function () {
         var params = new URLSearchParams(window.location.search);
-        var encodedPath = params.get("spa-path");
-        if (!encodedPath) {
+        var restoredPathRaw = params.get("spa-path");
+        if (!restoredPathRaw) {
           return;
         }
-        var restoredPath = decodeURIComponent(encodedPath);
+        // URLSearchParams.get() already decodes the parameter once; do not double-decode.
+        var restoredPath = restoredPathRaw.charAt(0) === "/" ? restoredPathRaw : "/" + restoredPathRaw;
         params.delete("spa-path");
         var remainingQuery = params.toString();
-        var queryPrefix = restoredPath.indexOf("?") >= 0 ? "&" : "?";
-        var target = remainingQuery ? restoredPath + queryPrefix + remainingQuery : restoredPath;
+        var target = restoredPath;
+        if (remainingQuery) {
+          var hashIndex = restoredPath.indexOf("#");
+          var pathAndQuery = hashIndex >= 0 ? restoredPath.slice(0, hashIndex) : restoredPath;
+          var hashFragment = hashIndex >= 0 ? restoredPath.slice(hashIndex) : "";
+          var queryPrefix = pathAndQuery.indexOf("?") >= 0 ? "&" : "?";
+          target = pathAndQuery + queryPrefix + remainingQuery + hashFragment;
+        }
         window.history.replaceState(null, "", target);
       })();
     </script>
-    <script type="module" crossorigin src="/assets/index-H5Uqwle2.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BDHsgJA_.css">
+    <script type="module" crossorigin src="/assets/index-BaipA7D3.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-C1L2DD6k.css">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>
