@@ -2,7 +2,6 @@
 const withOpacity = (variable) => `rgb(var(${variable}) / <alpha-value>)`;
 
 module.exports = {
-  darkMode: 'class',
   content: [
     "./src/**/*.{js,jsx,ts,tsx}", 
     "./index.html",        
@@ -38,11 +37,31 @@ module.exports = {
           "neutral-ink": withOpacity("--brand-neutral-ink"),
           "danger-soft": withOpacity("--brand-danger-soft"),
           "danger-ink": withOpacity("--brand-danger-ink"),
+          overlay: withOpacity("--brand-overlay"),
         },
       },
       boxShadow: {
         card: "0 1px 3px rgb(var(--brand-contrast) / 0.04), 0 1px 2px rgb(var(--brand-contrast) / 0.04)",
         sign: "0 4px 12px rgb(var(--brand-contrast) / 0.06), 0 1px 4px rgb(var(--brand-contrast) / 0.04)",
+      },
+      opacity: {
+        12: "0.12",
+        14: "0.14",
+        16: "0.16",
+        18: "0.18",
+        22: "0.22",
+        24: "0.24",
+        28: "0.28",
+        34: "0.34",
+        42: "0.42",
+        48: "0.48",
+        56: "0.56",
+        72: "0.72",
+        78: "0.78",
+        82: "0.82",
+        86: "0.86",
+        92: "0.92",
+        96: "0.96",
       },
     }, 
   },

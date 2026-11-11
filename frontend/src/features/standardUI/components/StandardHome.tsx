@@ -1,151 +1,49 @@
-import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { HiArrowUpRight } from "react-icons/hi2";
+import { FaEnvelope, FaFileAlt, FaGithub, FaLinkedin } from "react-icons/fa";
 import { portfolioProfile } from "../../portfolio/data/profile";
-import { portfolioProjects } from "../../portfolio/data/projects";
+import { featuredPortfolioWorkExperience, portfolioEducation } from "../../portfolio/data/experience";
+import { featuredPortfolioProjects } from "../../portfolio/data/projects";
 import { ProjectCard } from "../../portfolio/components/ProjectCard";
-import { publishTerminalTelemetry } from "../../terminalUI/lib/terminalTelemetry";
-import { type ContentItem } from "../../../lib/api";
-import { contentPlatformService } from "../../../lib/services/ContentPlatformService";
 
-const STATIC_PROJECT_SLUGS = new Set(portfolioProjects.map((p) => p.slug));
-
-function getProjectExcerpt(project: ContentItem) {
-  const description = project.description?.trim() ?? "";
-  if (!description) return "No summary published for this project yet.";
-  return description.length > 220 ? `${description.slice(0, 217)}...` : description;
-}
-
-function isInternalProjectUrl(url: string) {
-  if (url.startsWith("/")) return true;
-  if (typeof window === "undefined") return false;
-  try {
-    return new URL(url, window.location.origin).origin === window.location.origin;
-  } catch {
-    return false;
+function getResourceIcon(label: string) {
+  if (label === "Email") {
+    return <FaEnvelope className="h-8 w-8" aria-hidden="true" />;
   }
-}
-
-function normalizeInternalProjectUrl(url: string) {
-  if (url.startsWith("/")) return url;
-  if (typeof window === "undefined") return url;
-  try {
-    const resolved = new URL(url, window.location.origin);
-    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
-  } catch {
-    return url;
+  if (label === "GitHub") {
+    return <FaGithub className="h-8 w-8" aria-hidden="true" />;
   }
-}
-
-function ApiProjectCard({ project }: { project: ContentItem }) {
-  const projectUrl = project.projectUrl?.trim() ?? "";
-  const year = new Date(project.createdAt).getFullYear();
-
-  return (
-    <article className="home-api-card">
-      <p className="portfolio-kicker">{Number.isFinite(year) ? String(year) : "Published"}</p>
-      <h3 className="portfolio-display-subtitle mt-3">{project.title}</h3>
-      <p className="mt-4 flex-1 portfolio-copy">{getProjectExcerpt(project)}</p>
-      <div className="home-api-card-actions">
-        <Link to={`/projects/${project.slug}`} className="portfolio-inline-link">
-          View project
-          <HiArrowUpRight className="h-4 w-4" />
-        </Link>
-        {projectUrl ? (
-          isInternalProjectUrl(projectUrl) ? (
-            <Link to={normalizeInternalProjectUrl(projectUrl)} className="home-api-card-demo-link">
-              Live demo
-              <HiArrowUpRight className="h-4 w-4" />
-            </Link>
-          ) : (
-            <a
-              href={projectUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="home-api-card-demo-link"
-            >
-              Live demo
-              <HiArrowUpRight className="h-4 w-4" />
-            </a>
-          )
-        ) : null}
-      </div>
-    </article>
-  );
+  if (label === "LinkedIn") {
+    return <FaLinkedin className="h-8 w-8" aria-hidden="true" />;
+  }
+  if (label === "Resume PDF") {
+    return <FaFileAlt className="h-8 w-8" aria-hidden="true" />;
+  }
+  return null;
 }
 
 function StandardHome() {
-  const [managedProjects, setManagedProjects] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
-
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-        publishTerminalTelemetry({
-          tone: "info",
-          lines: ["backend :: GET /api/contents?type=PROJECT&page=0&size=100"],
-        });
-        const page = await contentPlatformService.listContentsPage({
-          type: "PROJECT",
-          page: 0,
-          size: 100,
-          signal: controller.signal,
-        });
-        if (!cancelled) {
-          setManagedProjects(page.content);
-          publishTerminalTelemetry({
-            tone: "success",
-            lines: [`backend :: loaded ${page.totalElements} project entries`],
-          });
-        }
-      } catch (err) {
-        if (!cancelled && (err as Error).name !== "AbortError") {
-          setError((err as Error).message);
-          setManagedProjects([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    void load();
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, []);
-
-  const projects = useMemo(
-    () => managedProjects.filter((p) => !STATIC_PROJECT_SLUGS.has(p.slug)),
-    [managedProjects],
-  );
-
   return (
     <div className="home-shell">
       <section className="home-hero">
         <div className="home-hero-content">
           <p className="portfolio-kicker">{portfolioProfile.name}</p>
+          <p className="home-role-line">{portfolioProfile.title}</p>
           <h1 className="portfolio-display-hero mt-6">
-            Full-stack developer building real applications from backend to frontend.
+            Software engineer and MBA candidate connecting{" "}
+            <span className="home-hero-highlight">engineering, data, and business strategy.</span>
           </h1>
-          <p className="mt-6 portfolio-copy-strong">
-            My work starts with Java and Spring Boot APIs, structured data models, and clean architecture, then moves to React frontends built to be simple, fast, and usable.
-          </p>
+          <p className="mt-6 portfolio-copy-strong">{portfolioProfile.summary}</p>
 
           <div className="home-hero-cta">
-            <Link to="/about" className="portfolio-button-primary">
-              About me
-            </Link>
-            <Link to="/contact" className="portfolio-button-secondary">
+            <a href={portfolioProfile.resumeUrl} target="_blank" rel="noreferrer noopener" className="portfolio-button-primary">
+              Download resume
+            </a>
+            <a href="#contact" className="portfolio-button-secondary">
               Contact
-            </Link>
+            </a>
           </div>
+
+          <div className="home-signal-divider mt-10" aria-hidden="true" />
         </div>
 
         <aside className="home-hero-aside">
@@ -158,39 +56,112 @@ function StandardHome() {
           </div>
 
           <div className="home-hero-stats">
-            <div className="home-stat">
-              <p className="portfolio-kicker">Location</p>
-              <p className="mt-2 portfolio-copy">{portfolioProfile.location}</p>
-            </div>
-            <div className="home-stat">
-              <p className="portfolio-kicker">Stack</p>
-              <p className="mt-2 portfolio-copy">{portfolioProfile.techStackLine}</p>
-            </div>
+            {portfolioProfile.heroFacts.map((fact) => (
+              <div key={fact.label} className="home-stat">
+                <p className="portfolio-kicker">{fact.label}</p>
+                <p className="home-stat-value">{fact.value}</p>
+              </div>
+            ))}
           </div>
         </aside>
       </section>
 
-      <section>
-        <p className="portfolio-kicker">Work</p>
-        <h2 className="portfolio-display-title mt-3">Projects</h2>
-
-        <div className="home-projects-grid">
-          {portfolioProjects.map((project) => (
-            <ProjectCard key={project.slug} project={project} showPreview={false} showTypeTag={false} />
-          ))}
-
-          {!loading && !error && projects.map((project) => (
-            <ApiProjectCard key={project.id} project={project} />
+      <section className="border-t border-brand-line/16 pt-10">
+        <p className="portfolio-kicker">Competencies</p>
+        <h2 className="portfolio-display-title mt-3">Technical and business skills</h2>
+        <div className="mt-6 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+          {portfolioProfile.stackGroups.map((group) => (
+            <div
+              key={group.label}
+              className="home-competency-tile">
+              <p className="portfolio-kicker">
+                <span className="home-competency-dot" aria-hidden="true" />
+                {group.label}
+              </p>
+              <ul className="mt-3 space-y-1.5">
+                {group.items.map((item) => (
+                  <li key={item} className="portfolio-copy">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
+      </section>
 
-        {loading ? (
-          <p className="mt-6 portfolio-copy">Loading...</p>
-        ) : null}
+      <section className="border-t border-brand-line/16 pt-10">
+        <p className="portfolio-kicker">Experience</p>
+        <h2 className="portfolio-display-title mt-3">Selected professional experience</h2>
+        <div className="mt-6 grid gap-8 lg:grid-cols-2">
+          {featuredPortfolioWorkExperience.map((entry) => (
+            <article key={`${entry.role}-${entry.organization}`} className="home-experience-card">
+              <p className="portfolio-kicker">{entry.period}</p>
+              <h3 className="portfolio-display-subtitle mt-3">{entry.role}</h3>
+              <p className="mt-2 portfolio-copy">{entry.organization}</p>
+              <p className="mt-3 portfolio-copy">{entry.story}</p>
+            </article>
+          ))}
+        </div>
+        <Link to="/about" className="portfolio-inline-link mt-6 inline-flex items-center">
+          Full career progression
+        </Link>
+      </section>
 
-        {!loading && error ? (
-          <p className="home-projects-error">Could not load projects: {error}</p>
-        ) : null}
+      <section className="border-t border-brand-line/16 pt-10">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div>
+            <p className="portfolio-kicker">Work</p>
+            <h2 className="portfolio-display-title mt-3">Featured projects</h2>
+          </div>
+          <Link to="/projects" className="portfolio-inline-link">
+            View all projects
+          </Link>
+        </div>
+
+        <div className="home-projects-grid">
+          {featuredPortfolioProjects.map((project) => (
+            <ProjectCard key={project.slug} project={project} showPreview={false} showTypeTag={false} />
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t border-brand-line/16 pt-10">
+        <p className="portfolio-kicker">Education and leadership</p>
+        <h2 className="portfolio-display-title mt-3">Education</h2>
+        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+          {portfolioEducation.map((entry) => (
+            <div key={entry.degree} className="portfolio-education-card">
+              <p className="portfolio-kicker">{entry.status}</p>
+              <p className="mt-2 portfolio-copy-strong">{entry.degree}</p>
+              <p className="mt-1 portfolio-copy">{entry.school}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="contact" className="home-contact-section">
+        <p className="portfolio-kicker">Contact</p>
+        <h2 className="portfolio-display-title mt-3">Get in touch</h2>
+        <p className="mt-4 max-w-2xl portfolio-copy">
+          Open to software engineering, data/business analytics, and technology leadership roles.
+        </p>
+        <div className="mt-8 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          {portfolioProfile.resources.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              target={item.label === "Email" ? undefined : "_blank"}
+              rel={item.label === "Email" ? undefined : "noreferrer noopener"}
+              className="home-contact-link group flex flex-col items-center text-center"
+            >
+              <span className="home-contact-icon transition-colors duration-200 group-hover:text-brand-frame">
+                {getResourceIcon(item.label)}
+              </span>
+              <span className="mt-4 portfolio-copy">{item.label}</span>
+            </a>
+          ))}
+        </div>
       </section>
     </div>
   );

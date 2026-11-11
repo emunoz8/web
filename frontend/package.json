@@ -27,10 +27,12 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
+    "typecheck": "tsc --noEmit --incremental false",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "validate": "npm run typecheck && npm test -- --run && npm run build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "install-legacy": "npm install --legacy-peer-deps",
@@ -63,13 +65,12 @@
   "main": "index.js",
   "author": "Edwin Munoz",
   "license": "ISC",
-  "description": "Frontend for CompilingJava, a React and TypeScript portfolio platform backed by Spring Boot APIs.",
+  "description": "Frontend-first React and TypeScript portfolio and interactive engineering showcase for CompilingJava.",
   "keywords": [
     "portfolio",
     "react",
     "typescript",
-    "spring-boot",
     "tailwindcss",
-    "full-stack"
+    "vite"
   ]
 }

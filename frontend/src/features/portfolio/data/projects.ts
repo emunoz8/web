@@ -37,6 +37,80 @@ export type PortfolioProject = {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: "world-cup-bracket",
+    title: "World Cup Bracket",
+    tagline: "Rust desktop app for World Cup 2026 predictions and qualification scenarios",
+    year: "2026",
+    shortDescription:
+      "A Rust desktop application for arranging group standings, predicting the World Cup knockout bracket, and exploring live qualification scenarios.",
+    description: [
+      "Built with egui and eframe, World Cup Bracket turns group-stage predictions into a clickable path from the Round of 32 to the Final. FIFA Annex C allocation data connects qualifying third-place teams to their possible knockout opponents.",
+      "Optional live scores and standings power qualification analysis, including advancement estimates and per-team outcome scenarios. Named saves, JSON import and export, and a printable bracket report make predictions easy to revisit and share.",
+    ],
+    features: [
+      "Drag-to-reorder group standings and clickable knockout-round picks",
+      "Third-place opponent allocation based on FIFA Annex C",
+      "Optional live data from ESPN and football-data.org",
+      "Qualification scenarios and Monte Carlo advancement estimates",
+      "Named saves, JSON import/export, and printable bracket reports",
+    ],
+    techStack: ["Rust", "egui", "eframe", "JSON"],
+    previews: [
+      {
+        kind: "image",
+        src: "/assets/features/world-cup-bracket/bracket.png",
+        alt: "World Cup Bracket desktop application showing the empty knockout bracket",
+        title: "Knockout bracket",
+        caption: "The desktop app presents the knockout tree from the Round of 32 through the Final.",
+      },
+    ],
+    liveDemo: null,
+    githubLinks: [
+      {
+        label: "WorldCupBracket repository",
+        href: "https://github.com/emunoz8/WorldCupBracket",
+        external: true,
+      },
+    ],
+  },
+  {
+    slug: "options-for-youth",
+    title: "Options for Youth — Mentoring Program Platform",
+    tagline: "Full-stack case-management system for a Chicago youth mentoring program",
+    year: "2026",
+    shortDescription:
+      "A full-stack case-management system built for Options for Youth, a Chicago youth mentoring program operating inside four CPS partner schools — replacing a patchwork of Google Sheets with a real database and a purpose-built app covering enrollment, attendance, mentoring notes, risk tracking, consent forms, and reporting.",
+    description: [
+      "Before this project, the program ran on a set of interlinked Google Sheets tabs — one for the roster, one for attendance, one for individual contact notes, one for group notes, and so on. It worked, but it had real limits: no enforced data integrity (nothing stopped a typo'd student ID from silently breaking a lookup), no real audit trail for sensitive changes like risk-level updates, and no way to safely let multiple mentors work in the sheets at once without stepping on each other.",
+      "A Postgres database is the single source of truth, sitting behind a Node/Express API deployed on Google Cloud Run. The staff-facing frontend is a Google Apps Script web app, embedded in the program's existing Google Sites intranet, so staff open the same bookmarks and navigation they already use, with no new login system to learn. A DocuSign integration handles legally required guardian/student consent forms in both English and Spanish, with signatures collected either remotely (email/text) or in person on a mentor's device.",
+      "Three problems along the way were worth solving carefully rather than patching over: a cross-layer timezone bug where dates silently shifted a day for users west of UTC (traced to Postgres's default date parsing combining badly with JavaScript's UTC-midnight date-string handling, and fixed at the database driver level); a DocuSign routing-order bug where a recipient's pre-placed signature fields would silently disappear under specific conditions, eventually traced through controlled A/B testing to an undocumented interaction between a template's saved routing order and the API's per-envelope override; and a duplicate student record for the same real student, discovered via a one-digit-too-long ID, merged into a single canonical record with zero loss of guardian contacts, enrollment history, or notes.",
+    ],
+    features: [
+      "Intake & roster — enrollment form, guardian contacts, demographics, and household/wellbeing details, with year-over-year re-enrollment preserving a returning student's original intake year and grade instead of overwriting them",
+      "Attendance & sign-in — a kiosk-style sign-in flow for group sessions and individual walk-ins, letting students pick which mentor they're there to see so multiple mentors can share one kiosk",
+      "Mentoring notes — a week-calendar interface for group and individual contact notes, with validation (a note needs a topic, summary, and at least one mentor present) and the ability to backdate a missed day",
+      "Risk-level tracking — an append-only history of risk-level changes per student, each with a reason, instead of a single mutable field that silently loses its own history",
+      "Consent forms (DocuSign) — a two-recipient sequential signing flow (guardian, then student), bilingual templates, a photo/video release checkbox that defaults to granted but stays editable, and an in-person signing option for families without an email or phone on file",
+      "Pre/post surveys — a 37-question assessment at the start and end of the program year, with results tied to a specific program year so question sets can evolve without corrupting past answers",
+      "Dashboard & reporting — a live program snapshot (active students, attendance, documentation completion, who hasn't been seen recently), with month-by-month lookback and export to Excel and Google Sheets for grant reporting",
+      "Admin tools — mentor caseload assignment (a standing school/grade rule with per-student override), a CPS partner-school staff directory, and a program-wide announcement board",
+    ],
+    techStack: [
+      "PostgreSQL (Cloud SQL)",
+      "Node.js",
+      "Express",
+      "Google Apps Script",
+      "Google Cloud Run",
+      "DocuSign API",
+      "Google Sheets / Excel export",
+    ],
+    previews: [],
+    liveDemo: null,
+    githubLinks: [],
+    githubNote: "Internal program system; live and in daily use by program staff, not publicly available.",
+    featured: true,
+  },
+  {
     slug: "compilingjava-web-platform",
     title: "CompilingJava Web Platform",
     tagline: "Full-stack portfolio and publishing system",
@@ -203,7 +277,6 @@ export const portfolioProjects: PortfolioProject[] = [
         external: true,
       },
     ],
-    featured: true,
   },
   {
     slug: "jit-cafe",
@@ -287,7 +360,6 @@ export const portfolioProjects: PortfolioProject[] = [
     },
     githubLinks: [],
     githubNote: "A public repository is not linked for this project.",
-    featured: true,
   },
 ];
 

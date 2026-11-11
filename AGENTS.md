@@ -4,7 +4,7 @@
 
 CompilingJava is being transitioned into a frontend-only personal website using React, TypeScript, Tailwind CSS, Vite, and local content, hosted as static files on GitHub Pages.
 
-The repository currently contains a frontend application that still calls backend services. Do not confuse the destination architecture with the existing implementation. No migration or redesign was performed as part of the documentation handoff on 2026-10-26.
+The repository originally contained a frontend application that called backend services. As of 2026-10-27 the active application is strictly frontend-only: content and AUX data are local; auth/admin/API Lab and Terminal UI code have been removed (see [docs/CHANGELOG.md](docs/CHANGELOG.md)); light mode is enforced. Visual work includes the initial Home/header treatment (CJ-037) and the shared portfolio color pass (CJ-040, 2026-11-11).
 
 Follow the user's current task and existing session authorization. The migration roadmap and issue tracker are context, not instructions to execute every item. A documentation-only task permits only its requested documentation changes; an analysis task permits inspection, not automatic fixes. Later explicit implementation requests supersede those task-specific limits within their stated scope.
 
@@ -27,22 +27,21 @@ The original analysis examined commit `6501155`. Its no-emit TypeScript check fa
 
 - Application/tooling root: `frontend/`; there is no root package.json.
 - Bootstrap: `frontend/index.html` → `src/index.tsx` → `App.tsx` → `context/Theme.tsx`.
-- `Theme.tsx` contains BrowserRouter, SiteUiModeProvider, and the shell with AuthProvider. `ThemeProvider.tsx` separately forces light mode.
-- `components/layout/Layout.tsx` selects StandardUI, TerminalUI, or shell-free feature content.
-- `routes/publicRoutes.ts` registers pages; `routes/AppRoutes.tsx` renders them with Suspense/admin guards and optional login overlay.
-- `features/portfolio/data/` holds profile/project data and the terminal command module. The terminal module also contains API execution logic despite its `data/` location.
-- `features/standardUI/` contains the active standard shell and home page. `pages/Home.tsx` delegates to `StandardHome`.
-- `features/terminalUI/` contains terminal presentation, session logic, dragging, and local event telemetry.
+- `Theme.tsx` contains BrowserRouter and the application shell. `ThemeProvider.tsx` enforces light mode.
+- `components/layout/Layout.tsx` renders StandardUI or shell-free feature content.
+- `routes/publicRoutes.ts` registers pages; `routes/AppRoutes.tsx` renders them with Suspense, redirects retired `/login`, `/admin/*`, and `/api-lab` URLs to `/`, and provides a wildcard not-found page.
+- `features/portfolio/data/` holds profile/project data and `localContent.ts` (local projects/blog posts/categories and selectors).
+- `features/standardUI/` contains the standard shell and home page. `pages/Home.tsx` delegates to `StandardHome`.
 - `features/ticTacToe/` contains browser-local game logic and imported lookup JSON.
 - `features/jitCafe/` contains nested Home/Menu/Contact pages and a static menu snapshot. Ordering/staff screenshots are not active ordering/admin routes.
-- `features/addToTheAux/` currently requires playlist/search/playback APIs and authentication.
-- `components/content/` contains a shared content browser and admin/editor infrastructure. `components/common/ContentModal.tsx` also owns engagement/auth-dependent behavior.
-- `lib/api.ts`, `lib/csrf.ts`, `lib/env.ts`, and `lib/services/ContentPlatformService.ts` implement main API configuration/requests/types. AUX has another API helper.
+- `features/addToTheAux/` is a local interactive demo backed by `data/localAuxData.ts` (in-memory queue, local search, simulated playback).
+- `components/content/` contains a shared content browser (feed, filters, header). `components/common/ContentModal.tsx` is a read-only reader dialog.
+- `lib/api.ts` holds shared content types; `lib/services/ContentPlatformService.ts` is a local-data facade (reads from `localContent.ts`; mutations throw). `lib/spaPathRestore.ts` mirrors the `index.html` SPA restore contract for tests.
 - `public/assets/` contains images/icons/PDF; `public/content/` contains older unwired Markdown/text. Do not assume those files are a complete export of API content.
 
-Navigation is currently defined in several places: route registry, profile header links, terminal commands, and JIT Cafe navigation. `showInNav` does not drive the standard header. Check all relevant surfaces when changing routes.
+Navigation is unified across route registry, header navigation, and feature breadcrumbs. Header navigation is driven by `portfolioNavItems` and matches `publicRoutes.ts` (`/`, `/projects`, `/blog`, `/about`, `/resume`, `/contact`).
 
-Known routing distinctions: `/projects/:id` treats `id` as a slug; four local case studies override matching API slugs. `/projects` has no registered route, though a preview targets it. Blog posts currently open in a modal. A global not-found route is absent. See the tracker before treating these as intended behavior.
+Known routing distinctions: `/projects/:id` treats `id` as a slug and resolves only local case studies. `/projects` is a local catalog. Blog posts currently open in a modal. See the tracker (CJ-020) before treating navigation as final.
 
 ## Frontend-only requirements
 
@@ -64,6 +63,7 @@ For authorized migration/new functionality:
 - Separate content access/selection from rendering so the redesign can change layouts without rewriting content rules.
 - Prefer native links/buttons, labeled form controls, meaningful image alternatives, and complete dialog focus behavior. Account for keyboard, mobile, large text, and reduced motion.
 - Use a coherent shared token system and scoped feature styling. Existing CSS is not fully isolated; check navigation between features for style leakage. Do not create another parallel theme/style system casually.
+- The portfolio uses teal, blue, and amber with navy headings; its tokens are scoped to `.portfolio-site-shell` in `styles/index.css`. Extend that palette for portfolio changes and preserve standalone demo palettes unless the task includes them.
 - Check route destinations, navigation, demo/iframe targets, and asset paths together. Root-relative paths currently assume custom-domain root hosting.
 - Do not add libraries for behavior that the existing stack can handle clearly. Dependency changes must be part of the authorized work; preserve the lockfile's unrelated edits.
 - Test meaningful behavior proportional to the change. Avoid implementation-mirroring tests or tests for trivial documentation edits. Retire obsolete tests alongside retired features rather than preserving unused server abstractions.
@@ -75,13 +75,14 @@ Run application commands from `frontend/`:
 
 ```sh
 npm run dev
-./node_modules/.bin/tsc --noEmit --incremental false
+npm run typecheck        # tsc --noEmit --incremental false
 npm test
 npm run build
+npm run validate         # typecheck + tests + build
 npm run preview
 ```
 
-Use the commands appropriate to the task, not the entire list automatically. Vite emits `frontend/build/`. `npm run build` does not currently run TypeScript checking. Vitest uses jsdom and `src/tests/setupTests.tsx`. Existing coverage primarily targets content/admin model helpers; the application test is a placeholder.
+Use the commands appropriate to the task, not the entire list automatically. Vite emits `frontend/build/`. `npm run build` does not run TypeScript checking by itself; use `npm run validate` for the full sequence. Vitest uses jsdom and `src/tests/setupTests.tsx`. Coverage lives in `src/tests/App.test.tsx` (local content, AUX data, routes, SPA restore, accessibility) and `components/content/models/ContentBrowserModels.test.ts`.
 
 Do not install dependencies merely to inspect or document the project. Do not run a build/test that writes artifacts during an explicitly strict read-only task; a no-emit check may be suitable when permitted. For implementation, distinguish baseline failures from regressions and record actual results.
 
@@ -90,8 +91,8 @@ For documentation-only work, validate local Markdown links, cross-document consi
 ## Deployment conventions
 
 - `frontend/public/CNAME` contains `compilingjava.com`; current router/assets/fallback assume hosting at the domain root.
-- `frontend/vite.config.ts` uses output `build` and a development `/api` proxy to localhost:8080. The proxy is not a production service and is scheduled for removal after its consumers migrate.
-- `frontend/public/404.html` redirects to `/?spa-path=…`; `frontend/index.html` restores that path. Double decoding is tracked in CJ-013.
+- `frontend/vite.config.ts` uses output `build`. The former development `/api` proxy has been removed (CJ-008).
+- `frontend/public/404.html` redirects to `/?spa-path=…`; `frontend/index.html` restores that path with a single decode (CJ-013).
 - No Actions workflow existed at handoff. `npm run deploy` runs a build and publishes via `gh-pages -d build`; do not treat it as a harmless validation command.
 - Package `homepage` metadata does not configure Vite's base. A `/web/` deployment requires coordinated router, assets, manifest, iframe, and fallback changes.
 - Verify root/subpath hosting, deep-link refresh, query/hash encoding, unknown paths, images/PDF, and absence of API requests before declaring readiness.

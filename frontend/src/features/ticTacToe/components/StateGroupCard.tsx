@@ -52,7 +52,11 @@ function StateGroupCard({
           onSelectMove(selectedOption.nextBoard);
         }
       }}
-      aria-label={canSelect ? `Apply move ${selectedOption.move}` : undefined}
+      aria-label={
+        canSelect
+          ? `State ${groupIndex + 1}, ${scoreLabel(group.bestScore)}, apply move ${selectedOption.move}`
+          : `State ${groupIndex + 1}, ${scoreLabel(group.bestScore)}`
+      }
     >
       <header className="canonical-header">
         <strong>State {groupIndex + 1}</strong>

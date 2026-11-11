@@ -99,6 +99,8 @@ function StateCyclePreview({ moves, interactive, snapIndex, onSnapIndexChange }:
             max={moves.length - 1}
             step={0.01}
             value={sliderValue}
+            aria-label="Symmetry transform preview"
+            aria-valuetext={`Move #${current.move} via ${previewTransform.label}`}
             onPointerDown={() => setIsDragging(true)}
             onPointerUp={snapSlider}
             onPointerCancel={snapSlider}

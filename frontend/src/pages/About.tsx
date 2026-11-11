@@ -1,220 +1,109 @@
-import { useEffect, useState } from "react";
-import ContentModal from "../components/common/ContentModal";
 import { portfolioProfile } from "../features/portfolio/data/profile";
-import { publishTerminalTelemetry } from "../features/terminalUI/lib/terminalTelemetry";
-import { type ContentItem } from "../lib/api";
-import { contentPlatformService } from "../lib/services/ContentPlatformService";
-
-const ABOUT_BLOG_PAGE_SIZE = 3;
-
-function getBlogExcerpt(item: ContentItem) {
-  const source = item.bodyMd?.trim() || item.description?.trim() || "";
-  if (!source) {
-    return "This post is published from the backend content service and is available to read in full from the blog viewer.";
-  }
-
-  const cleaned = source
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/^>\s*/gm, "")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/`{1,3}/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (cleaned.length <= 180) {
-    return cleaned;
-  }
-
-  return `${cleaned.slice(0, 177)}...`;
-}
+import {
+  portfolioCertifications,
+  portfolioEducation,
+  portfolioWorkExperience,
+} from "../features/portfolio/data/experience";
 
 function About() {
-  const [blogPosts, setBlogPosts] = useState<ContentItem[]>([]);
-  const [blogLoading, setBlogLoading] = useState(true);
-  const [blogError, setBlogError] = useState<string | null>(null);
-  const [selectedBlog, setSelectedBlog] = useState<ContentItem | null>(null);
-  const [blogModalOpen, setBlogModalOpen] = useState(false);
-  const [blogModalLoading, setBlogModalLoading] = useState(false);
-  const [blogModalError, setBlogModalError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
-
-    async function loadBlogPosts() {
-      try {
-        setBlogLoading(true);
-        setBlogError(null);
-        publishTerminalTelemetry({
-          tone: "info",
-          lines: [`backend :: GET /api/contents?type=BLOG&page=0&size=${ABOUT_BLOG_PAGE_SIZE}`],
-        });
-
-        const page = await contentPlatformService.listContentsPage({
-          type: "BLOG",
-          page: 0,
-          size: ABOUT_BLOG_PAGE_SIZE,
-          signal: controller.signal,
-        });
-
-        if (!cancelled) {
-          setBlogPosts(page.content);
-          publishTerminalTelemetry({
-            tone: "success",
-            lines: [`backend :: loaded ${page.numberOfElements} latest blog entr${page.numberOfElements === 1 ? "y" : "ies"} for about page`],
-          });
-        }
-      } catch (err) {
-        if (!cancelled && (err as Error).name !== "AbortError") {
-          setBlogError((err as Error).message);
-          setBlogPosts([]);
-          publishTerminalTelemetry({
-            tone: "error",
-            lines: [`backend :: about page blog load failed :: ${(err as Error).message}`],
-          });
-        }
-      } finally {
-        if (!cancelled) {
-          setBlogLoading(false);
-        }
-      }
-    }
-
-    void loadBlogPosts();
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, []);
-
-  const openBlogPost = async (item: ContentItem) => {
-    setBlogModalOpen(true);
-    setSelectedBlog(item);
-    setBlogModalLoading(true);
-    setBlogModalError(null);
-
-    try {
-      publishTerminalTelemetry({
-        tone: "info",
-        lines: [`backend :: GET /api/contents/id/${item.id}`],
-      });
-      const fullPost = await contentPlatformService.getContentById(item.id);
-      setSelectedBlog(fullPost);
-      publishTerminalTelemetry({
-        tone: "success",
-        lines: [`backend :: opened blog post :: ${fullPost.title}`],
-      });
-    } catch (err) {
-      setBlogModalError((err as Error).message);
-      publishTerminalTelemetry({
-        tone: "error",
-        lines: [`backend :: blog post open failed :: ${(err as Error).message}`],
-      });
-    } finally {
-      setBlogModalLoading(false);
-    }
-  };
-
-  const closeBlogModal = () => {
-    setBlogModalOpen(false);
-    setBlogModalLoading(false);
-    setBlogModalError(null);
-    setSelectedBlog(null);
-  };
-
   return (
-    <>
-      <div className="space-y-16 py-8 sm:py-10">
-        <section className="grid gap-10 border-b border-brand-line pb-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
-          <div className="max-w-3xl">
-            <p className="portfolio-kicker">About</p>
-            <h1 className="portfolio-display-title mt-4">A bit about me</h1>
-            <p className="mt-6 portfolio-copy-strong">
-              {portfolioProfile.shortAbout[0]}
+    <div className="space-y-16 py-8 sm:py-10">
+      <section className="portfolio-page-intro grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+        <div className="max-w-3xl">
+          <p className="portfolio-kicker">About</p>
+          <h1 className="portfolio-display-title mt-4">A bit about me</h1>
+          <p className="mt-6 portfolio-copy-strong">{portfolioProfile.shortAbout[0]}</p>
+          <p className="mt-4 portfolio-copy">{portfolioProfile.shortAbout[1]}</p>
+          {portfolioProfile.aboutParagraphs.map((paragraph) => (
+            <p key={paragraph} className="mt-4 portfolio-copy">
+              {paragraph}
             </p>
-            <p className="mt-4 portfolio-copy">
-              {portfolioProfile.shortAbout[1]}
-            </p>
+          ))}
+        </div>
+
+        <aside className="grid gap-4 lg:justify-self-end lg:max-w-sm">
+          <div className="border-t border-brand-line pt-4">
+            <p className="portfolio-kicker">Location</p>
+            <p className="mt-2 portfolio-copy">{portfolioProfile.location}</p>
           </div>
-
-          <aside className="grid gap-4 lg:justify-self-end lg:max-w-sm">
-            <div className="border-t border-brand-line pt-4">
-              <p className="portfolio-kicker">Location</p>
-              <p className="mt-2 portfolio-copy">{portfolioProfile.location}</p>
-            </div>
-            <div className="border-t border-brand-line pt-4">
-              <p className="portfolio-kicker">Stack</p>
-              <p className="mt-2 portfolio-copy">{portfolioProfile.techStackLine}</p>
-            </div>
-          </aside>
-        </section>
-
-        <section>
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <p className="portfolio-kicker">Writing</p>
-              <h2 className="portfolio-display-title mt-3">Latest posts</h2>
-            </div>
+          <div className="border-t border-brand-line pt-4">
+            <p className="portfolio-kicker">Focus</p>
+            <p className="mt-2 portfolio-copy">{portfolioProfile.techStackLine}</p>
           </div>
+        </aside>
+      </section>
 
-          {blogLoading ? (
-            <div className="mt-6 border-t border-brand-line/16 pt-6">
-              <p className="portfolio-copy">Loading recent posts...</p>
+      <section>
+        <p className="portfolio-kicker">Education</p>
+        <h2 className="portfolio-display-title mt-3">Education</h2>
+        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+          {portfolioEducation.map((entry) => (
+            <div key={entry.degree} className="portfolio-education-card">
+              <p className="portfolio-kicker">{entry.status}</p>
+              <p className="mt-2 portfolio-copy-strong">{entry.degree}</p>
+              <p className="mt-1 portfolio-copy">{entry.school}</p>
             </div>
-          ) : null}
+          ))}
+        </div>
+      </section>
 
-          {!blogLoading && blogError ? (
-            <div className="mt-6 border-t border-brand-line/16 pt-6">
-              <p className="portfolio-copy">{`Could not load blog posts: ${blogError}`}</p>
-            </div>
-          ) : null}
+      <section>
+        <p className="portfolio-kicker">Certifications</p>
+        <h2 className="portfolio-display-title mt-3">Certifications</h2>
+        <div className="mt-6 grid gap-x-8 gap-y-3 border-t border-brand-line/16 pt-5 sm:grid-cols-2">
+          {portfolioCertifications.map((cert) => (
+            <a
+              key={cert.label}
+              href={cert.href}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="portfolio-inline-link inline-flex items-center"
+            >
+              {cert.label}
+            </a>
+          ))}
+        </div>
+      </section>
 
-          {!blogLoading && !blogError && blogPosts.length === 0 ? (
-            <div className="mt-6 border-t border-brand-line/16 pt-6">
-              <p className="portfolio-copy">No blog posts are published yet.</p>
-            </div>
-          ) : null}
+      <section>
+        <p className="portfolio-kicker">Career progression</p>
+        <h2 className="portfolio-display-title mt-3">Professional history</h2>
+        <div className="mt-6 space-y-10">
+          {portfolioWorkExperience.map((entry) => (
+            <article
+              key={`${entry.role}-${entry.organization}`}
+              className="grid gap-8 border-t border-brand-line/18 pt-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+            >
+              <div>
+                <p className="portfolio-kicker">{entry.period}</p>
+                <h3 className="portfolio-display-subtitle mt-3">{entry.role}</h3>
+                <p className="mt-3 portfolio-copy">{entry.organization}</p>
+              </div>
+              <p className="portfolio-copy">{entry.story}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-          {!blogLoading && !blogError && blogPosts.length > 0 ? (
-            <div className="mt-6 grid gap-x-8 gap-y-10 lg:grid-cols-2 xl:grid-cols-3">
-              {blogPosts.map((post) => (
-                <article key={post.id} className="flex h-full flex-col border-t border-brand-line/18 pt-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="portfolio-kicker">{new Date(post.createdAt).toLocaleDateString()}</p>
-                      <h3 className="portfolio-display-subtitle mt-3">{post.title}</h3>
-                    </div>
-                    <p className="portfolio-kicker">Live from API</p>
-                  </div>
-
-                  <p className="mt-3 portfolio-copy">{`slug :: ${post.slug}`}</p>
-                  <p className="mt-4 flex-1 portfolio-copy">{getBlogExcerpt(post)}</p>
-
-                  <button
-                    type="button"
-                    onClick={() => void openBlogPost(post)}
-                    className="portfolio-inline-link mt-5 inline-flex items-center"
-                  >
-                    Read post
-                  </button>
-                </article>
-              ))}
-            </div>
-          ) : null}
-        </section>
-
-      </div>
-
-      <ContentModal
-        open={blogModalOpen}
-        item={selectedBlog}
-        loading={blogModalLoading}
-        error={blogModalError}
-        onClose={closeBlogModal}
-      />
-    </>
+      <section>
+        <p className="portfolio-kicker">Looking ahead</p>
+        <h2 className="portfolio-display-title mt-3">Professional interests and objective</h2>
+        <div className="mt-6 max-w-3xl space-y-4 border-t border-brand-line/16 pt-5">
+          <p className="portfolio-copy">
+            My professional interests sit at the intersection of software engineering, business analytics,
+            information systems, data science, and artificial intelligence. I am drawn to roles and problems
+            that need someone who can move between writing and architecting software and reasoning about the
+            business and operational impact of that software.
+          </p>
+          <p className="portfolio-copy">
+            My career objective is to apply that combination — a Computer Science foundation, an MBA in Business
+            Analytics, hands-on software development, and leadership experience from the Marine Corps and program
+            coordination — toward technology leadership and business analytics roles where I can help an
+            organization connect its technical systems to its strategic decisions.
+          </p>
+        </div>
+      </section>
+    </div>
   );
 }
 

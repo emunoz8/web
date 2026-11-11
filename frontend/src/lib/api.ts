@@ -1,12 +1,7 @@
-import { apiBaseEnv } from "./env";
-
-const normalizedApiBase = apiBaseEnv.replace(/\/+$/, "");
-
-export const apiBaseUrl = normalizedApiBase;
+export const apiBaseUrl = "";
 
 export const apiUrl = (path: string): string => {
-  const safePath = path.startsWith("/") ? path : `/${path}`;
-  return `${normalizedApiBase}${safePath}`;
+  return path.startsWith("/") ? path : `/${path}`;
 };
 
 export type PagedResponse<T> = {

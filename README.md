@@ -1,104 +1,89 @@
 # CompilingJava
 
-CompilingJava is a full-stack portfolio platform built as a real application rather than a static personal site. The repo combines a React and TypeScript frontend with a Spring Boot backend that supports content publishing, project case studies, admin workflows, authentication, comments, likes, and interactive feature routes.
+CompilingJava is the frontend-first software engineering portfolio and interactive project showcase behind `compilingjava.com`. The application is built with React, TypeScript, Tailwind CSS, and Vite, and runs as a self-contained static frontend deployable to GitHub Pages without requiring a runtime backend service.
 
 ## What This Repo Contains
 
 - `frontend/`
-  React 18, TypeScript, Tailwind CSS, React Router, and a route-driven portfolio UI.
-- `backend/`
-  Spring Boot 3.5, Java 17, PostgreSQL, Flyway, Spring Security, caching, and deployment scripts.
-- `JIT_cafe/`
-  A separate React/Vite product prototype kept alongside the main site workspace.
-
-## Why This Exists
-
-This project is the platform behind `compilingjava.com`. The goal is to show software engineering work through the product itself:
-
-- structured project and blog publishing
-- interactive product demos and feature routes
-- backend-backed engagement and admin tooling
-- local development and production deployment workflows
+  React 18, TypeScript, Tailwind CSS, React Router, Vite, Vitest, local project/article content, and interactive feature demos.
+- `docs/`
+  Architecture analysis (`CODEBASE_ANALYSIS.md`), frontend-only migration plan (`MIGRATION_PLAN.md`), issue tracker (`ISSUES.md`), and changelog (`CHANGELOG.md`).
+- `AGENTS.md`
+  Project conventions and multi-agent collaboration instructions.
 
 ## Stack
 
-- Frontend: React, TypeScript, Tailwind CSS, React Router, React Markdown
-- Backend: Java 17, Spring Boot, Spring Security, JPA, Flyway
-- Data: PostgreSQL
-- Deployment: GitHub Pages for the frontend, Google Cloud Run and Cloud SQL support for the backend
+- **UI & Routing:** React 18, TypeScript, React Router, Tailwind CSS, React Markdown
+- **Build & Validation:** Vite, Vitest, Testing Library, TypeScript (`tsc --noEmit`)
+- **Hosting Target:** GitHub Pages (`frontend/public/CNAME` and `frontend/public/404.html` SPA fallback)
 
 ## Repo Layout
 
 ```text
-frontend/
-  src/
-    components/
-    context/
-    features/
-    lib/
-    pages/
-    routes/
-backend/
-  src/main/java/com/compilingjava/
-    auth/
-    comment/
-    content/
-    like/
-    security/
-    spotify/
-    user/
-  src/main/resources/
-    db/migration/
-  scripts/
+web/
+  AGENTS.md
+  README.md
   docs/
-JIT_cafe/
+    CODEBASE_ANALYSIS.md
+    MIGRATION_PLAN.md
+    ISSUES.md
+    CHANGELOG.md
+  frontend/
+    index.html
+    public/
+      CNAME
+      404.html
+      assets/
+      meta/
+    src/
+      components/
+      context/
+      features/
+        addToTheAux/
+        jitCafe/
+        portfolio/
+        standardUI/
+        terminalUI/
+        ticTacToe/
+      lib/
+      pages/
+      routes/
+      styles/
+      tests/
 ```
 
-## Local Development
+## Local Development & Validation
 
-### Frontend
+Run all application commands from `frontend/`:
 
-```powershell
+```sh
 cd frontend
-npm install
-npm start
+npm run dev
 ```
 
-The frontend expects the backend at `http://localhost:8080` in local development.
+Validation and production build commands:
 
-### Backend
-
-The backend includes Windows PowerShell scripts for starting PostgreSQL and running Spring Boot locally.
-
-```powershell
-cd backend
-.\scripts\start-localdb.ps1
-.\scripts\run-backend-localdb.ps1
+```sh
+cd frontend
+npm run typecheck
+npm test -- --run
+npm run build
+npm run preview
 ```
 
-Useful alternatives:
+Or run the full validation pipeline in one step:
 
-- `.\mvnw.cmd test`
-- `.\mvnw.cmd spring-boot:run`
+```sh
+cd frontend
+npm run validate
+```
 
 ## Key Features
 
-- portfolio and blog content platform with typed frontend models
-- admin content creation and editing flows
-- session-based auth plus Google auth support
-- comments and like engagement features
-- feature routes including AddToTheAUX, Tic Tac Toe, and JIT Cafe
-- production-oriented backend config, migrations, and deployment docs
-
-## Deployment Notes
-
-Backend deployment references live in:
-
-- `backend/docs/PRODUCTION_GO_LIVE.md`
-- `backend/docs/CLOUDRUN_CLOUDSQL_TESTING.md`
-
-Frontend deployment is configured through the scripts in `frontend/package.json`.
-
-## Status
-
-This is an active working codebase. Some parts of the repo are under active iteration, but the platform is structured as a real deployed system rather than a throwaway demo.
+- **Project Case Studies (`/projects`, `/projects/:id`):** Detailed architecture writeups, screenshots, and embedded interactive surfaces for CompilingJava, AddToTheAUX, Tic Tac Toe Revisited, and JIT Cafe.
+- **Interactive Demos:**
+  - **Tic Tac Toe (`/tic-tac-toe`):** Browser-local Minimax symmetry lookup explorer and playable AI opponent.
+  - **JIT Cafe (`/jit-cafe/*`):** Multi-page restaurant menu and guest-experience showcase backed by a local menu snapshot and product flow screenshots.
+  - **AddToTheAUX (`/add-to-the-aux`):** Interactive orbital playlist stage with local catalog search, playback simulation, and in-session queue additions.
+- **Technical Writing (`/blog`, `/about`):** Local Markdown articles with category filtering and modal reader view.
+- **Dual UI Shell:** Standard portfolio shell and interactive terminal shell (`TerminalUI`) backed by local content selectors.

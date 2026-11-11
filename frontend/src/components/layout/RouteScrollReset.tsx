@@ -13,13 +13,6 @@ function RouteScrollReset() {
       left: 0,
       top: 0,
     });
-
-    document.querySelectorAll<HTMLElement>(".terminal-open-content").forEach((element) => {
-      element.scrollTo({
-        left: 0,
-        top: 0,
-      });
-    });
   }, [routeKey]);
 
   return null;

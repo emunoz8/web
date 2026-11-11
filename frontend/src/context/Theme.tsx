@@ -1,12 +1,9 @@
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import Layout from "../components/layout/Layout";
-import { SiteUiModeProvider, useSiteUiMode } from "./SiteUiModeContext";
 import { getShellPathname, isChromelessPath, isViewportLockedPath } from "../lib/authRouting";
-import { AuthProvider } from "./AuthContext";
 
 function AppShellContent() {
   const location = useLocation();
-  const { mode } = useSiteUiMode();
   const pathname = getShellPathname(location);
   const chromeless = isChromelessPath(pathname);
   const viewportLocked = isViewportLockedPath(pathname);
@@ -27,31 +24,19 @@ function AppShellContent() {
             ? "min-h-screen w-full overflow-hidden"
             : chromeless
               ? "min-h-screen w-full"
-              : mode === "terminal"
-                ? "flex min-h-screen w-full flex-col bg-brand-canvas"
-                : "flex min-h-screen w-full flex-col bg-transparent"
+              : "flex min-h-screen w-full flex-col bg-transparent"
         }
       >
-        <AuthProvider>
-          <Layout />
-        </AuthProvider>
+        <Layout />
       </div>
     </div>
-  );
-}
-
-function AppShell() {
-  return (
-    <SiteUiModeProvider>
-      <AppShellContent />
-    </SiteUiModeProvider>
   );
 }
 
 const Theme: React.FC = () => {
   return (
     <Router>
-      <AppShell />
+      <AppShellContent />
     </Router>
   );
 };

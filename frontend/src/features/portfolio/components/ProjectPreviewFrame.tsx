@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { HiXMark } from "react-icons/hi2";
 import type { ProjectPreview } from "../data/projects";
 
@@ -6,22 +6,63 @@ type ProjectPreviewFrameProps = {
   preview: ProjectPreview;
 };
 
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function ProjectPreviewFrame({ preview }: ProjectPreviewFrameProps) {
   const [viewerOpen, setViewerOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const dialogTitleId = useId();
 
   useEffect(() => {
     if (!viewerOpen) {
       return;
     }
 
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         setViewerOpen(false);
+        return;
+      }
+
+      if (event.key === "Tab" && dialogRef.current) {
+        const focusable = Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+        );
+        if (focusable.length === 0) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (triggerRef.current) {
+        triggerRef.current.focus();
+      } else {
+        previousActiveElement?.focus?.();
+      }
+    };
   }, [viewerOpen]);
 
   return (
@@ -37,6 +78,7 @@ export function ProjectPreviewFrame({ preview }: ProjectPreviewFrameProps) {
             />
           ) : (
             <button
+              ref={triggerRef}
               type="button"
               onClick={() => setViewerOpen(true)}
               className="block w-full cursor-zoom-in"
@@ -65,13 +107,18 @@ export function ProjectPreviewFrame({ preview }: ProjectPreviewFrameProps) {
           onClick={() => setViewerOpen(false)}
           role="dialog"
           aria-modal="true"
-          aria-label={preview.title}
+          aria-labelledby={dialogTitleId}
         >
           <div
+            ref={dialogRef}
             className="relative flex max-h-[92vh] w-full max-w-6xl items-center justify-center rounded-[1.75rem] border border-brand-line/18 bg-brand-surface/96 p-4 shadow-[0_28px_84px_rgb(var(--brand-shadow-modal)/0.42)] sm:p-6"
             onClick={(event) => event.stopPropagation()}
           >
+            <h2 id={dialogTitleId} className="sr-only">
+              {preview.title}
+            </h2>
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={() => setViewerOpen(false)}
               className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-line/18 bg-brand-surface/92 text-brand-contrast transition hover:border-brand-frame/34 hover:text-brand-accent"

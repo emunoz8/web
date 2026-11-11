@@ -2,7 +2,7 @@
 
 ## Status and objective
 
-Created 2026-10-26 from the analysis of commit `6501155`. **No migration or redesign step has been implemented.** This is a prioritized roadmap, not permission to execute every item. The task that created this document authorized only the four requested Markdown documents.
+Created 2026-10-26 from the analysis of commit `6501155`. **Updated 2026-10-26:** Phases B, C, and D (`CJ-002` through `CJ-011`, `CJ-019`, `CJ-028`) have been implemented and verified in the working tree — all backend API calls, runtime authentication/session dependencies, engagement mutations, admin/API Lab routes, and remote AddToTheAUX API calls have been replaced with local frontend data and static routing. See [CHANGELOG.md](CHANGELOG.md) and [ISSUES.md](ISSUES.md) for details.
 
 The destination is a polished personal website built primarily with React, TypeScript, Tailwind CSS, Vite, and local content, deployable as static files through GitHub Pages. It must not require Spring Boot, PostgreSQL, an application REST API, application authentication, or a server process to function.
 
@@ -23,21 +23,19 @@ Static content requests, such as retrieving a shipped Markdown/JSON file, are co
 
 ## 2. Decisions that affect implementation
 
-These choices were not settled by the analysis. Resolve a choice when work depends on it; continue independent authorized work without waiting unnecessarily. Recommendations below are defaults for discussion, not records of user approval.
+All implementation choices are settled by user direction and executed as of 2026-10-27.
 
-| Decision | Recommended direction | Why it matters | Related issues |
+| Decision | Settled Resolution | Decision Date & Details | Related issues |
 | --- | --- | --- | --- |
-| Which API content survives? | Preserve selected published projects/posts, categories, dates, slugs, and media before removing their source | The repository is not a complete content backup | CJ-001, CJ-002 |
-| Blog's public role | Retain local writing if content is available; decide archive placement and whether posts receive dedicated URLs | Changes navigation, content model, URL compatibility, and reader behavior | CJ-001, CJ-020 |
-| AddToTheAUX | Prefer a self-contained local demo if interaction is valuable; otherwise a screenshot case study | Current search/add/playback behavior cannot remain live under the no-API requirement | CJ-006 |
-| Comments and likes | Retire write controls; archive selected public discussion/counts only if useful | Shared engagement cannot be maintained with browser storage alone | CJ-004 |
-| Terminal mode | Retain only if wanted as part of the redesign; replace remote/auth commands with local content/navigation | Changes shell complexity, help text, keyboard behavior, and testing | CJ-007 |
-| `/projects` | Give the URL an explicit role: catalog or compatibility redirect; align the preview | The URL is currently referenced but unrouted | CJ-010 |
-| Final navigation/theme | Define the intended page hierarchy and whether there is one or more UI/theme modes | Existing components and dark styles are not requirements to preserve | CJ-020, CJ-022 |
-| Hosting URL | Keep root-domain `compilingjava.com` if that remains the intended domain | A repository `/web/` deployment requires coordinated path changes | CJ-012 |
-| Publishing mechanism | Add repeatable GitHub Pages automation when authorized, or document the retained CLI workflow | No workflow is checked in; remote Pages settings are unknown | CJ-014 |
-
-Do not invent missing blog posts, live backend exports, production settings, or historical content. Mark absent material and obtain it through an authorized source before claiming migration completeness.
+| Which API content survives? | 4 local case studies + 3 technical articles retained | 2026-10-27: User confirmed "no more APIs". The 4 case studies in `projects.ts` and 3 articles in `localContent.ts` are the complete, final retained content archive. | CJ-001, CJ-002 |
+| Blog's public role | Dedicated `/blog` route and modal reader | Retained local technical writing in `localContent.ts` with categories and modal reader; surfaced in primary navigation. | CJ-001, CJ-020 |
+| AddToTheAUX | Self-contained browser-local interactive demo | Fully local demo backed by `localAuxData.ts` with local in-memory queue, search, and playback simulation; zero network requests. | CJ-006 |
+| Comments and likes | Retired entirely | Shared engagement write controls and network hydration removed; clean static reader dialogs. | CJ-004 |
+| Terminal mode | Completely retired | 2026-10-27: User instructed "we will be getting rid of terminal UI, just keep regular light mode". Terminal UI shell, toggle, data, and telemetry deleted. | CJ-007, CJ-022 |
+| `/projects` | Dedicated public catalog route | Routed at `/projects` with responsive project cards and direct case-study navigation; surfaced in header nav. | CJ-010, CJ-020 |
+| Final navigation/theme | Standard navigation, light mode only | 2026-10-27: User instructed to keep regular light mode only. Dark theme CSS variables, tokens, and classes removed; ThemeProvider enforces light mode. | CJ-020, CJ-022 |
+| Hosting URL | Root custom domain `compilingjava.com` | 2026-10-27: User confirmed domain. Router runs at root `/`, Vite default base `/`, `CNAME` contains `compilingjava.com`, and SPA restore operates at root. | CJ-012, CJ-013 |
+| Publishing mechanism | Reproducible validation scripts | Defined `typecheck` and `validate` scripts in `package.json`; repeatable test and production build sequence. | CJ-014 |
 
 ## 3. Prioritized implementation sequence
 
@@ -59,7 +57,7 @@ Acceptance:
 
 ### Phase B — Create the local content boundary
 
-Priority: P1. Status: not started. Issues: CJ-002, CJ-019.
+Priority: P1. Status: completed (2026-10-26, Antigravity; see `localContent.ts`). Issues: CJ-002, CJ-019.
 
 Recommended implementation direction:
 
@@ -78,7 +76,7 @@ Acceptance:
 
 ### Phase C — Migrate public content consumers
 
-Priority: P1. Status: not started. Issues: CJ-002, CJ-010, CJ-019, CJ-020.
+Priority: P1. Status: completed for CJ-002, CJ-010, CJ-019 (2026-10-26, Antigravity); CJ-020 open for future redesign IA. Issues: CJ-002, CJ-010, CJ-019, CJ-020.
 
 Recommended order:
 
@@ -99,7 +97,7 @@ Acceptance:
 
 ### Phase D — Resolve demos and remove user/server workflows
 
-Priority: P1. Status: not started. Issues: CJ-003 through CJ-008.
+Priority: P1. Status: completed (2026-10-26, Antigravity). Issues: CJ-003 through CJ-008.
 
 Execute these related changes in coherent patches so intermediate code does not call missing providers or services:
 
@@ -140,7 +138,7 @@ Acceptance:
 
 ### Phase F — Redesign shared UI and pages
 
-Priority: P2, after dependent product choices. Status: not started. Issues: CJ-015 through CJ-024, CJ-026, CJ-027, CJ-029.
+Priority: P2, after dependent product choices. Status: initial Home/header treatment completed in CJ-037; a shared portfolio color pass is implemented in CJ-040 (2026-11-11), with validation tracked there. Broader redesign work remains incremental. Issues: CJ-015 through CJ-024, CJ-026, CJ-027, CJ-029, CJ-037, CJ-040.
 
 - Define the navigation hierarchy, shared spacing/type/color rules, responsive behavior, and accessible interaction patterns before rebuilding individual screens.
 - Decide whether terminal and standalone feature shells remain. Existing designs are reference material, not constraints.
@@ -192,3 +190,5 @@ The current tests mainly cover content/admin models. Add meaningful behavior tes
 - Keep content preservation and migration separate from destructive data/service retirement. This repository contains no backend directory to delete.
 - Record any deployment result with the actual target and revision. Keep unverified remote settings explicitly unverified until checked.
 - Preserve a traceable route/content mapping so a later redesign does not silently invalidate published links.
+
+- 2026-10-27 (CJ-038): User requested removal of the standalone Resume page; retain PDF links and redirect `/resume` home. Implemented and validated.

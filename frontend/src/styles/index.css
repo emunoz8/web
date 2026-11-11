@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -140,97 +138,26 @@
     linear-gradient(145deg, rgb(var(--palette-canvas)) 0%, rgb(var(--palette-panel)) 100%);
 }
 
-.dark,
-[data-theme="dark"] {
-  color-scheme: dark;
-  --palette-canvas: 9 9 11;
-  --palette-surface: 24 24 27;
-  --palette-panel: 39 39 42;
-  --palette-ink: 244 244 245;
-  --palette-muted: 161 161 170;
-  --palette-accent: 96 165 250;
-  --palette-accent-strong: 147 197 253;
-  --palette-line: 63 63 70;
-  --palette-frame: 113 113 122;
-
-  --brand-canvas: var(--palette-canvas);
-  --brand-haze: var(--palette-line);
-  --brand-surface: var(--palette-surface);
-  --brand-contrast: var(--palette-ink);
-  --brand-panel: var(--palette-panel);
-  --brand-line: var(--palette-line);
-  --brand-frame: var(--palette-frame);
-  --brand-ink: var(--palette-ink);
-  --brand-muted: var(--palette-muted);
-  --brand-accent: var(--palette-accent);
-  --brand-accent-strong: var(--palette-ink);
-  --brand-accent-fill: var(--palette-accent);
-  --brand-accent-fill-strong: 59 130 246;
-  --brand-hero: var(--palette-surface);
-  --brand-warning-soft: 78 59 19;
-  --brand-warning-ink: 253 230 138;
-  --brand-info-soft: 30 58 138;
-  --brand-info-ink: 147 197 253;
-  --brand-success-soft: 6 78 59;
-  --brand-success-ink: 110 231 183;
-  --brand-neutral-soft: var(--palette-panel);
-  --brand-neutral-ink: var(--palette-ink);
-  --brand-danger-soft: 127 29 29;
-  --brand-danger-ink: 252 165 165;
-  --brand-shadow-ink: 0 0 0;
-  --brand-shadow-frame: var(--palette-line);
-  --brand-shadow-modal: 0 0 0;
-  --brand-overlay: 0 0 0;
-  --brand-body-overlay-opacity: 0;
-  --brand-body-background: rgb(var(--palette-canvas));
-  --brand-body-overlay: none;
-  --brand-stripes:
-    linear-gradient(
-      90deg,
-      rgb(var(--brand-frame)) 0%,
-      rgb(var(--brand-frame)) 38%,
-      rgb(var(--brand-line)) 38%,
-      rgb(var(--brand-line)) 74%,
-      rgb(var(--brand-accent)) 74%,
-      rgb(var(--brand-accent)) 100%
-    );
-  --brand-stripes-reverse:
-    linear-gradient(
-      90deg,
-      rgb(var(--brand-accent)) 0%,
-      rgb(var(--brand-accent)) 26%,
-      rgb(var(--brand-line)) 26%,
-      rgb(var(--brand-line)) 64%,
-      rgb(var(--brand-frame)) 64%,
-      rgb(var(--brand-frame)) 100%
-    );
-  --brand-card-background: rgb(var(--palette-surface));
-  --brand-surface-gradient: none;
-  --brand-hero-gradient: rgb(var(--palette-surface));
-  --brand-panel-gradient: rgb(var(--palette-panel));
-  --brand-panel-soft-gradient: none;
-  --brand-item-gradient: rgb(var(--palette-surface));
-  --brand-contrast-glass-gradient: none;
-  --brand-surface-glass-gradient: none;
-  --brand-accent-gradient:
-    linear-gradient(180deg, rgb(var(--palette-accent)) 0%, rgb(59 130 246) 100%);
-  --brand-ambient-panel: none;
-  --brand-ambient-frame: none;
-  --brand-image-overlay:
-    linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.42) 100%);
-  --brand-image-warm-1:
-    linear-gradient(145deg, rgb(var(--palette-panel)) 0%, rgb(var(--palette-frame)) 100%);
-  --brand-image-warm-2:
-    linear-gradient(145deg, rgb(var(--palette-canvas)) 0%, rgb(var(--palette-panel)) 100%);
-  --brand-image-neutral-1:
-    linear-gradient(145deg, rgb(var(--palette-panel)) 0%, rgb(var(--palette-line)) 100%);
-  --brand-image-earth-1:
-    linear-gradient(145deg, rgb(var(--palette-canvas)) 0%, rgb(var(--palette-panel)) 100%);
-}
-
 body.brand-body-scroll-locked,
 body.portfolio-body-scroll-locked {
   overflow: hidden;
+}
+
+.portfolio-site-shell {
+  --portfolio-accent: 18 94 100;
+  --portfolio-tint: 240 246 246;
+  --brand-canvas: 251 251 250;
+  --brand-panel: 243 244 243;
+  --brand-hero: 244 246 246;
+  --brand-ink: 30 53 73;
+  --brand-contrast: 23 49 72;
+  --brand-muted: 77 97 114;
+  --brand-line: 218 222 224;
+  --brand-frame: 37 105 118;
+  --brand-accent: var(--portfolio-accent);
+  --brand-accent-fill: var(--portfolio-accent);
+  --brand-accent-fill-strong: 12 72 78;
+  --brand-accent-gradient: linear-gradient(135deg, rgb(18 94 100), rgb(12 72 78));
 }
 
 .portfolio-site-shell,
@@ -238,8 +165,8 @@ body.portfolio-body-scroll-locked {
   position: relative;
   isolation: isolate;
   background-color: rgb(var(--brand-canvas));
-  background-image: radial-gradient(circle, rgb(var(--brand-frame) / 0.15) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, rgb(var(--brand-accent) / 0.04), transparent 38rem);
   scrollbar-gutter: stable both-edges;
   overflow-x: clip;
 }
@@ -261,37 +188,64 @@ body.portfolio-body-scroll-locked {
   overflow-x: clip;
 }
 
-.terminal-mode-canvas {
-  position: relative;
-  isolation: isolate;
-  background:
-    radial-gradient(circle at 16% 12%, rgb(var(--brand-frame) / 0.16), transparent 28%),
-    radial-gradient(circle at 84% 10%, rgb(var(--brand-accent) / 0.08), transparent 22%),
-    linear-gradient(180deg, rgb(255 252 248) 0%, rgb(248 244 238) 54%, rgb(241 235 227) 100%);
+.portfolio-site-shell :is(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid rgb(var(--brand-accent));
+  outline-offset: 4px;
 }
 
-.terminal-mode-canvas::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.14;
-  background-image:
-    linear-gradient(rgb(var(--brand-line) / 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--brand-line) / 0.12) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.72) 0%, transparent 100%);
+.portfolio-header {
+  border-top: 3px solid rgb(var(--brand-accent));
+  background-color: rgb(251 251 250 / 0.96);
 }
 
-.terminal-mode-canvas::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 50% 28%, rgb(255 255 255 / 0.52), transparent 34%),
-    linear-gradient(180deg, rgb(255 255 255 / 0.24) 0%, transparent 30%);
-  opacity: 0.9;
+.portfolio-wordmark,
+.portfolio-header nav a[aria-current="page"] {
+  color: rgb(var(--brand-accent));
+}
+
+.portfolio-footer {
+  border-top: 1px solid rgb(var(--brand-accent) / 0.2);
+  background-color: rgb(var(--portfolio-tint));
+}
+
+.portfolio-tech-badge {
+  background-color: rgb(255 255 255 / 0.72);
+  border-color: rgb(var(--brand-accent) / 0.16);
+}
+
+.portfolio-page-intro {
+  border: 1px solid rgb(var(--brand-accent) / 0.16);
+  border-radius: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background-color: rgb(var(--portfolio-tint));
+}
+
+.portfolio-education-card {
+  border: 1px solid rgb(var(--brand-line));
+  border-left: 3px solid rgb(var(--brand-accent));
+  border-radius: 0.75rem;
+  background-color: rgb(255 255 255);
+  padding: 1.25rem;
+}
+
+.portfolio-project-card {
+  --project-accent: var(--portfolio-accent);
+  border: 1px solid rgb(var(--brand-line));
+  border-top: 3px solid rgb(var(--project-accent));
+  border-radius: 1rem;
+  background-color: rgb(255 255 255);
+  padding: 1.5rem;
+  box-shadow: 0 6px 20px rgb(var(--brand-contrast) / 0.03);
+}
+
+.portfolio-project-card:hover {
+  border-color: rgb(var(--project-accent) / 0.5);
+}
+
+.portfolio-project-card .portfolio-chip {
+  background-color: rgb(var(--project-accent) / 0.07);
+  border-color: rgb(var(--project-accent) / 0.18);
+  color: rgb(var(--project-accent));
 }
 
 .portfolio-panel,
@@ -367,7 +321,7 @@ body.portfolio-body-scroll-locked {
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgb(var(--brand-frame) / 0.9);
+  color: rgb(var(--brand-frame));
 }
 
 .portfolio-section-divider,
@@ -475,9 +429,9 @@ body.portfolio-body-scroll-locked {
   gap: 0.22rem;
   min-width: 9.5rem;
   border-radius: 6px;
-  border: 1px solid rgb(var(--brand-line));
+  border: 1px solid rgb(var(--brand-accent) / 0.25);
   padding: 0.55rem 1rem 0.6rem 1rem;
-  background: rgb(var(--brand-surface));
+  background: rgb(var(--brand-accent) / 0.06);
   box-shadow: 0 1px 2px rgb(var(--brand-contrast) / 0.04);
   transition:
     border-color 140ms ease,
@@ -522,15 +476,15 @@ body.portfolio-body-scroll-locked {
 .portfolio-display-hero,
 .brand-display-hero {
   font-family: Inter, system-ui, sans-serif;
-  font-size: clamp(2.25rem, 5vw, 4rem);
-  line-height: 1.08;
+  font-size: clamp(2.1rem, 4.6vw, 4rem);
+  line-height: 1.12;
   letter-spacing: -0.025em;
   font-weight: 700;
   text-transform: none;
   color: rgb(var(--brand-contrast));
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  hyphens: auto;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .portfolio-display-title,
@@ -591,7 +545,7 @@ body.portfolio-body-scroll-locked {
   gap: 0.45rem;
   font-size: 0.92rem;
   font-weight: 600;
-  color: rgb(var(--brand-contrast));
+  color: rgb(var(--brand-accent));
   transition: color 140ms ease;
 }
 
@@ -866,6 +820,8 @@ body.portfolio-body-scroll-locked {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
   display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4rem;
 }
 
@@ -878,20 +834,35 @@ body.portfolio-body-scroll-locked {
 
 .home-hero {
   display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem;
-  border-bottom: 1px solid rgb(var(--brand-line));
-  padding-bottom: 3.5rem;
+  border: 1px solid rgb(var(--brand-accent) / 0.18);
+  border-radius: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background:
+    rgb(var(--portfolio-tint));
   align-items: start;
 }
 
 @media (min-width: 1024px) {
   .home-hero {
-    grid-template-columns: minmax(0, 1.12fr) minmax(18rem, 0.88fr);
+    grid-template-columns: minmax(0, 1.55fr) minmax(16rem, 0.75fr);
   }
 }
 
 .home-hero-content {
-  max-width: 48rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 56rem;
+}
+
+.home-hero .portfolio-display-hero {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+.home-hero-highlight {
+  color: rgb(var(--brand-accent));
 }
 
 .home-hero-cta {
@@ -903,6 +874,8 @@ body.portfolio-body-scroll-locked {
 
 .home-hero-aside {
   display: grid;
+  width: 100%;
+  min-width: 0;
   gap: 1.5rem;
 }
 
@@ -914,9 +887,12 @@ body.portfolio-body-scroll-locked {
 }
 
 .home-hero-photo {
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
   border-radius: 8px;
-  border: 1px solid rgb(var(--brand-line));
+  border: 4px solid rgb(255 255 255 / 0.85);
+  box-shadow: 0 12px 30px rgb(var(--brand-accent) / 0.12);
 }
 
 .home-hero-photo-img {
@@ -929,11 +905,46 @@ body.portfolio-body-scroll-locked {
 .home-hero-stats {
   display: grid;
   gap: 1rem;
+  border-radius: 0.75rem;
+  background-color: rgb(255 255 255 / 0.7);
+  padding: 1.25rem;
 }
 
 .home-stat {
   border-top: 1px solid rgb(var(--brand-line));
   padding-top: 1rem;
+}
+
+.home-stat:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.home-experience-card {
+  border: 1px solid rgb(var(--brand-line));
+  border-left: 3px solid rgb(var(--brand-accent));
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background-color: rgb(255 255 255);
+}
+
+.home-contact-section {
+  border: 1px solid rgb(var(--brand-accent) / 0.18);
+  border-radius: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background-color: rgb(var(--portfolio-tint));
+  scroll-margin-top: 8rem;
+}
+
+.home-contact-link {
+  border: 1px solid rgb(var(--brand-accent) / 0.2);
+  border-radius: 0.75rem;
+  padding: 1.25rem 0.75rem;
+  background-color: rgb(255 255 255 / 0.78);
+}
+
+.home-contact-icon {
+  color: rgb(var(--brand-accent));
 }
 
 .home-projects-grid {
@@ -988,6 +999,75 @@ body.portfolio-body-scroll-locked {
   margin-top: 1.5rem;
   font-size: 0.875rem;
   color: rgb(var(--brand-danger-ink));
+}
+
+.header-role-line {
+  margin-top: 0.3rem;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: rgb(var(--brand-muted));
+}
+
+.home-role-line {
+  margin-top: 0.85rem;
+  max-width: 100%;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: rgb(var(--brand-muted));
+  overflow-wrap: break-word;
+}
+
+.home-stat-value {
+  margin-top: 0.4rem;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
+  color: rgb(var(--brand-ink));
+}
+
+.home-signal-divider {
+  height: 2px;
+  width: 100%;
+  max-width: 7rem;
+  border-radius: 999px;
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--brand-accent)) 0%,
+    rgb(var(--brand-accent) / 0.35) 55%,
+    transparent 100%
+  );
+}
+
+.home-competency-tile {
+  position: relative;
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--brand-line));
+  border-radius: 0.75rem;
+  background-color: rgb(var(--brand-surface));
+  background-image: none;
+}
+
+.home-competency-tile::before {
+  content: "";
+  position: absolute;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  left: -1px;
+  width: 3px;
+  border-radius: 999px;
+  background-color: var(--tile-accent, rgb(var(--brand-accent)));
+}
+
+.home-competency-dot {
+  display: inline-block;
+  height: 0.4rem;
+  width: 0.4rem;
+  margin-right: 0.5rem;
+  border-radius: 999px;
+  vertical-align: middle;
+  background-color: var(--tile-accent, rgb(var(--brand-accent)));
 }
 
 /* ── End Home page ──────────────────────────────────────────── */
@@ -1401,697 +1481,6 @@ body.portfolio-body-scroll-locked {
     letter-spacing: 0.18em;
   }
 
-  .terminal-workspace,
-  .brand-terminal-panel {
-    --terminal-base: 8 12 19;
-    --terminal-surface: 13 19 29;
-    --terminal-surface-elevated: 20 29 42;
-    --terminal-surface-overlay: 10 16 25;
-    --terminal-border: 79 100 124;
-    --terminal-border-strong: 118 145 175;
-    --terminal-ink: 228 235 242;
-    --terminal-muted: 160 178 194;
-    --terminal-dim: 107 125 142;
-    --terminal-accent: 119 214 190;
-    --terminal-accent-strong: 212 246 237;
-    --terminal-success: 173 226 197;
-    --terminal-error: 241 149 135;
-    --terminal-shadow: 4 8 15;
-    --terminal-frame-surface: 216 226 235;
-    --terminal-frame-shadow: 186 198 210;
-    --terminal-frame-line: 246 249 251;
-    --brand-canvas: var(--terminal-base);
-    --brand-surface: var(--terminal-surface);
-    --brand-contrast: var(--terminal-ink);
-    --brand-panel: var(--terminal-surface-elevated);
-    --brand-line: var(--terminal-border);
-    --brand-frame: var(--terminal-border-strong);
-    --brand-ink: var(--terminal-ink);
-    --brand-muted: var(--terminal-muted);
-    --brand-accent: var(--terminal-accent);
-    --brand-accent-strong: var(--terminal-accent-strong);
-    --brand-accent-fill: 30 70 83;
-    --brand-accent-fill-strong: 22 49 60;
-    --brand-hero: var(--terminal-surface);
-    --brand-shadow-ink: var(--terminal-shadow);
-    --brand-surface-gradient:
-      linear-gradient(180deg, rgb(var(--terminal-surface) / 0.98) 0%, rgb(var(--terminal-surface-overlay) / 0.98) 100%);
-    --brand-panel-soft-gradient:
-      linear-gradient(180deg, rgb(var(--terminal-surface-elevated) / 0.84) 0%, rgb(var(--terminal-surface) / 0.98) 100%);
-    --brand-surface-glass-gradient:
-      linear-gradient(180deg, rgb(var(--terminal-surface) / 0.96) 0%, rgb(var(--terminal-surface-overlay) / 0.96) 100%);
-    --brand-accent-gradient:
-      linear-gradient(180deg, rgb(var(--brand-accent-fill)) 0%, rgb(var(--brand-accent-fill-strong)) 100%);
-  }
-
-  .brand-terminal-panel {
-    @apply relative overflow-hidden rounded-[1.75rem];
-    border: 1px solid rgb(var(--terminal-border) / 0.44);
-    background:
-      radial-gradient(circle at top left, rgb(var(--terminal-accent) / 0.16), transparent 28%),
-      radial-gradient(circle at bottom right, rgb(var(--terminal-border-strong) / 0.16), transparent 36%),
-      linear-gradient(180deg, rgb(var(--terminal-surface-elevated) / 0.98) 0%, rgb(var(--terminal-base) / 0.98) 100%);
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.04),
-      0 32px 84px rgb(var(--terminal-shadow) / 0.36),
-      0 10px 26px rgb(var(--terminal-shadow) / 0.22);
-  }
-
-  .brand-terminal-panel::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.38;
-    background-image:
-      linear-gradient(180deg, transparent 0%, rgb(var(--terminal-accent) / 0.03) 48%, transparent 100%),
-      linear-gradient(rgb(var(--terminal-border) / 0.08) 1px, transparent 1px);
-    background-size: 100% 5px, 100% 4px;
-    mix-blend-mode: screen;
-  }
-
-  .brand-terminal-subpanel {
-    @apply rounded-[1.35rem] border p-4;
-    border-color: rgb(var(--terminal-border) / 0.34);
-    background: linear-gradient(
-      180deg,
-      rgb(var(--terminal-surface-elevated) / 0.98) 0%,
-      rgb(var(--terminal-surface) / 0.94) 100%
-    );
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.03),
-      0 12px 24px rgb(var(--terminal-shadow) / 0.16);
-  }
-
-  .brand-terminal-chip {
-    @apply inline-flex items-center rounded-full border px-3 py-2 font-mono text-[11px] uppercase transition;
-    border-color: rgb(var(--terminal-border) / 0.32);
-    background-color: rgb(var(--terminal-surface-overlay) / 0.88);
-    color: rgb(var(--terminal-muted));
-    letter-spacing: 0.18em;
-  }
-
-  .brand-terminal-chip:hover {
-    border-color: rgb(var(--terminal-border-strong) / 0.56);
-    background-color: rgb(var(--terminal-surface-elevated) / 0.96);
-    color: rgb(var(--terminal-accent-strong));
-  }
-
-  .brand-terminal-input {
-    @apply w-full min-w-0 flex-1 bg-transparent font-mono text-sm outline-none;
-    color: rgb(var(--terminal-ink));
-    caret-color: rgb(var(--terminal-accent));
-    line-height: 1.6;
-  }
-
-  .brand-terminal-input::placeholder {
-    color: rgb(var(--terminal-dim) / 0.9);
-  }
-
-  body.terminal-window-dragging {
-    user-select: none;
-    cursor: grabbing;
-  }
-
-  .terminal-workspace {
-    @apply w-full;
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 20;
-    width: min(90vw, 56rem);
-    height: min(80vh, 40rem);
-    transition:
-      width 160ms ease,
-      height 160ms ease,
-      box-shadow 160ms ease;
-  }
-
-  .terminal-workspace:not(.terminal-workspace-open) {
-    padding: 0.8rem;
-    border-radius: 2rem;
-    background:
-      radial-gradient(circle at top left, rgb(var(--terminal-accent) / 0.12), transparent 28%),
-      radial-gradient(circle at bottom right, rgb(255 255 255 / 0.4), transparent 34%),
-      linear-gradient(
-        180deg,
-        rgb(226 233 240 / 0.96) 0%,
-        rgb(205 215 226 / 0.92) 100%
-      );
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.88),
-      0 30px 70px rgb(var(--brand-shadow-ink) / 0.16),
-      0 12px 28px rgb(var(--terminal-shadow) / 0.12);
-  }
-
-  .terminal-workspace::before {
-    content: "";
-    position: absolute;
-    inset: -1.25rem;
-    pointer-events: none;
-    border-radius: 2.25rem;
-    background:
-      radial-gradient(circle at 50% 30%, rgb(var(--terminal-accent) / 0.12), transparent 46%),
-      radial-gradient(circle at 50% 70%, rgb(var(--terminal-shadow) / 0.2), transparent 60%);
-    filter: blur(28px);
-    opacity: 0.9;
-  }
-
-  .terminal-workspace:not(.terminal-workspace-open)::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    border: 1px solid rgb(255 255 255 / 0.82);
-    box-shadow:
-      inset 0 0 0 1px rgb(var(--terminal-border-strong) / 0.12),
-      inset 0 18px 24px rgb(255 255 255 / 0.12);
-  }
-
-  .terminal-workspace-open {
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-  }
-
-  .terminal-workspace-with-window:not(.terminal-workspace-open) {
-    width: min(94vw, 72rem);
-    height: min(84vh, 44rem);
-  }
-
-  .terminal-workspace-open::before {
-    display: none;
-  }
-
-  .terminal-workspace-dragging {
-    transition: none;
-  }
-
-  .terminal-shell-screen {
-    @apply relative flex h-full w-full flex-col overflow-hidden rounded-[1.25rem];
-    border: 1px solid rgb(var(--terminal-border) / 0.46);
-    background:
-      radial-gradient(circle at top left, rgb(var(--terminal-accent) / 0.08), transparent 26%),
-      linear-gradient(180deg, rgb(var(--terminal-base)) 0%, rgb(5 9 15) 100%);
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.04),
-      0 34px 96px rgb(var(--terminal-shadow) / 0.42),
-      0 12px 28px rgb(var(--terminal-shadow) / 0.24);
-    color: rgb(var(--terminal-ink));
-    font-family: var(--terminal-font-stack);
-  }
-
-  .terminal-workspace:not(.terminal-workspace-open) .terminal-shell-screen {
-    border-color: rgb(var(--terminal-border-strong) / 0.62);
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.05),
-      0 42px 120px rgb(var(--terminal-shadow) / 0.48),
-      0 18px 42px rgb(var(--terminal-shadow) / 0.24),
-      0 0 0 1px rgb(255 255 255 / 0.03);
-  }
-
-  .terminal-shell-screen-open {
-    background:
-      radial-gradient(circle at top left, rgb(var(--terminal-accent) / 0.08), transparent 26%),
-      linear-gradient(180deg, rgb(var(--terminal-base)) 0%, rgb(5 9 15) 100%);
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .terminal-shell-screen::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 1;
-    background:
-      linear-gradient(180deg, rgb(var(--terminal-accent) / 0.025) 0%, transparent 18%),
-      linear-gradient(rgb(var(--terminal-border) / 0.04) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 4px;
-  }
-
-  .terminal-shell-header {
-    @apply relative z-[1] flex items-center justify-between gap-4 border-b px-4 py-3 sm:px-5;
-    border-color: rgb(var(--terminal-border) / 0.36);
-    background: linear-gradient(180deg, rgb(var(--terminal-surface-overlay) / 0.9) 0%, rgb(var(--terminal-surface-overlay) / 0.72) 100%);
-  }
-
-  .terminal-shell-toolbar {
-    @apply relative z-[1] flex items-center justify-between gap-3 border-b px-3 py-2 sm:px-4;
-    border-color: rgb(var(--terminal-border) / 0.32);
-    background: linear-gradient(180deg, rgb(var(--terminal-surface-overlay) / 0.86) 0%, rgb(var(--terminal-base) / 0.72) 100%);
-  }
-
-  .terminal-shell-toolbar-minimal {
-    min-height: 2.5rem;
-    background: rgb(var(--terminal-surface-overlay) / 0.92);
-  }
-
-  .terminal-shell-dragzone {
-    @apply flex min-w-0 flex-1 items-center justify-between gap-4;
-    cursor: grab;
-    touch-action: none;
-  }
-
-  .terminal-shell-dragzone-minimal {
-    @apply min-h-[1.25rem] items-center justify-start;
-    padding: 0.15rem 0;
-  }
-
-  .terminal-shell-dragzone-active {
-    cursor: grabbing;
-  }
-
-  .terminal-shell-dragzone-static {
-    cursor: default;
-    touch-action: auto;
-  }
-
-  .terminal-shell-grip {
-    display: inline-flex;
-    height: 0.35rem;
-    width: 2.5rem;
-    border-radius: 999px;
-    background:
-      repeating-linear-gradient(
-        90deg,
-        rgb(var(--terminal-border-strong) / 0.62) 0,
-        rgb(var(--terminal-border-strong) / 0.62) 0.2rem,
-        transparent 0.2rem,
-        transparent 0.4rem
-      );
-  }
-
-  .terminal-shell-label {
-    @apply min-w-0 truncate font-mono uppercase;
-    font-size: 0.675rem;
-    letter-spacing: 0.18em;
-    color: rgb(var(--terminal-muted));
-    font-family: var(--terminal-font-stack);
-  }
-
-  .terminal-shell-directory {
-    @apply min-w-0 truncate text-right font-mono;
-    font-size: 0.72rem;
-    color: rgb(var(--terminal-dim));
-    font-family: var(--terminal-font-stack);
-  }
-
-  .terminal-shell-viewport {
-    @apply relative z-[1] flex min-h-0 flex-1 flex-col overflow-hidden;
-  }
-
-  .terminal-shell-split {
-    @apply relative z-[1] grid min-h-0 flex-1 overflow-hidden;
-    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
-  }
-
-  .terminal-shell-session {
-    @apply flex min-h-0 min-w-0 flex-col overflow-hidden;
-    border-right: 1px solid rgb(var(--terminal-border) / 0.32);
-  }
-
-  .terminal-shell-window {
-    @apply flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden;
-    background:
-      radial-gradient(circle at top left, rgb(var(--terminal-accent) / 0.06), transparent 24%),
-      linear-gradient(180deg, rgb(var(--terminal-surface-overlay)) 0%, rgb(var(--terminal-base)) 100%);
-  }
-
-  .terminal-shell-home-layout {
-    @apply flex min-h-0 flex-1 flex-col overflow-hidden;
-  }
-
-  .terminal-shell-console {
-    @apply flex shrink-0 flex-col overflow-hidden;
-    border-top: 1px solid rgb(var(--terminal-border) / 0.28);
-    background:
-      linear-gradient(180deg, rgb(var(--terminal-surface-overlay) / 0.9) 0%, rgb(var(--terminal-base) / 0.96) 100%);
-  }
-
-  .terminal-shell-console .terminal-shell-log {
-    flex: 0 1 auto;
-    min-height: 4.5rem;
-    max-height: 11rem;
-    border-bottom: 1px solid rgb(var(--terminal-border) / 0.22);
-  }
-
-  .terminal-shell-window-bar {
-    @apply flex items-center border-b px-4 py-3 sm:px-5;
-    border-color: rgb(var(--terminal-border) / 0.32);
-    background: linear-gradient(180deg, rgb(var(--terminal-surface-elevated)) 0%, rgb(var(--terminal-surface)) 100%);
-  }
-
-  .terminal-shell-window-path {
-    @apply min-w-0 truncate font-mono;
-    font-size: 0.72rem;
-    color: rgb(var(--terminal-accent-strong));
-    font-family: var(--terminal-font-stack);
-  }
-
-  .terminal-shell-pathbar {
-    @apply flex flex-wrap items-center gap-3 border-b px-3 py-2 font-mono text-[10px] uppercase sm:px-4;
-    border-color: rgb(var(--terminal-border) / 0.22);
-    letter-spacing: 0.18em;
-    color: rgb(var(--terminal-dim));
-    background-color: rgb(var(--terminal-base) / 0.92);
-  }
-
-  .terminal-shell-body {
-    @apply relative min-h-0 flex-1 overflow-hidden;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) {
-    @apply min-h-0 flex-1 overflow-y-auto;
-    background:
-      radial-gradient(circle at top left, rgb(var(--terminal-accent) / 0.035), transparent 20%),
-      linear-gradient(180deg, rgb(var(--terminal-surface-overlay)) 0%, rgb(var(--terminal-base)) 100%);
-    color: rgb(var(--terminal-ink));
-    padding-left: clamp(1.25rem, 2vw, 1.85rem);
-    padding-right: clamp(0.85rem, 1.25vw, 1.1rem);
-  }
-
-  .terminal-shell-home {
-    padding-top: 0.35rem;
-    padding-bottom: 0.5rem;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) > * {
-    min-height: 100%;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .py-12,
-  :is(.terminal-open-content, .terminal-shell-home) .py-16,
-  :is(.terminal-open-content, .terminal-shell-home) .sm\:py-16,
-  :is(.terminal-open-content, .terminal-shell-home) .sm\:py-10,
-  :is(.terminal-open-content, .terminal-shell-home) .sm\:py-8 {
-    padding-top: 0.875rem !important;
-    padding-bottom: 0.875rem !important;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .px-6,
-  :is(.terminal-open-content, .terminal-shell-home) .px-8,
-  :is(.terminal-open-content, .terminal-shell-home) .sm\:px-8 {
-    padding-left: 0.875rem !important;
-    padding-right: 0.875rem !important;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-panel,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-panel-muted,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-panel-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-panel,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-panel-muted,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-panel-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-summary-card,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-sidebar-card,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-rail,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-fact-card,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-card,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-content-frame,
-  :is(.terminal-open-content, .terminal-shell-home) .text-area {
-    border-radius: 0.95rem;
-    border-color: rgb(var(--terminal-border) / 0.34);
-    background:
-      linear-gradient(180deg, rgb(var(--terminal-surface-elevated) / 0.98) 0%, rgb(var(--terminal-surface)) 100%);
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.03),
-      0 16px 30px rgb(var(--terminal-shadow) / 0.14);
-    backdrop-filter: none;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-panel-hero::after,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-panel-hero::after,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-hero-card::after {
-    background:
-      linear-gradient(90deg, transparent 0%, rgb(var(--terminal-border-strong) / 0.45) 50%, transparent 100%);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-card-interactive:hover,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-card-interactive:hover,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-interactive-panel:hover {
-    transform: none;
-    border-color: rgb(var(--terminal-border-strong) / 0.36);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.02);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-title,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-subtitle,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-title,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-subtitle {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    text-transform: none;
-    letter-spacing: -0.03em;
-    line-height: 1.08;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-hero {
-    font-size: clamp(2rem, 5vw, 3.4rem);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-title,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-title {
-    font-size: clamp(1.45rem, 3.5vw, 2.25rem);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-subtitle,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-subtitle {
-    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-kicker,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-kicker,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-eyebrow,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-fact-label,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-fact-label {
-    color: rgb(var(--terminal-accent));
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-copy,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-copy,
-  :is(.terminal-open-content, .terminal-shell-home) .text-brand-muted,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-mono-detail,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-mono-detail {
-    color: rgb(var(--terminal-muted));
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-copy-strong,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-copy-strong,
-  :is(.terminal-open-content, .terminal-shell-home) .text-brand-contrast,
-  :is(.terminal-open-content, .terminal-shell-home) .text-brand-ink,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-title,
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-display-subtitle,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-hero,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-title,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-display-subtitle {
-    color: rgb(var(--terminal-ink));
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-fact-value,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-fact-value {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 1.5rem;
-    line-height: 1.1;
-    text-transform: none;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-chip,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-chip,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-meta-chip,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-status-chip {
-    border-color: rgb(var(--terminal-border) / 0.36);
-    background-color: rgb(var(--terminal-surface-overlay) / 0.92);
-    color: rgb(var(--terminal-accent-strong));
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-button-primary,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-button-primary {
-    border-radius: 0.8rem;
-    border-color: rgb(var(--terminal-accent) / 0.44);
-    background: linear-gradient(180deg, rgb(var(--brand-accent-fill)) 0%, rgb(var(--brand-accent-fill-strong)) 100%);
-    color: rgb(var(--terminal-accent-strong));
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.06),
-      0 12px 24px rgb(var(--terminal-shadow) / 0.2);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-button-primary:hover,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-button-primary:hover {
-    border-color: rgb(var(--terminal-accent) / 0.56);
-    filter: brightness(1.04);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-button-secondary,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-button-secondary {
-    border-radius: 0.8rem;
-    border-color: rgb(var(--terminal-border) / 0.36);
-    background: linear-gradient(180deg, rgb(var(--terminal-surface-elevated)) 0%, rgb(var(--terminal-surface)) 100%);
-    color: rgb(var(--terminal-ink));
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.03),
-      0 8px 18px rgb(var(--terminal-shadow) / 0.12);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .portfolio-section-divider,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-section-divider,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-divider {
-    height: 0;
-    background: none;
-    border-top: 1px dashed rgb(var(--terminal-border) / 0.32);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .brand-page-shell,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-page-group-list {
-    gap: 1.5rem;
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) .brand-page-header,
-  :is(.terminal-open-content, .terminal-shell-home) .brand-section-meta {
-    border-color: rgb(var(--terminal-border) / 0.28);
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) a {
-    color: rgb(var(--terminal-accent-strong));
-  }
-
-  :is(.terminal-open-content, .terminal-shell-home) a:hover {
-    color: rgb(var(--terminal-accent));
-  }
-
-  .terminal-shell-log {
-    @apply relative z-[1] flex-1 space-y-2 overflow-y-auto px-4 py-4 sm:px-5;
-    background-color: transparent;
-    font-family: var(--terminal-font-stack);
-  }
-
-  .terminal-log-entry {
-    @apply flex items-start gap-3 font-mono text-[0.875rem];
-    line-height: 1.7;
-    white-space: pre-wrap;
-  }
-
-  .terminal-log-entry-text {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    white-space: pre-wrap;
-  }
-
-  .terminal-log-entry-info {
-    color: rgb(var(--terminal-muted));
-  }
-
-  .terminal-log-entry-success {
-    color: rgb(var(--terminal-success));
-  }
-
-  .terminal-log-entry-error {
-    color: rgb(var(--terminal-error));
-  }
-
-  .terminal-log-entry-command {
-    color: rgb(var(--terminal-ink));
-  }
-
-  .terminal-log-entry-command.terminal-log-entry {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    align-items: start;
-    column-gap: 0.75rem;
-  }
-
-  .terminal-log-entry-prompt {
-    color: rgb(var(--terminal-accent));
-    white-space: nowrap;
-  }
-
-  .terminal-log-entry-command-text {
-    min-width: 0;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
-  .terminal-shell-prompt {
-    @apply relative z-[1] flex flex-wrap items-start gap-3 border-t px-4 py-3 sm:px-5;
-    border-color: rgb(var(--terminal-border) / 0.34);
-    background: rgb(var(--terminal-base));
-    font-family: var(--terminal-font-stack);
-  }
-
-  .terminal-shell-prompt-stacked {
-    @apply flex-col items-stretch gap-2;
-  }
-
-  .terminal-shell-prompt-label {
-    @apply min-w-0 flex-none;
-    max-width: 100%;
-    color: rgb(var(--terminal-accent));
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
-  .terminal-shell-prompt-stacked .terminal-shell-prompt-label {
-    @apply block whitespace-normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
-  .terminal-shell-toggle {
-    @apply inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 font-mono text-[11px] uppercase transition;
-    border-color: rgb(var(--terminal-border) / 0.42);
-    background: rgb(var(--terminal-surface-elevated) / 0.88);
-    color: rgb(var(--terminal-muted));
-    letter-spacing: 0.18em;
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.03),
-      0 6px 16px rgb(var(--terminal-shadow) / 0.12);
-  }
-
-  .terminal-shell-toggle:hover {
-    border-color: rgb(var(--terminal-border-strong) / 0.56);
-    background: rgb(var(--terminal-surface-elevated) / 0.94);
-    color: rgb(var(--terminal-accent-strong));
-  }
-
-  .terminal-shell-toggle:focus-visible {
-    outline: 2px solid rgb(var(--terminal-accent) / 0.7);
-    outline-offset: 2px;
-  }
-
-  @media (max-width: 640px) {
-    .terminal-workspace {
-      width: calc(100vw - 1rem);
-      height: calc(100vh - 1rem);
-    }
-
-    .terminal-workspace-open {
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-    }
-
-    .terminal-shell-screen {
-      border-radius: 1rem;
-    }
-
-    .terminal-shell-split {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: minmax(14rem, 38vh) minmax(0, 1fr);
-    }
-
-    .terminal-shell-session {
-      border-right: 0;
-      border-bottom: 1px solid rgb(var(--terminal-border) / 0.32);
-    }
-  }
 }
 
 @layer utilities {
@@ -2174,9 +1563,18 @@ body.portfolio-body-scroll-locked {
 }
 
 @media (max-width: 640px) {
+  .portfolio-header-resume {
+    min-width: 0;
+    padding: 0.45rem 0.7rem 0.5rem 0.7rem;
+  }
+
+  .portfolio-header-resume-title {
+    font-size: 0.78rem;
+  }
+
   .portfolio-display-hero,
   .brand-display-hero {
-    font-size: clamp(3.1rem, 16vw, 4.4rem);
+    font-size: clamp(2rem, 9vw, 2.75rem);
   }
 
   .portfolio-display-title,

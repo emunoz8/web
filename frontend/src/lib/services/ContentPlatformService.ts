@@ -1,5 +1,10 @@
-import { apiUrl, CategoryDomain, CategoryItem, ContentItem, PagedResponse } from "../api";
-import { fetchWithCsrf } from "../csrf";
+import { CategoryDomain, CategoryItem, ContentItem } from "../api";
+import {
+  getLocalContentById,
+  getLocalContentBySlug,
+  listLocalCategories,
+  listLocalContentsPage,
+} from "../../features/portfolio/data/localContent";
 
 export type EngagementSummary = {
   likes: number;
@@ -15,11 +20,6 @@ export type CommentTreeNode = {
   body: string;
   createdAt: string;
   children: CommentTreeNode[];
-};
-
-type MessagePayload = {
-  message?: unknown;
-  id?: unknown;
 };
 
 type ContentListParams = {
@@ -82,181 +82,19 @@ type CommentCreateInput = {
   parentId: number | null;
 };
 
-type JsonRequestOptions = {
-  method?: "GET" | "POST" | "PUT" | "DELETE";
-  token?: string | null;
-  body?: unknown;
-  signal?: AbortSignal;
-  cache?: RequestCache;
-};
-
-type LikeCountResponse = {
-  count?: number;
-};
-
-type LikeMeResponse = {
-  liked?: boolean;
-};
-
-type RawEngagement = {
-  likes?: number;
-  comments?: number;
-  likedByMe?: boolean;
-};
-
-const parseJsonSafe = (raw: string): unknown | undefined => {
-  if (!raw) {
-    return undefined;
-  }
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return undefined;
-  }
-};
-
-const extractMessage = (payload: unknown): string | null => {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  const maybe = payload as MessagePayload;
-  if (typeof maybe.message === "string" && maybe.message.trim() !== "") {
-    return maybe.message;
-  }
-  return null;
-};
-
-const asNumericId = (payload: unknown): number | null => {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  const maybe = payload as MessagePayload;
-  return typeof maybe.id === "number" ? maybe.id : null;
-};
-
-class ApiClient {
-  async request(path: string, options: JsonRequestOptions = {}): Promise<Response> {
-    const { method = "GET", token, body, signal, cache } = options;
-    const headers: HeadersInit = {};
-
-    if (body !== undefined) {
-      headers["Content-Type"] = "application/json";
-    }
-    if (token && token.trim() !== "") {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    return fetchWithCsrf(apiUrl(path), {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal,
-      cache,
-    });
-  }
-
-  async readBody(response: Response): Promise<unknown | undefined> {
-    const raw = await response.text();
-    const parsed = parseJsonSafe(raw);
-    if (parsed !== undefined) {
-      return parsed;
-    }
-    return raw || undefined;
-  }
-
-  async throwWithResponse(response: Response, fallback: string): Promise<never> {
-    const payload = await this.readBody(response);
-    const message = extractMessage(payload);
-    throw new Error(message ?? fallback);
-  }
-
-  async jsonOrThrow<T>(path: string, options: JsonRequestOptions, fallback: string): Promise<T> {
-    const response = await this.request(path, options);
-    if (!response.ok) {
-      await this.throwWithResponse(response, fallback);
-    }
-    return (await response.json()) as T;
-  }
-
-  async bodyOrThrow(path: string, options: JsonRequestOptions, fallback: string): Promise<unknown | undefined> {
-    const response = await this.request(path, options);
-    const payload = await this.readBody(response);
-    if (!response.ok) {
-      const message = extractMessage(payload);
-      throw new Error(message ?? fallback);
-    }
-    return payload;
-  }
-}
-
 export class ContentPlatformService {
-  constructor(private readonly client: ApiClient) {}
-
-  async listCategories(domain: CategoryDomain, signal?: AbortSignal): Promise<CategoryItem[]> {
-    return this.client.jsonOrThrow<CategoryItem[]>(
-      `/api/categories?domain=${domain}`,
-      { signal, cache: "no-store" },
-      "Could not load categories."
-    );
+  async listCategories(domain: CategoryDomain, _signal?: AbortSignal): Promise<CategoryItem[]> {
+    return listLocalCategories(domain);
   }
 
   async listContentsPage(params: ContentListParams): Promise<ContentPage> {
-    const query = new URLSearchParams({
+    return listLocalContentsPage({
       type: params.type,
-      page: String(params.page ?? 0),
-      size: String(params.size ?? 20),
+      category: params.category,
+      q: params.q,
+      page: params.page,
+      size: params.size,
     });
-
-    if (params.category && params.category.trim() !== "") {
-      query.set("category", params.category.trim());
-    }
-    if (params.q && params.q.trim() !== "") {
-      query.set("q", params.q.trim());
-    }
-
-    const body = await this.client.jsonOrThrow<PagedResponse<ContentItem>>(
-      `/api/contents?${query.toString()}`,
-      { signal: params.signal, cache: "no-store" },
-      "Could not load content list."
-    );
-    const content = body.content ?? [];
-    const engagementById: Record<number, EngagementSummary> = {};
-    content.forEach((item) => {
-      const raw = item.engagement as RawEngagement | undefined;
-      if (!raw) {
-        return;
-      }
-      if (typeof raw.likes !== "number" || typeof raw.comments !== "number") {
-        return;
-      }
-      engagementById[item.id] = {
-        likes: raw.likes,
-        comments: raw.comments,
-        likedByMe: raw.likedByMe === true,
-      };
-    });
-
-    const number = typeof body.number === "number" ? body.number : params.page ?? 0;
-    const size = typeof body.size === "number" ? body.size : params.size ?? 20;
-    const totalPages = typeof body.totalPages === "number" ? body.totalPages : number + 1;
-    const totalElements = typeof body.totalElements === "number" ? body.totalElements : content.length;
-    const numberOfElements = typeof body.numberOfElements === "number" ? body.numberOfElements : content.length;
-    const first = typeof body.first === "boolean" ? body.first : number === 0;
-    const last = typeof body.last === "boolean" ? body.last : number + 1 >= totalPages;
-    const empty = typeof body.empty === "boolean" ? body.empty : content.length === 0;
-
-    return {
-      content,
-      engagementById,
-      number,
-      size,
-      totalPages,
-      totalElements,
-      numberOfElements,
-      first,
-      last,
-      empty,
-    };
   }
 
   async listContents(params: ContentListParams): Promise<ContentItem[]> {
@@ -264,216 +102,89 @@ export class ContentPlatformService {
     return page.content;
   }
 
-  async getContentById(contentId: number, signal?: AbortSignal): Promise<ContentItem> {
-    return this.client.jsonOrThrow<ContentItem>(
-      `/api/contents/id/${contentId}`,
-      { signal },
-      "Could not load content."
-    );
-  }
-
-  async getContentBySlug(slug: string, signal?: AbortSignal): Promise<ContentItem> {
-    return this.client.jsonOrThrow<ContentItem>(
-      `/api/contents/slug/${encodeURIComponent(slug)}`,
-      { signal },
-      "Could not load content."
-    );
-  }
-
-  async createProject(input: ProjectCreateInput): Promise<ContentItem> {
-    const payload = await this.client.bodyOrThrow(
-      "/api/admin/projects",
-      {
-        method: "POST",
-        body: input,
-      },
-      "Project create failed."
-    );
-
-    if (!payload || typeof payload !== "object") {
-      throw new Error("Project create returned invalid response.");
+  async getContentById(contentId: number, _signal?: AbortSignal): Promise<ContentItem> {
+    const found = getLocalContentById(contentId);
+    if (!found) {
+      throw new Error("Content not found.");
     }
-    return payload as ContentItem;
+    return found;
   }
 
-  async updateProject(id: number, input: ProjectUpdateInput): Promise<ContentItem> {
-    const payload = await this.client.bodyOrThrow(
-      `/api/admin/projects/${id}`,
-      {
-        method: "PUT",
-        body: input,
-      },
-      "Project update failed."
-    );
-
-    if (!payload || typeof payload !== "object") {
-      throw new Error("Project update returned invalid response.");
+  async getContentBySlug(slug: string, _signal?: AbortSignal): Promise<ContentItem> {
+    const found = getLocalContentBySlug(slug);
+    if (!found) {
+      throw new Error("Content not found.");
     }
-    return payload as ContentItem;
+    return found;
   }
 
-  async deleteContent(id: number): Promise<void> {
-    const response = await this.client.request(`/api/admin/contents/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      await this.client.throwWithResponse(response, "Content delete failed.");
-    }
+  async createProject(_input: ProjectCreateInput): Promise<ContentItem> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async createBlog(input: BlogCreateInput): Promise<ContentItem> {
-    const payload = await this.client.bodyOrThrow(
-      "/api/admin/blogs",
-      {
-        method: "POST",
-        body: input,
-      },
-      "Blog create failed."
-    );
-
-    if (!payload || typeof payload !== "object") {
-      throw new Error("Blog create returned invalid response.");
-    }
-    return payload as ContentItem;
+  async updateProject(_id: number, _input: ProjectUpdateInput): Promise<ContentItem> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async updateBlog(id: number, input: BlogUpdateInput): Promise<ContentItem> {
-    const payload = await this.client.bodyOrThrow(
-      `/api/admin/blogs/${id}`,
-      {
-        method: "PUT",
-        body: input,
-      },
-      "Blog update failed."
-    );
-
-    if (!payload || typeof payload !== "object") {
-      throw new Error("Blog update returned invalid response.");
-    }
-    return payload as ContentItem;
+  async deleteContent(_id: number): Promise<void> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async createCategory(input: CategoryCreateInput): Promise<number> {
-    const payload = await this.client.bodyOrThrow(
-      "/api/admin/categories",
-      {
-        method: "POST",
-        body: input,
-      },
-      "Category create failed."
-    );
-
-    const id = asNumericId(payload);
-    if (id == null) {
-      throw new Error("Category create returned invalid response.");
-    }
-    return id;
+  async createBlog(_input: BlogCreateInput): Promise<ContentItem> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async attachCategory(contentId: number, categoryId: number): Promise<void> {
-    const response = await this.client.request(`/api/admin/contents/${contentId}/categories/${categoryId}`, {
-      method: "POST",
-    });
-    if (!response.ok) {
-      await this.client.throwWithResponse(response, "Category attach failed.");
-    }
+  async updateBlog(_id: number, _input: BlogUpdateInput): Promise<ContentItem> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async listCommentTree(contentId: number, signal?: AbortSignal): Promise<CommentTreeNode[]> {
-    return this.client.jsonOrThrow<CommentTreeNode[]>(
-      `/api/comments/tree?contentId=${encodeURIComponent(String(contentId))}`,
-      { signal },
-      "Could not load comments."
-    );
+  async createCategory(_input: CategoryCreateInput): Promise<number> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async listComments(contentId: number, signal?: AbortSignal): Promise<unknown[]> {
-    const body = await this.client.jsonOrThrow<unknown>(
-      `/api/comments?contentId=${encodeURIComponent(String(contentId))}`,
-      { signal },
-      "Could not load comments."
-    );
-    return Array.isArray(body) ? body : [];
+  async attachCategory(_contentId: number, _categoryId: number): Promise<void> {
+    throw new Error("Runtime admin publishing is retired in static frontend mode.");
   }
 
-  async createComment(input: CommentCreateInput): Promise<void> {
-    await this.client.bodyOrThrow(
-      "/api/comments",
-      {
-        method: "POST",
-        body: input,
-      },
-      "Comment create failed."
-    );
+  async listCommentTree(_contentId: number, _signal?: AbortSignal): Promise<CommentTreeNode[]> {
+    return [];
   }
 
-  async deleteComment(commentId: number): Promise<void> {
-    const response = await this.client.request(`/api/comments/${commentId}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      await this.client.throwWithResponse(response, "Comment delete failed.");
-    }
+  async listComments(_contentId: number, _signal?: AbortSignal): Promise<unknown[]> {
+    return [];
   }
 
-  async getLikeCount(contentId: number, signal?: AbortSignal): Promise<number> {
-    const body = await this.client.jsonOrThrow<LikeCountResponse>(
-      `/api/contents/${contentId}/likes/count`,
-      { signal },
-      "Could not load likes."
-    );
-    return typeof body.count === "number" ? body.count : 0;
+  async createComment(_input: CommentCreateInput): Promise<void> {
+    throw new Error("Comments are retired in static frontend mode.");
   }
 
-  async isLikedByMe(contentId: number, signal?: AbortSignal): Promise<boolean> {
-    const response = await this.client.request(`/api/contents/${contentId}/likes/me`, {
-      signal,
-    });
-
-    if (response.status === 401 || response.status === 403) {
-      return false;
-    }
-    if (!response.ok) {
-      await this.client.throwWithResponse(response, `Could not load like status (${response.status}).`);
-    }
-
-    const body = (await response.json()) as LikeMeResponse;
-    return body.liked === true;
+  async deleteComment(_commentId: number): Promise<void> {
+    throw new Error("Comments are retired in static frontend mode.");
   }
 
-  async like(contentId: number): Promise<void> {
-    const response = await this.client.request(`/api/contents/${contentId}/likes`, {
-      method: "POST",
-    });
-    if (!response.ok) {
-      await this.client.throwWithResponse(response, `Like request failed (${response.status}).`);
-    }
+  async getLikeCount(_contentId: number, _signal?: AbortSignal): Promise<number> {
+    return 0;
   }
 
-  async unlike(contentId: number): Promise<void> {
-    const response = await this.client.request(`/api/contents/${contentId}/likes`, {
-      method: "DELETE",
-    });
-    if (!response.ok && response.status !== 404) {
-      await this.client.throwWithResponse(response, `Unlike request failed (${response.status}).`);
-    }
+  async isLikedByMe(_contentId: number, _signal?: AbortSignal): Promise<boolean> {
+    return false;
   }
 
-  async getEngagementSummary(contentId: number, isAuthenticated = false, signal?: AbortSignal): Promise<EngagementSummary> {
-    const [likes, comments, likedByMe] = await Promise.all([
-      this.getLikeCount(contentId, signal),
-      this.listComments(contentId, signal).then((items) => items.length),
-      isAuthenticated ? this.isLikedByMe(contentId, signal) : Promise.resolve(false),
-    ]);
+  async like(_contentId: number): Promise<void> {
+    throw new Error("Likes are retired in static frontend mode.");
+  }
 
+  async unlike(_contentId: number): Promise<void> {
+    throw new Error("Likes are retired in static frontend mode.");
+  }
+
+  async getEngagementSummary(_contentId: number, _isAuthenticated = false, _signal?: AbortSignal): Promise<EngagementSummary> {
     return {
-      likes,
-      comments,
-      likedByMe,
+      likes: 0,
+      comments: 0,
+      likedByMe: false,
     };
   }
 }
 
-const apiClient = new ApiClient();
-
-export const contentPlatformService = new ContentPlatformService(apiClient);
+export const contentPlatformService = new ContentPlatformService();

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button } from "../components/ui/Button";
+import { getButtonClassName } from "../components/ui/Button";
 import {
   JIT_CAFE_CONTACT_PATH,
   JIT_CAFE_MENU_PATH,
@@ -127,8 +127,8 @@ export function HomePage() {
           </p>
 
           <div className="home-page-hero-actions">
-            <Link to={JIT_CAFE_MENU_PATH}>
-              <Button>Explore food menu</Button>
+            <Link to={JIT_CAFE_MENU_PATH} className={getButtonClassName("primary")}>
+              Explore food menu
             </Link>
             <Link to={JIT_CAFE_CONTACT_PATH} className="home-page-action-link">
               Contact us

@@ -1,17 +1,26 @@
 import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
 
+export type ButtonVariant = "primary" | "secondary" | "ghost";
+
 type ButtonProps = PropsWithChildren<
   ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "ghost";
+    variant?: ButtonVariant;
   }
 >;
 
-const variants = {
+const variants: Record<ButtonVariant, string> = {
   primary: "app-button-primary",
   secondary: "app-button-secondary",
   ghost: "app-button-ghost",
 };
+
+export function getButtonClassName(
+  variant: ButtonVariant = "primary",
+  className?: string,
+) {
+  return cn("app-button", variants[variant], className);
+}
 
 export function Button({
   children,
@@ -21,11 +30,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={cn(
-        "app-button",
-        variants[variant],
-        className,
-      )}
+      className={getButtonClassName(variant, className)}
       {...props}
     >
       {children}

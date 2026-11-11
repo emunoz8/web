@@ -123,71 +123,6 @@
   text-rendering: optimizeLegibility;
 }
 
-.dark .jit-cafe-feature,
-.jit-cafe-feature[data-theme="dark"] {
-  color-scheme: dark;
-  --brand-canvas: 20 25 32;
-  --brand-haze: 201 209 218;
-  --brand-surface: 28 34 42;
-  --brand-contrast: 248 249 250;
-  --brand-panel: 52 60 71;
-  --brand-line: 79 89 101;
-  --brand-frame: 124 138 153;
-  --brand-ink: 238 241 244;
-  --brand-muted: 167 176 186;
-  --brand-accent: 188 199 211;
-  --brand-accent-strong: 213 221 229;
-  --brand-accent-fill: 86 101 118;
-  --brand-accent-fill-strong: 64 77 92;
-  --brand-hero: 18 24 31;
-  --brand-warning-soft: 92 82 62;
-  --brand-warning-ink: 236 226 206;
-  --brand-info-soft: 62 73 85;
-  --brand-info-ink: 220 228 236;
-  --brand-success-soft: 61 75 66;
-  --brand-success-ink: 217 228 219;
-  --brand-neutral-soft: 74 84 94;
-  --brand-neutral-ink: 229 234 239;
-  --brand-danger-soft: 91 69 73;
-  --brand-danger-ink: 243 223 226;
-  --brand-shadow-ink: 3 5 8;
-  --brand-shadow-frame: 34 42 52;
-  --brand-shadow-modal: 1 2 4;
-  --brand-overlay: 3 5 8;
-  --brand-body-overlay-opacity: 1;
-  --brand-body-background:
-    radial-gradient(circle at 14% 2%, rgb(var(--brand-frame) / 0.18), transparent 34%),
-    radial-gradient(circle at 86% 8%, rgb(var(--brand-panel) / 0.22), transparent 28%),
-    radial-gradient(circle at 50% 100%, rgb(var(--brand-accent) / 0.1), transparent 24%),
-    linear-gradient(180deg, rgb(37 45 56) 0%, rgb(var(--brand-canvas)) 56%, rgb(11 14 18) 100%);
-  --brand-body-overlay:
-    linear-gradient(180deg, rgb(var(--brand-contrast) / 0.03) 0%, transparent 24%),
-    radial-gradient(circle at 12% 14%, rgb(var(--brand-accent) / 0.05), transparent 18%),
-    radial-gradient(circle at 88% 8%, rgb(var(--brand-frame) / 0.09), transparent 18%);
-  --brand-card-background:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.18) 100%);
-  --brand-surface-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.98) 0%, rgb(var(--brand-hero) / 0.14) 100%);
-  --brand-hero-gradient:
-    linear-gradient(160deg, rgb(var(--brand-hero)) 0%, rgb(var(--brand-frame) / 0.74) 100%);
-  --brand-panel-gradient:
-    linear-gradient(160deg, rgb(var(--brand-panel)) 0%, rgb(var(--brand-line) / 0.84) 100%);
-  --brand-panel-soft-gradient:
-    linear-gradient(180deg, rgb(var(--brand-panel) / 0.34) 0%, rgb(var(--brand-surface) / 0.96) 100%);
-  --brand-item-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface)) 0%, rgb(var(--brand-hero) / 0.22) 100%);
-  --brand-contrast-glass-gradient:
-    linear-gradient(180deg, rgb(var(--brand-contrast) / 0.18) 0%, rgb(var(--brand-contrast) / 0.06) 100%);
-  --brand-surface-glass-gradient:
-    linear-gradient(180deg, rgb(var(--brand-surface) / 0.95) 0%, rgb(var(--brand-hero) / 0.18) 100%);
-  --brand-accent-gradient:
-    linear-gradient(180deg, rgb(var(--brand-accent-fill)) 0%, rgb(var(--brand-accent-fill-strong)) 100%);
-  --brand-ambient-panel:
-    radial-gradient(circle, rgb(var(--brand-panel) / 0.24) 0%, transparent 72%);
-  --brand-ambient-frame:
-    radial-gradient(circle, rgb(var(--brand-frame) / 0.18) 0%, transparent 72%);
-}
-
 .jit-cafe-feature[data-darkreader-mode] {
   color-scheme: light;
   --brand-canvas: 243 245 247;
@@ -4003,11 +3938,11 @@ body.jit-cafe-body-scroll-locked {
     background-image: var(--brand-surface-gradient);
   }
 
-  .brand-ambient-panel {
+  .jit-cafe-feature .brand-ambient-panel {
     background-image: var(--brand-ambient-panel);
   }
 
-  .brand-ambient-frame {
+  .jit-cafe-feature .brand-ambient-frame {
     background-image: var(--brand-ambient-frame);
   }
 
@@ -4107,13 +4042,13 @@ body.jit-cafe-body-scroll-locked {
     background-color: rgb(var(--brand-overlay) / 0.9);
   }
 
-  .brand-button-primary {
+  .jit-cafe-feature .brand-button-primary {
     background-color: rgb(var(--brand-accent-fill));
     background-image: var(--brand-accent-gradient);
     box-shadow: 0 10px 22px rgb(var(--brand-accent-fill) / 0.2);
   }
 
-  .brand-button-primary:hover {
+  .jit-cafe-feature .brand-button-primary:hover {
     background-image: linear-gradient(
       180deg,
       rgb(var(--brand-accent-fill-strong)) 0%,
@@ -4122,31 +4057,31 @@ body.jit-cafe-body-scroll-locked {
     box-shadow: 0 14px 28px rgb(var(--brand-accent-fill) / 0.24);
   }
 
-  .brand-button-primary:active {
+  .jit-cafe-feature .brand-button-primary:active {
     box-shadow: 0 8px 16px rgb(var(--brand-accent-fill) / 0.18);
   }
 
-  .bg-brand-accent {
+  .jit-cafe-feature .bg-brand-accent {
     background-color: rgb(var(--brand-accent-fill));
   }
 
-  .hover\:bg-brand-accent-strong:hover {
+  .jit-cafe-feature .hover\:bg-brand-accent-strong:hover {
     background-color: rgb(var(--brand-accent-fill-strong));
   }
 
-  .brand-button-secondary {
+  .jit-cafe-feature .brand-button-secondary {
     background-color: rgb(var(--brand-contrast));
     background-image: var(--brand-surface-glass-gradient);
     box-shadow: 0 10px 22px rgb(var(--brand-shadow-ink) / 0.08);
   }
 
-  .brand-button-secondary:hover {
+  .jit-cafe-feature .brand-button-secondary:hover {
     background-color: rgb(var(--brand-panel) / 0.45);
     background-image: var(--brand-panel-soft-gradient);
     box-shadow: 0 12px 26px rgb(var(--brand-shadow-ink) / 0.1);
   }
 
-  .brand-button-secondary:active {
+  .jit-cafe-feature .brand-button-secondary:active {
     box-shadow: 0 8px 18px rgb(var(--brand-shadow-ink) / 0.08);
   }
 

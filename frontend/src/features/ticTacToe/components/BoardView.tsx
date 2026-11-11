@@ -41,6 +41,32 @@ function CellMarker({ marker }: CellMarkerProps) {
   return null;
 }
 
+function buildCellAriaLabel(
+  index: number,
+  marker: PlayerSymbol | "",
+  isPlayable: boolean,
+  isHighlighted: boolean,
+  isNextMove: boolean,
+): string {
+  const row = Math.floor(index / 3) + 1;
+  const col = (index % 3) + 1;
+  const stateText =
+    marker === ""
+      ? isPlayable
+        ? "empty, playable"
+        : "empty"
+      : `marked ${marker}`;
+  const notes: string[] = [];
+  if (isHighlighted) {
+    notes.push("last AI move");
+  }
+  if (isNextMove) {
+    notes.push("previewed move");
+  }
+  const suffix = notes.length > 0 ? ` (${notes.join(", ")})` : "";
+  return `Cell ${index}, row ${row} column ${col}, ${stateText}${suffix}`;
+}
+
 function BoardView({
   board,
   large = false,
@@ -66,22 +92,24 @@ function BoardView({
         </>
       )}
 
-      <div className={`board ${large ? "board-large" : ""}`}>
+      <div className={`board ${large ? "board-large" : ""}`} role="group" aria-label="Tic Tac Toe board">
         {board.split("").map((cell, index) => {
           const marker: PlayerSymbol | "" = cell === "X" || cell === "O" ? cell : "";
           const isEmpty = marker === "";
           const isPlayable = playableIndices?.has(index) ?? false;
+          const isHighlighted = highlightedIndices?.has(index) ?? false;
+          const isNextMove = nextMoveIndices?.has(index) ?? false;
 
           return (
             <button
               key={index}
               type="button"
               className={`cell ${isEmpty ? "cell-empty" : `cell-${marker}`} ${isPlayable ? "cell-playable" : ""} ${
-                highlightedIndices?.has(index) ? "cell-ai-last" : ""
-              } ${nextMoveIndices?.has(index) ? "cell-next-move" : ""}`}
+                isHighlighted ? "cell-ai-last" : ""
+              } ${isNextMove ? "cell-next-move" : ""}`}
               onClick={() => onCellClick?.(index)}
               disabled={!onCellClick || !isPlayable}
-              aria-label={`Cell ${index}`}
+              aria-label={buildCellAriaLabel(index, marker, isPlayable, isHighlighted, isNextMove)}
             >
               {isEmpty && showCellIndices ? (
                 <span className="cell-index">{index}</span>

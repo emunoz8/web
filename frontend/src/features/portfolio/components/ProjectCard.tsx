@@ -56,7 +56,7 @@ export function ProjectCard({
   const hiddenTechCount = Math.max(0, project.techStack.length - visibleTechStack.length);
 
   return (
-    <article className="group flex h-full flex-col border-t border-brand-line/18 pt-4 transition-colors duration-200">
+    <article className="portfolio-project-card group flex h-full flex-col transition-colors duration-200">
       {showPreview ? (
         <div className="overflow-hidden rounded-[1.75rem] border border-brand-line/16 bg-brand-surface/40 transition-colors duration-200 group-hover:border-brand-frame/28">
           {renderPreview(preview, project)}

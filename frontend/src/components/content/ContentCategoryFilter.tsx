@@ -31,7 +31,7 @@ const ContentCategoryFilter: React.FC<ContentCategoryFilterProps> = ({
               className={
                 selectedCategory === ""
                   ? "btn"
-                  : "border rounded-md min-h-11 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "border rounded-md min-h-11 px-3 py-2 text-sm hover:bg-gray-100"
               }
               onClick={() => onSelectCategory("")}
             >
@@ -44,7 +44,7 @@ const ContentCategoryFilter: React.FC<ContentCategoryFilterProps> = ({
                 className={
                   selectedCategory === category.slug
                     ? "btn"
-                    : "border rounded-md min-h-11 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                    : "border rounded-md min-h-11 px-3 py-2 text-sm hover:bg-gray-100"
                 }
                 onClick={() => onSelectCategory(category.slug)}
               >

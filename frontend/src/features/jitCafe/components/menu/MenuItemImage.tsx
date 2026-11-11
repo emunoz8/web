@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getJitCafeAssetPath } from "../../lib/paths";
 import { cn } from "../../utils/cn";
-import { menuImageSlugs } from "./menuImageSlugs";
 
 export type MenuImageVariant =
   | "hotDog"
@@ -29,55 +28,46 @@ const imageThemes: Record<
   MenuImageVariant,
   {
     backgroundClass: string;
+    fallbackAsset: string;
   }
 > = {
   hotDog: {
     backgroundClass: "brand-image-hotdog",
+    fallbackAsset: "foodiesfeed-hot-dog.webp",
   },
   sausage: {
     backgroundClass: "brand-image-sausage",
+    fallbackAsset: "foodiesfeed-sausage.webp",
   },
   burger: {
     backgroundClass: "brand-image-burger",
+    fallbackAsset: "foodiesfeed-burger.webp",
   },
   sandwich: {
     backgroundClass: "brand-image-sandwich",
+    fallbackAsset: "foodiesfeed-sandwich.webp",
   },
   beef: {
     backgroundClass: "brand-image-beef",
+    fallbackAsset: "foodiesfeed-sandwich.webp",
   },
   fries: {
     backgroundClass: "brand-image-fries",
+    fallbackAsset: "foodiesfeed-fries.webp",
   },
   snacks: {
     backgroundClass: "brand-image-snacks",
+    fallbackAsset: "foodiesfeed-churros.webp",
   },
   drinks: {
     backgroundClass: "brand-image-drinks",
+    fallbackAsset: "foodiesfeed-soda.webp",
   },
   shakes: {
     backgroundClass: "brand-image-shakes",
+    fallbackAsset: "foodiesfeed-shake.webp",
   },
 };
-
-function toAssetSlug(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function toFallbackImageCandidates(itemName: string) {
-  const directSlug = toAssetSlug(itemName);
-  const compactSlug = toAssetSlug(
-    itemName.replace(/\b(and|with|the|a|an|of)\b/gi, " "),
-  );
-  const candidates = [directSlug, compactSlug].filter(
-    (slug): slug is string => Boolean(slug) && menuImageSlugs.has(slug),
-  );
-  return [...new Set(candidates)].map((slug) => getJitCafeAssetPath(`${slug}.svg`));
-}
 
 export function MenuItemImage({
   itemName,
@@ -90,15 +80,18 @@ export function MenuItemImage({
   compact = false,
 }: MenuItemImageProps) {
   const theme = imageThemes[variant];
-  const imageCandidates = imageUrl
-    ? [imageUrl, ...toFallbackImageCandidates(itemName)]
-    : toFallbackImageCandidates(itemName);
+  const variantFallbackUrl = getJitCafeAssetPath(theme.fallbackAsset);
+  const imageCandidates = [
+    ...(imageUrl ? [imageUrl] : []),
+    ...(imageUrl !== variantFallbackUrl ? [variantFallbackUrl] : []),
+  ];
   const [imageCandidateIndex, setImageCandidateIndex] = useState(0);
   const activeImageSrc = imageCandidates[imageCandidateIndex];
+  const accessibleLabel = imageAlt ?? `${itemName} from ${sectionName}`;
 
   useEffect(() => {
     setImageCandidateIndex(0);
-  }, [itemName, imageUrl]);
+  }, [itemName, imageUrl, variant]);
 
   function handleImageError() {
     setImageCandidateIndex((current) => {
@@ -122,22 +115,24 @@ export function MenuItemImage({
       {activeImageSrc ? (
         <img
           src={activeImageSrc}
-          alt={imageAlt ?? `${itemName} from ${sectionName}`}
+          alt={accessibleLabel}
           className="menu-item-image-media"
           decoding="async"
           loading={compact ? "eager" : "lazy"}
           onError={handleImageError}
         />
       ) : (
-        <div aria-hidden="true" className={cn("menu-item-image-fallback", theme.backgroundClass)} />
+        <div
+          role="img"
+          aria-label={accessibleLabel}
+          className={cn("menu-item-image-fallback", theme.backgroundClass)}
+        />
       )}
       <div className="menu-item-image-overlay" />
       {!compact && featured ? (
-        <>
-          <div className="menu-item-image-featured">
-            Featured item
-          </div>
-        </>
+        <div className="menu-item-image-featured">
+          Featured item
+        </div>
       ) : null}
     </div>
   );

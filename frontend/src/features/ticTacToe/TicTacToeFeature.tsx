@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "./styles.css";
 import HintMessage from "./components/HintMessage";
 import TreeBody from "./components/TreeBody";
@@ -111,6 +112,14 @@ function TicTacToeFeature() {
     <div className="ttt-feature">
       <div className="page">
         <header className="ttt-feature-hero">
+          <div className="mb-3">
+            <Link
+              to="/projects"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity"
+            >
+              ← Back to Projects
+            </Link>
+          </div>
           <div className="ttt-feature-hero-row">
             <div className="ttt-feature-hero-copy">
               <p className="ttt-feature-hero-kicker">Feature Page</p>

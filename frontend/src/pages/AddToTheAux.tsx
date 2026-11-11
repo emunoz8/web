@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import AddToTheAuxLoadingScreen from "../features/addToTheAux/components/AddToTheAuxLoadingScreen";
 import OrbitalPlaylistStage from "../features/addToTheAux/components/OrbitalPlaylistStage";
-import { buildLoginRouteState } from "../lib/authRouting";
 import "../features/addToTheAux/styles.css";
 import { useAddTrack } from "../features/addToTheAux/hooks/useAddTrack";
 import { useCurrentlyPlaying } from "../features/addToTheAux/hooks/useCurrentlyPlaying";
-import { useGuestPreview } from "../features/addToTheAux/hooks/useGuestPreview";
 import { usePlaylist } from "../features/addToTheAux/hooks/usePlaylist";
 import { useTrackSearch } from "../features/addToTheAux/hooks/useTrackSearch";
 import { EXIT_ANIMATION_MS, createTrackKey, type OrbitMotionDirection } from "../features/addToTheAux/lib/orbitStage";
@@ -26,25 +23,19 @@ function clampWindowStart(index: number, length: number, windowSize: number): nu
 }
 
 function AddToTheAux() {
-  const { authLoading, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const { playlist, playlistLoading, playlistError, orderedPlaylistItems, loadPlaylist } = usePlaylist(VISIBLE_PLAYLIST_ITEMS);
-  const guestPreviewExpired = useGuestPreview(isAuthenticated, !authLoading);
   const [playlistWindowStart, setPlaylistWindowStart] = useState(0);
   const [orbitMotionDirection, setOrbitMotionDirection] = useState<OrbitMotionDirection>("idle");
 
   const { query, setQuery, trimmedQuery, searchResults, searchLoading, searchError } = useTrackSearch(
     MIN_QUERY_LENGTH,
     SEARCH_LIMIT,
-    isAuthenticated,
+    true,
   );
 
-  const { currentlyPlaying, currentlyPlayingLoading, currentlyPlayingError } = useCurrentlyPlaying(
-    isAuthenticated || !guestPreviewExpired,
-  );
+  const { currentlyPlaying, currentlyPlayingLoading, currentlyPlayingError } = useCurrentlyPlaying(true);
 
-  const { addingUri, actionError, addTrack } = useAddTrack(loadPlaylist, isAuthenticated);
+  const { addingUri, actionError, addTrack } = useAddTrack(loadPlaylist, true);
 
   useEffect(() => {
     setPlaylistWindowStart((currentIndex) =>
@@ -66,7 +57,7 @@ function AddToTheAux() {
     };
   }, [orbitMotionDirection]);
 
-  const canManageTracks = isAuthenticated;
+  const canManageTracks = true;
   const canCyclePlaylist = orderedPlaylistItems.length > VISIBLE_PLAYLIST_ITEMS;
   const maxWindowStart = Math.max(0, orderedPlaylistItems.length - VISIBLE_PLAYLIST_ITEMS);
   const canCycleBackward = playlistWindowStart > 0;
@@ -78,10 +69,6 @@ function AddToTheAux() {
   const latestTrackKey = orderedPlaylistItems[0] ? createTrackKey(orderedPlaylistItems[0]) : null;
   const firstTrackKey = orderedPlaylistItems.at(-1) ? createTrackKey(orderedPlaylistItems.at(-1)!) : null;
   const showInitialPlaylistLoading = playlistLoading && !playlist && !playlistError;
-
-  function handleLoginClick() {
-    navigate("/login", { state: buildLoginRouteState(location) });
-  }
 
   function cyclePlaylist(delta: number) {
     if (!canCyclePlaylist) {
@@ -104,6 +91,15 @@ function AddToTheAux() {
 
   return (
     <div className="add-to-the-aux-page">
+      <div className="px-4 py-3 border-b border-white/10 bg-black/60 backdrop-blur z-20 flex items-center justify-between">
+        <Link
+          to="/projects"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-white/80 hover:text-white transition-colors"
+        >
+          ← Back to Projects
+        </Link>
+        <span className="text-xs uppercase tracking-widest text-white/50">Interactive Demo</span>
+      </div>
       <main className="add-to-the-aux-main">
         <div className="add-to-the-aux-stage">
           {showInitialPlaylistLoading ? (
@@ -127,8 +123,8 @@ function AddToTheAux() {
               currentlyPlayingLoading={currentlyPlayingLoading}
               currentlyPlayingError={currentlyPlayingError}
               canManageTracks={canManageTracks}
-              showGuestOverlay={!authLoading && !isAuthenticated && guestPreviewExpired}
-              onLoginClick={handleLoginClick}
+              showGuestOverlay={false}
+              onLoginClick={() => undefined}
               canCyclePlaylist={canCyclePlaylist}
               onCycleForward={() => cyclePlaylist(1)}
               onCycleBackward={() => cyclePlaylist(-1)}

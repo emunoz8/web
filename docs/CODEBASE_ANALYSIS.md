@@ -10,7 +10,20 @@
 - Findings are based on source/configuration inspection and the no-emit TypeScript check recorded below. The browser UI, live backend, database, production domain, and GitHub Pages settings were not exercised or verified.
 - Recommendations and source-derived runtime risks are labeled separately from observed command results. An implemented UI flow is not proof that its remote service currently works.
 
-**Central finding:** this checkout contains only the frontend application, but it is not independent of backend services. Public content, authentication, engagement, administration, terminal commands, and AddToTheAUX still contain runtime API dependencies.
+**Central finding (baseline `6501155`):** the baseline checkout contained only the frontend application, but it was not independent of backend services. Public content, authentication, engagement, administration, terminal commands, and AddToTheAUX still contained runtime API dependencies.
+
+**Present state update (2026-10-26):** Following implementation of `CJ-002` through `CJ-011`, `CJ-019`, and `CJ-028` (recorded in [CHANGELOG.md](CHANGELOG.md) and [ISSUES.md](ISSUES.md)):
+- All runtime `/api/*` and `/actuator/*` calls have been eliminated across `frontend/src/`.
+- Public projects, categories, and blog articles resolve synchronously from `frontend/src/features/portfolio/data/localContent.ts` and `projects.ts`.
+- Global `AuthProvider` has been removed from `Theme.tsx`; `AuthContext.tsx` provides a static guest context.
+- Shared likes/comments engagement reads and write controls have been removed from `ContentModal.tsx` and `ContentCard.tsx`.
+- Runtime admin routes (`/admin/projects`, `/admin/blog`), `/login`, and `/api-lab` have been removed from `publicRoutes.ts` and redirect to `/` in `AppRoutes.tsx`.
+- `/projects` is registered in `publicRoutes.ts` using local `portfolioProjects`, and `AppRoutes.tsx` includes a global `<Route path="*" element={<NotFoundPage />} />`.
+- `AddToTheAUX` runs as a self-contained frontend interactive demo backed by `frontend/src/features/addToTheAux/data/localAuxData.ts`.
+- Terminal UI, simulated command parser, and session telemetry have been removed entirely; light mode is enforced site-wide.
+- The `/api` proxy and legacy `REACT_APP_` env prefix have been removed from `frontend/vite.config.ts`.
+
+The numbered sections below preserve the baseline `6501155` audit evidence for historical reference.
 
 ## 1. Repository structure and documentation drift
 
@@ -129,13 +142,13 @@ frontend/index.html
 
 ### Standard and terminal modes
 
-[SiteUiModeContext.tsx](../frontend/src/context/SiteUiModeContext.tsx) stores the preferred mode under `localStorage['site-ui-mode']`. The default is `standard`. A `ui=standard` or `ui=terminal` query parameter can change the preference. At widths below 768px the effective mode becomes standard, and the toggle is hidden.
+`SiteUiModeContext` (removed: `frontend/src/context/SiteUiModeContext.tsx`) stored the preferred mode under `localStorage['site-ui-mode']`. The default was `standard`. A `ui=standard` or `ui=terminal` query parameter could change the preference. At widths below 768px the effective mode became standard, and the toggle was hidden. In the current release, Terminal UI is retired and only standard light mode is supported.
 
 - `StandardUI` wraps pages in `StandardHeader`, a constrained `main`, and `StandardFooter`.
-- `TerminalUI` wraps the same routed page content in a draggable/fullscreen window alongside logs and a prompt.
-- `useTerminalSession` implements command history, keyboard shortcuts, navigation, auth actions, and API commands. History is in memory, capped at 40 commands and 120 displayed log entries.
-- `useDraggableTerminalWindow` handles pointer dragging, centering, viewport clamping, and resize adjustment. Position is component state, not a saved layout.
-- `publishTerminalTelemetry` / `subscribeTerminalTelemetry` communicate through browser events. This is local UI telemetry, not an external analytics integration.
+- `TerminalUI` (removed: `frontend/src/features/terminalUI/components/TerminalUI.tsx`) formerly wrapped routed page content in a draggable window alongside logs and a prompt.
+- `useTerminalSession` implemented command history, keyboard shortcuts, navigation, auth actions, and API commands.
+- `useDraggableTerminalWindow` handled pointer dragging, centering, viewport clamping, and resize adjustment.
+- `publishTerminalTelemetry` / `subscribeTerminalTelemetry` communicated through browser events for local UI telemetry.
 
 `/tic-tac-toe`, `/add-to-the-aux`, and the `/jit-cafe` subtree bypass the portfolio shell. AUX additionally uses viewport-locking styles.
 
@@ -145,16 +158,16 @@ Navigation has multiple sources of truth:
 
 1. [publicRoutes.ts](../frontend/src/routes/publicRoutes.ts): routable pages, labels, `showInNav`, and `requiresAdmin` flags.
 2. [profile.ts](../frontend/src/features/portfolio/data/profile.ts): actual standard header links: Home, About, Resume, Contact.
-3. [terminalShell.ts](../frontend/src/features/portfolio/data/terminalShell.ts): virtual directories, page/project commands, feature launches, and external links.
+3. `terminalShell` (removed: `frontend/src/features/portfolio/data/terminalShell.ts`): virtual directories, page/project commands, feature launches, and external links.
 4. [JIT Cafe Navbar](../frontend/src/features/jitCafe/components/navigation/Navbar.tsx): restaurant Home, Food Menu, Contact us.
 
 The standard header does not derive its navigation from `publicRoutes`. Changing `showInNav` alone will not update it. The terminal's projects shortcut maps to `/`, where current project cards are rendered.
 
 ### Authentication state and route behavior
 
-- [AuthContext.tsx](../frontend/src/context/AuthContext.tsx) stores an in-memory session with username, email, roles, and username-change capability. It exposes loading/authenticated/admin states and login/logout/refresh functions.
+- `AuthContext.tsx` (removed: `frontend/src/context/AuthContext.tsx`) stores an in-memory session with username, email, roles, and username-change capability. It exposes loading/authenticated/admin states and login/logout/refresh functions.
 - `isAdmin` is derived from `ROLE_ADMIN`. Authentication uses server cookies; API Lab additionally accepts an optional bearer token for manual testing.
-- [RequireAdmin.tsx](../frontend/src/routes/RequireAdmin.tsx) returns nothing while session loading is pending, redirects guests to login with a return location, and redirects non-admin users home.
+- `RequireAdmin.tsx` (removed: `frontend/src/routes/RequireAdmin.tsx`) returns nothing while session loading is pending, redirects guests to login with a return location, and redirects non-admin users home.
 - `PrivateRoute.tsx` exists but is not used by the active route registry.
 - Login can be a normal route or an overlay. `AppRoutes` keeps the background route rendered and separately renders `/login` when `backgroundLocation` is supplied.
 
@@ -170,14 +183,14 @@ In this table, **local** means page-specific content/logic is local; the global 
 | --- | --- | --- | --- |
 | `/` — [Home](../frontend/src/pages/Home.tsx), [StandardHome](../frontend/src/features/standardUI/components/StandardHome.tsx) | Profile hero and project catalog; local `ProjectCard` plus API project cards | Local profile/four projects; API list requests page 0, size 100, type PROJECT. API entries with local slugs are excluded. Static cards remain on API failure; an error is shown. | Standard/terminal home links; links to About, Contact, project details |
 | `/about` — [About](../frontend/src/pages/About.tsx) | Biography and latest writing | Local biography; latest three BLOG entries fetched; clicking a post retrieves full content by ID and opens `ContentModal`, which also loads engagement | Standard/terminal navigation; blog buttons open modal; shell provides onward navigation |
-| `/resume` — [Resume](../frontend/src/pages/Resume.tsx) | Summary, education, work history, certifications, resources | Local arrays/profile data and PDF; no page-specific API | Standard/terminal links; PDF, Contact, external credentials/profile links |
+| `/resume` — Resume (retired source) | Summary, education, work history, certifications, resources | Local arrays/profile data and PDF; no page-specific API | Standard/terminal links; PDF, Contact, external credentials/profile links |
 | `/contact` — [Contact](../frontend/src/pages/Contact.tsx) | Contact/resource links | Local profile resources; mailto and external/PDF links, no form submission | Standard/terminal navigation and home CTA |
 | `/projects/:id` — [ProjectDetail](../frontend/src/pages/ProjectDetail.tsx) | Case study, screenshots, feature list, demo/source links | `id` is actually used as a slug. Local project lookup first; otherwise API lookup by slug, type check for PROJECT, Markdown description, optional iframe. Unknown/error state uses `NotFoundState`. | Home project cards/terminal commands; Back to home and live-demo links |
 | `/blog` — [Blog](../frontend/src/pages/Blog.tsx) | `ContentBrowserPage` archive with categories, feed, details | API-dependent; page size 20, infinite loading plus Load More button, engagement hydration. Full posts open in modal, not dedicated post routes. | Direct URL/terminal command/admin user-view link; modal close and shell navigation |
-| `/login` — [Login](../frontend/src/pages/Login.tsx) | Password/Google sign-in as page or modal | API-dependent; Google configuration has env fallback; external GSI script; returns to stored destination or home | Terminal, protected routes, likes/comments, AUX; modal close uses history back |
-| `/admin/projects` — [AdminProjects](../frontend/src/pages/admin/AdminProjects.tsx) | Content browser plus create/edit/delete project workflow | API-dependent/admin-protected; title, slug, Markdown description, project URL, optional existing/new category at creation | Terminal admin command/direct URL; Open User View returns home |
-| `/admin/blog` — [AdminBlog](../frontend/src/pages/admin/AdminBlog.tsx) | Content browser plus blog publishing/editing/deletion | API-dependent/admin-protected; title, slug, Markdown body, optional category at creation | Blog's admin link/direct URL; Open User View goes to Blog |
-| `/api-lab` — [ApiLab](../frontend/src/pages/ApiLab.tsx) | Manual request console and request/response history | API-dependent/admin-protected; auth, content, categories, comments, users, likes, actuator. Last 30 request records held in state. | Direct URL; normal shell navigation |
+| `/login` — `Login` (removed: `frontend/src/pages/Login.tsx`) | Password/Google sign-in as page or modal | API-dependent; Google configuration has env fallback; external GSI script; returns to stored destination or home | Terminal, protected routes, likes/comments, AUX; modal close uses history back |
+| `/admin/projects` — `AdminProjects` (removed: `frontend/src/pages/admin/AdminProjects.tsx`) | Content browser plus create/edit/delete project workflow | API-dependent/admin-protected; title, slug, Markdown description, project URL, optional existing/new category at creation | Terminal admin command/direct URL; Open User View returns home |
+| `/admin/blog` — `AdminBlog` (removed: `frontend/src/pages/admin/AdminBlog.tsx`) | Content browser plus blog publishing/editing/deletion | API-dependent/admin-protected; title, slug, Markdown body, optional category at creation | Blog's admin link/direct URL; Open User View goes to Blog |
+| `/api-lab` — `ApiLab` (removed: `frontend/src/pages/ApiLab.tsx`) | Manual request console and request/response history | API-dependent/admin-protected; auth, content, categories, comments, users, likes, actuator. Last 30 request records held in state. | Direct URL; normal shell navigation |
 | `/add-to-the-aux` — [AddToTheAux](../frontend/src/pages/AddToTheAux.tsx) | Orbital playlist, mobile list, search, current playback, add-track flow | API-dependent. Ten visible desktop playlist slots; authenticated search/add; five-minute guest preview in sessionStorage; no local music fixture fallback | Case study/terminal/direct URL; login overlay and external Spotify playlist link; no standard portfolio header |
 | `/tic-tac-toe` — [TicTacToeFeature](../frontend/src/features/ticTacToe/TicTacToeFeature.tsx) | Game against lookup AI, hint tree, symmetry previews | Local JSON and TS; player/AI starts, delayed AI turn, retry, best-move lookup and equivalent states implemented. Gameplay not browser-tested in this audit. | Case study/terminal/direct URL; no standard portfolio header or dedicated home link |
 | `/jit-cafe` — [HomePage](../frontend/src/features/jitCafe/pages/HomePage.tsx) | Restaurant introduction and historical product screenshots | Local content and images. Ordering/staff flows shown here are screenshots, not implemented pages | Case study/terminal/direct URL; restaurant navbar and menu/contact CTAs |
@@ -235,6 +248,8 @@ Import/reference inspection found no active consumers for:
 
 These are cleanup candidates, not authorization to delete them. Recheck references before later removal. Likewise, files in `public/content/` are not wired into the current pages, but can still be served as public files.
 
+**Update 2026-10-27 (CJ-023):** A reachability scan from `src/index.tsx` removed the retired auth/admin/API subsystems: `components/auth/*`, `components/content/admin/*` (including its model tests), `pages/Login.tsx`, `pages/ApiLab.tsx`, `pages/admin/*`, `context/AuthContext.tsx`, `routes/PrivateRoute.tsx`, `routes/RequireAdmin.tsx`, `lib/csrf.ts`, `lib/env.ts`, `types/google-identity.d.ts`, `features/addToTheAux/lib/api.ts`, `features/addToTheAux/hooks/useGuestPreview.ts`, `features/jitCafe/components/menu/menuImageSlugs.ts`, and the auth-coupled legacy `components/layout/Navbar.tsx` plus the empty `Sidebar.tsx` and re-export `TerminalShell.tsx`. `pages/Projects.tsx` is now active. Still unreferenced but retained as possible redesign material pending a product decision: `components/layout/Footer.tsx`, `data/NavItem.tsx`, `components/helpers/Paragrapher.tsx`, `components/common/GitHubLink.tsx`, `components/common/LinkedInLink.tsx`, `features/portfolio/components/ProjectsStorySection.tsx`, `features/standardUI/components/StandardHomeStory.tsx`, `reportWebVitals.ts`, and `public/content/`.
+
 ## 7. Local data and assets
 
 - [profile.ts](../frontend/src/features/portfolio/data/profile.ts): profile copy, standard navigation, technology groups, resources, PDF URL.
@@ -253,11 +268,11 @@ The inspected public directory was approximately 22 MB. Literal `/assets/...` so
 
 [lib/api.ts](../frontend/src/lib/api.ts) normalizes the API base and builds URLs. It also defines `CategoryDomain`, `CategoryItem`, `ContentItem`, and `PagedResponse`. `ContentItem` has numeric ID, slug, title, timestamp, PROJECT/BLOG type, optional description/Markdown/project URL, and optional engagement.
 
-[lib/csrf.ts](../frontend/src/lib/csrf.ts) implements `fetchWithCsrf()`. Unsafe methods call `ensureCsrfToken()`, which checks `XSRF-TOKEN` and otherwise requests `/api/auth/csrf`; the token is sent as `X-XSRF-TOKEN`. Requests include credentials. Concurrent initialization shares a pending token request.
+`lib/csrf.ts` (removed: `frontend/src/lib/csrf.ts`) implements `fetchWithCsrf()`. Unsafe methods call `ensureCsrfToken()`, which checks `XSRF-TOKEN` and otherwise requests `/api/auth/csrf`; the token is sent as `X-XSRF-TOKEN`. Requests include credentials. Concurrent initialization shares a pending token request.
 
 [ContentPlatformService.ts](../frontend/src/lib/services/ContentPlatformService.ts) uses an internal `ApiClient` for JSON, errors, credentials, and mutations. It assumes a backend supporting content, categories, comments, and likes. Database implementation/schema cannot be verified from this frontend repository.
 
-[env.ts](../frontend/src/lib/env.ts) reads:
+`env.ts` (removed: `frontend/src/lib/env.ts`) reads:
 
 | Variable | Behavior |
 | --- | --- |
@@ -300,7 +315,7 @@ All operations below are implemented in `ContentPlatformService` unless otherwis
 | `POST /api/admin/categories` | `createCategory()` | Both create workflows |
 | `POST /api/admin/contents/{contentId}/categories/{categoryId}` | `attachCategory()` | Both create workflows |
 
-Relevant orchestration sources: [useContentBrowserData](../frontend/src/components/content/hooks/useContentBrowserData.ts), [useAdminProjectEditor](../frontend/src/components/content/admin/hooks/useAdminProjectEditor.ts), [useAdminBlogEditor](../frontend/src/components/content/admin/hooks/useAdminBlogEditor.ts).
+Relevant orchestration sources: [useContentBrowserData](../frontend/src/components/content/hooks/useContentBrowserData.ts), `useAdminProjectEditor` (removed: `frontend/src/components/content/admin/hooks/useAdminProjectEditor.ts`), `useAdminBlogEditor` (removed: `frontend/src/components/content/admin/hooks/useAdminBlogEditor.ts`).
 
 ### Engagement
 
@@ -321,18 +336,18 @@ Relevant orchestration sources: [useContentBrowserData](../frontend/src/componen
 
 ### Terminal dependencies
 
-[terminalShell.ts](../frontend/src/features/portfolio/data/terminalShell.ts) mixes static command definitions and network execution:
+`terminalShell` (removed: `frontend/src/features/portfolio/data/terminalShell.ts`) mixed static command definitions and network execution:
 
-- `fetchSessionLines()` directly requests `GET /api/auth/session`.
-- `resolveTerminalApiCommand()` handles `api status`, `api projects`, `api blogs`, category commands, and `api content <slug>` with `fetch` aliases.
-- Content/category commands use the same content service endpoints listed above.
-- [useTerminalSession](../frontend/src/features/terminalUI/hooks/useTerminalSession.ts) handles login/admin navigation and calls context logout.
+- `fetchSessionLines()` directly requested `GET /api/auth/session`.
+- `resolveTerminalApiCommand()` handled `api status`, `api projects`, `api blogs`, category commands, and `api content <slug>` with `fetch` aliases.
+- Content/category commands used the same content service endpoints listed above.
+- `useTerminalSession` (removed: `frontend/src/features/terminalUI/hooks/useTerminalSession.ts`) handled login/admin navigation and called context logout.
 
 Removing page API consumers alone would leave these calls reachable.
 
 ### AddToTheAUX dependencies
 
-[features/addToTheAux/lib/api.ts](../frontend/src/features/addToTheAux/lib/api.ts) implements `buildApiUrl()` and `fetchJson()`. It uses the shared CSRF helper, despite allowing a separate AUX base. If separate service origins remain during transition, CSRF initialization still targets the main API configuration; interoperability was not verified.
+`features/addToTheAux/lib/api.ts` (removed: `frontend/src/features/addToTheAux/lib/api.ts`) implements `buildApiUrl()` and `fetchJson()`. It uses the shared CSRF helper, despite allowing a separate AUX base. If separate service origins remain during transition, CSRF initialization still targets the main API configuration; interoperability was not verified.
 
 Default paths below use `/api/testing`; the prefix is configurable.
 
@@ -347,7 +362,7 @@ Default paths below use `/api/testing`; the prefix is configurable.
 
 ### API Lab additional surface
 
-[ApiLab.tsx](../frontend/src/pages/ApiLab.tsx) calls `fetchWithCsrf()` through `runApiCall()`, loads category options, and repeats the content/category/comment/like/admin operations above. It also exposes:
+`ApiLab.tsx` (removed: `frontend/src/pages/ApiLab.tsx`) calls `fetchWithCsrf()` through `runApiCall()`, loads category options, and repeats the content/category/comment/like/admin operations above. It also exposes:
 
 | Method and endpoint | Purpose |
 | --- | --- |
@@ -451,7 +466,7 @@ error TS2739: ... is missing the following properties from type
 'BlogEditEditorState': deleteLoading, delete
 ```
 
-The failing fixture is in [AdminEditorFormViewModels.test.ts](../frontend/src/components/content/admin/models/AdminEditorFormViewModels.test.ts). No fix was applied. `vite build` does not include this check, so build success alone would not establish type correctness.
+The failing fixture is in `AdminEditorFormViewModels.test.ts` (removed: `frontend/src/components/content/admin/models/AdminEditorFormViewModels.test.ts`). No fix was applied. `vite build` does not include this check, so build success alone would not establish type correctness.
 
 Existing tests cover content selection/collection/modal models, admin draft/category models, and admin view-model mappings. [App.test.tsx](../frontend/src/tests/App.test.tsx) is only `expect(true).toBe(true)`; it does not render the application. No application routing, game, auth, or feature integration tests were found in the inspected source.
 
@@ -467,3 +482,11 @@ No dependency installation, build, test-suite execution, application mutation, b
 6. Validate the final site as a static build with no application API requirements.
 
 These are future recommendations. The analysis and documentation do not authorize implementation. Continue with [MIGRATION_PLAN.md](MIGRATION_PLAN.md), [ISSUES.md](ISSUES.md), and [AGENTS.md](../AGENTS.md), and follow the user's next task.
+
+**2026-10-27 (CJ-038):** Removed the standalone Resume page and primary navigation entry. `/resume` redirects home; existing PDF links remain. Validation passed (TypeScript, 15 tests, production build).
+
+**2026-10-27 (CJ-039):** The shared catalog contains six projects, including `world-cup-bracket`, a Rust/egui desktop application documented from https://github.com/emunoz8/WorldCupBracket. Its screenshot is stored locally under `frontend/public/assets/features/world-cup-bracket/`; no runtime API integration was added to this website. `StandardFooter.tsx` includes Rust in its existing technology badge list.
+
+**2026-11-11 (CJ-040):** The portfolio shell now defines scoped teal/blue/amber tokens with navy headings and muted blue-gray body text. Home has a tinted hero, colored competency/experience/education cards, and a tinted contact section. Shared project cards, Projects/About introductions, navigation, and footer use the same palette. Standalone demos retain their own palettes. Styling remains in `frontend/src/styles/index.css`; no new dependency or runtime service was introduced. Verification and remaining visual-QA limits are recorded in the issue tracker and changelog.
+
+**2026-11-11 (CJ-040 revision):** The multi-color teal/blue/amber palette was replaced by a single deep-teal accent (`--portfolio-accent`) over neutral warm-white surfaces, hairline borders, and navy ink. Project cards, competency tiles, experience/education cards no longer rotate colors. Standalone demos unchanged. `typecheck` and `build` passed; tests and browser visual QA not run.

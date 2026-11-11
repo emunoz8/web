@@ -1,8 +1,7 @@
 // src/routes/AppRoutes.tsx
 import { Suspense, createElement } from "react";
-import { Location, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { publicRoutes } from "./publicRoutes";
-import RequireAdmin from "./RequireAdmin";
 import type { RoutePageComponent } from "./types";
 
 const routeLoadingFallback = (
@@ -11,43 +10,49 @@ const routeLoadingFallback = (
   </div>
 );
 
-function renderRouteElement(Component: RoutePageComponent, requiresAdmin = false) {
-  const page = (
+function renderRouteElement(Component: RoutePageComponent) {
+  return (
     <Suspense fallback={routeLoadingFallback}>
       {createElement(Component)}
     </Suspense>
   );
+}
 
-  return requiresAdmin ? <RequireAdmin>{page}</RequireAdmin> : page;
+function NotFoundPage() {
+  return (
+    <div className="py-12 sm:py-16">
+      <div className="max-w-3xl border-t border-brand-line/18 pt-4">
+        <p className="portfolio-kicker">404</p>
+        <h1 className="portfolio-display-title mt-4">Page not found</h1>
+        <p className="mt-4 portfolio-copy">
+          The page you requested does not exist or has been moved.
+        </p>
+        <Link to="/" className="portfolio-button-secondary mt-6 inline-flex">
+          Back to home
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 const AppRoutes = () => {
-  const location = useLocation();
-  const state = location.state as { backgroundLocation?: Location } | null;
-  const backgroundLocation = state?.backgroundLocation;
-  const loginRoute = publicRoutes.find((route) => route.to === "/login");
-
   return (
-    <>
-      <Routes location={backgroundLocation || location}>
-        {publicRoutes.map(({ to, Component, requiresAdmin }) => (
-          <Route
-            key={to}
-            path={to}
-            element={renderRouteElement(Component, requiresAdmin)}
-          />
-        ))}
-      </Routes>
-
-      {backgroundLocation && loginRoute && (
-        <Routes>
-          <Route
-            path={loginRoute.to}
-            element={renderRouteElement(loginRoute.Component, loginRoute.requiresAdmin)}
-          />
-        </Routes>
-      )}
-    </>
+    <Routes>
+      {publicRoutes.map(({ to, Component }) => (
+        <Route
+          key={to}
+          path={to}
+          element={renderRouteElement(Component)}
+        />
+      ))}
+      <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/admin/*" element={<Navigate to="/" replace />} />
+      <Route path="/api-lab" element={<Navigate to="/" replace />} />
+      <Route path="/blog/*" element={<Navigate to="/" replace />} />
+      <Route path="/resume" element={<Navigate to="/" replace />} />
+      <Route path="/contact" element={<Navigate to="/#contact" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 };
 
